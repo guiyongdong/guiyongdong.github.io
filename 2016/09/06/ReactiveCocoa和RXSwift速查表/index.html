@@ -6,20 +6,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>归档: 6666/1 - 贵大头的博客</title>
+    <title>ReactiveCocoa和RXSwift速查表 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
     
     
     
-    <meta name="description" content="快乐的程序猿">
+    <meta name="description" content="在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(转载)">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="贵大头的博客">
-<meta property="og:url" content="http://yoursite.com/archives/6666/01/index.html">
+<meta property="og:title" content="ReactiveCocoa和RXSwift速查表">
+<meta property="og:url" content="http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="快乐的程序猿">
+<meta property="og:description" content="在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(转载)">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/ReactiveCocoa-Objective-C.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/ReactiveCocoaV4.x-Swift.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/RXSwift.png?raw=true">
+<meta property="og:updated_time" content="2016-09-06T02:19:15.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="贵大头的博客">
-<meta name="twitter:description" content="快乐的程序猿">
+<meta name="twitter:title" content="ReactiveCocoa和RXSwift速查表">
+<meta name="twitter:description" content="在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(转载)">
+<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/ReactiveCocoa-Objective-C.png?raw=true">
     
     
         
@@ -42,7 +47,7 @@
             <!-- Define author's picture -->
 
 
-<header id="header" data-behavior="1">
+<header id="header" data-behavior="4">
     <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
     <div class="header-title">
         <a class="header-title-link" href="/ ">贵大头的博客</a>
@@ -66,7 +71,7 @@
         
     
 
-<nav id="sidebar" data-behavior="1">
+<nav id="sidebar" data-behavior="4">
     <div class="sidebar-container">
         
             <div class="sidebar-profile">
@@ -174,66 +179,117 @@
 </nav>
 
             
-            <div id="main" data-behavior="1"
+            <div id="main" data-behavior="4"
                  class="
                         hasCoverMetaIn
                         ">
                 
-    <section class="postShorten-group main-content-wrap">
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
     
     
-    <article class="postShorten postShorten--thumbnailimg-top" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-                <a href="/6666/01/01/欢迎来到贵大头的博客/">
-                    <div class="postShorten-thumbnailimg">
-                        <img alt="" itemprop="image" src="http://d1u9biwaxjngwg.cloudfront.net/welcome-to-tranquilpeak/city-750.jpg"/>
-                    </div>
-                </a>
-                
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/6666/01/01/欢迎来到贵大头的博客/">
-                            欢迎来到贵大头的博客
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="6666-01-01T17:40:49+08:00">
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            ReactiveCocoa和RXSwift速查表
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2016-09-06T09:55:48+08:00">
 	
-		    1月 01, 6666
+		    9月 06, 2016
     	
     </time>
     
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
+
+
+    
 </div>
 
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！<br>
-                    
-                        <a href="/6666/01/01/欢迎来到贵大头的博客/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta" target="_blank" rel="external">转载</a>)</p>
+<a id="more"></a>
+<h3 id="ReactiveCocoa-Objective-C部分"><a href="#ReactiveCocoa-Objective-C部分" class="headerlink" title="ReactiveCocoa-Objective-C部分"></a>ReactiveCocoa-Objective-C部分</h3><p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/ReactiveCocoa-Objective-C.png?raw=true" alt="ReactiveCocoa-Objective-C Swartz"></p>
+<h3 id="ReactiveCocoaV4-x-Swift部分"><a href="#ReactiveCocoaV4-x-Swift部分" class="headerlink" title="ReactiveCocoaV4.x-Swift部分"></a>ReactiveCocoaV4.x-Swift部分</h3><p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/ReactiveCocoaV4.x-Swift.png?raw=true" alt="ReactiveCocoaV4.x-Swift Swartz"></p>
+<h3 id="RXSwift部分"><a href="#RXSwift部分" class="headerlink" title="RXSwift部分"></a>RXSwift部分</h3><p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/RXSwift.png?raw=true" alt="ReactiveCocoaV4.x-Swift Swartz"></p>
+<!-- more -->
+
             
         </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
         
-    </article>
-    
-    <div class="pagination-bar">
-    <ul class="pagination">
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/ReactiveCocoa/">ReactiveCocoa</a>
+
+            </div>
         
+        <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/6666/01/01/欢迎来到贵大头的博客/"  data-tooltip="欢迎来到贵大头的博客">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/08/12/深入ReactiveCocoa/" data-tooltip="深入ReactiveCocoa">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-google-plus"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-facebook-official"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-twitter"></i>
+            </a>
+        </li>
         
-        <li class="pagination-number">第 1 页 共 1 页</li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
     </ul>
 </div>
 
-</section>
+
+        
+            
+        
+    </div>
+</article>
 
 
 
@@ -244,6 +300,84 @@
 </footer>
 
             </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/6666/01/01/欢迎来到贵大头的博客/"  data-tooltip="欢迎来到贵大头的博客">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/08/12/深入ReactiveCocoa/" data-tooltip="深入ReactiveCocoa">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-google-plus"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-facebook-official"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-twitter"></i>
+            </a>
+        </li>
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <ul class="share-options">
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+
             
         </div>
         
@@ -402,6 +536,8 @@
         <!--SCRIPTS-->
 <script src="/assets/js/script-rt08quwts7iav5x0cfd2ym0gb5qkd1lvrsmwrakxtkhefmaaes4ywkmnjnwf.min.js"></script>
 <!--SCRIPTS END-->
+
+    
 
 
 
