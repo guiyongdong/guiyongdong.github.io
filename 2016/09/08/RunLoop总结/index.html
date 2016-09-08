@@ -6,21 +6,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>关于RAC的一些资料 - 贵大头的博客</title>
+    <title>RunLoop总结 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
     
     
     
-    <meta name="description" content="看了这么多RAC资料，在这里我整理了一下，以备学习。">
+    <meta name="description" content="最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对&amp;lt;CoreFoundation/CFRunLoop.h&amp;gt;的头文件函数总结。">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="关于RAC的一些资料">
-<meta property="og:url" content="http://yoursite.com/2016/09/06/关于RAC的一些资料/index.html">
+<meta property="og:title" content="RunLoop总结">
+<meta property="og:url" content="http://yoursite.com/2016/09/08/RunLoop总结/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="看了这么多RAC资料，在这里我整理了一下，以备学习。">
-<meta property="og:updated_time" content="2016-09-06T07:19:42.000Z">
+<meta property="og:description" content="最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对&amp;lt;CoreFoundation/CFRunLoop.h&amp;gt;的头文件函数总结。">
+<meta property="og:updated_time" content="2016-09-08T09:43:27.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="关于RAC的一些资料">
-<meta name="twitter:description" content="看了这么多RAC资料，在这里我整理了一下，以备学习。">
+<meta name="twitter:title" content="RunLoop总结">
+<meta name="twitter:description" content="最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对&amp;lt;CoreFoundation/CFRunLoop.h&amp;gt;的头文件函数总结。">
     
     
         
@@ -186,19 +186,19 @@
         <div class="post-header main-content-wrap text-left">
     
         <h1 class="post-title" itemprop="headline">
-            关于RAC的一些资料
+            RunLoop总结
         </h1>
     
     <div class="post-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T14:47:26+08:00">
+    <time itemprop="datePublished" datetime="2016-09-08T17:05:52+08:00">
 	
-		    9月 06, 2016
+		    9月 08, 2016
     	
     </time>
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
+    <a class="category-link" href="/categories/RunLoop/">RunLoop</a>
 
 
     
@@ -208,102 +208,230 @@
     
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
-            <p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p>
+            <p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p>
 <a id="more"></a>
-<h5 id="何为函数式编程"><a href="#何为函数式编程" class="headerlink" title="何为函数式编程"></a>何为函数式编程</h5><ul>
-<li><a href="http://valiantcat.com/2016/06/03/%E4%BB%8E%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E5%88%B0%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" target="_blank" rel="external">从函数调用到函数式编程</a></li>
-</ul>
-<h5 id="RP入门"><a href="#RP入门" class="headerlink" title="RP入门"></a>RP入门</h5><ul>
-<li><a href="https://github.com/benjycui/introrx-chinese-edition" target="_blank" rel="external">RP入门</a></li>
-</ul>
-<h5 id="RAC思想"><a href="#RAC思想" class="headerlink" title="RAC思想"></a>RAC思想</h5><ul>
-<li><p><a href="http://www.jianshu.com/p/25922584bc43" target="_blank" rel="external">iOS Reactive Cocoa使用浅析</a></p>
+<h3 id="关于RunLoop的资料总结"><a href="#关于RunLoop的资料总结" class="headerlink" title="关于RunLoop的资料总结"></a>关于RunLoop的资料总结</h3><p>网上关于RunLoop的总结大致相同，这里推荐几篇好的文章共大家学习。</p>
+<ul>
+<li><p>YYModel作者关于RunLoop的总结 《<a href="http://blog.ibireme.com/2015/05/18/runloop/" target="_blank" rel="external">深入理解RunLoop</a>》</p>
 </li>
-<li><p><a href="http://blog.devtang.com/2016/01/03/reactive-cocoa-discussion/index.html" target="_blank" rel="external">ReactiveCocoa 讨论会</a></p>
+<li><p>简书上不错的文章 《<a href="http://www.jianshu.com/p/37ab0397fec7" target="_blank" rel="external">【iOS程序启动与运转】- RunLoop个人小结</a>》</p>
 </li>
-</ul>
-<h5 id="RAC基础篇"><a href="#RAC基础篇" class="headerlink" title="RAC基础篇"></a>RAC基础篇</h5><ul>
-<li><p><a href="http://www.guiyongdong.com/2016/08/11/%E5%88%9D%E8%AF%86ReactiveCocoa/" target="_blank" rel="external">初识ReactiveCocoa</a></p>
+<li><p>sunnyxx的RunLoop线下讨论会 <a href="https://pan.baidu.com/s/1i5bN3dN" target="_blank" rel="external">百度网盘</a></p>
 </li>
-<li><p><a href="http://www.guiyongdong.com/2016/08/12/%E6%B7%B1%E5%85%A5ReactiveCocoa/" target="_blank" rel="external">深入ReactiveCocoa</a></p>
+<li><p>用RunLoop捕获程序Crash 防止用户使用时程序崩溃 <a href="https://github.com/guiyongdong/Resource/tree/master/%20CrashManager" target="_blank" rel="external">git连接</a></p>
 </li>
 </ul>
-<h5 id="非常不错的RAC入门教程"><a href="#非常不错的RAC入门教程" class="headerlink" title="非常不错的RAC入门教程"></a>非常不错的RAC入门教程</h5><ul>
-<li><p><a href="http://benbeng.leanote.com/post/ReactiveCocoaTutorial-part1" target="_blank" rel="external">ReactiveCocoa入门教程——第一部分对应的中文版</a></p>
-</li>
-<li><p><a href="http://blog.sunnyxx.com/2014/03/06/rac_1_macros/" target="_blank" rel="external">Reactive Cocoa Tutorial [1] = 神奇的Macros</a></p>
-</li>
-<li><p><a href="http://blog.sunnyxx.com/2014/03/06/rac_2_racstream/" target="_blank" rel="external">Reactive Cocoa Tutorial [2] = 百变RACStream</a></p>
-</li>
-<li><p><a href="http://blog.sunnyxx.com/2014/03/06/rac_3_racsignal/" target="_blank" rel="external">Reactive Cocoa Tutorial [3] = RACSignal的巧克力工厂</a></p>
-</li>
-<li><p><a href="http://blog.sunnyxx.com/2014/04/19/rac_4_filters/" target="_blank" rel="external">Reactive Cocoa Tutorial [4] = 只取所需的Filters</a></p>
-</li>
-<li><p><a href="http://leichunfeng.github.io/blog/2015/12/25/reactivecocoa-v2-dot-5-yuan-ma-jie-xi-zhi-jia-gou-zong-lan" target="_blank" rel="external">ReactiveCocoa v2.5 源码解析之架构总览</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/d262f2c55fbe" target="_blank" rel="external">RAC核心元素与信号流</a></p>
-</li>
-</ul>
-<h5 id="来自美团的对冷热信号的分析"><a href="#来自美团的对冷热信号的分析" class="headerlink" title="来自美团的对冷热信号的分析"></a>来自美团的对冷热信号的分析</h5><ul>
-<li><p><a href="http://tech.meituan.com/RACSignalSubscription.html" target="_blank" rel="external">RACSignal的Subscription深入分析 - 美团点评技术团队</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/talk-about-reactivecocoas-cold-signal-and-hot-signal-part-1.html" target="_blank" rel="external">细说ReactiveCocoa的冷信号与热信号（一）</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/talk-about-reactivecocoas-cold-signal-and-hot-signal-part-2.html" target="_blank" rel="external">细说ReactiveCocoa的冷信号与热信号（二）：为什么要区分冷热信号</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/talk-about-reactivecocoas-cold-signal-and-hot-signal-part-3.html" target="_blank" rel="external">细说ReactiveCocoa的冷信号与热信号（三）：怎么处理冷信号与热信号</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/potential-memory-leak-in-reactivecocoa.html" target="_blank" rel="external">ReactiveCocoa中潜在的内存泄漏及解决方案</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/RACSignalSubscription.html" target="_blank" rel="external">RACSignal的Subscription深入分析</a></p>
-</li>
-</ul>
-<h5 id="RAC源码解析"><a href="#RAC源码解析" class="headerlink" title="RAC源码解析"></a>RAC源码解析</h5><ul>
-<li><p><a href="http://www.jianshu.com/p/d262f2c55fbe" target="_blank" rel="external">RAC核心元素与信号流</a></p>
-</li>
-<li><p><a href="http://ios.jobbole.com/85019/" target="_blank" rel="external">剖析@weakify 和 @strongify</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/baeebca1f6f4" target="_blank" rel="external">ReactiveCocoa源码阅读之前序</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/d5e4dc7e592e" target="_blank" rel="external">ReactiveCocoa源码阅读之RACSignal(一)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/bcdea71ba824" target="_blank" rel="external">ReactiveCocoa源码阅读之RACSignal(二)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/7c1ddba2b3a4" target="_blank" rel="external">ReactiveCocoa源码阅读之bind函数</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/f939bf6afc93" target="_blank" rel="external">ReactiveCocoa源码阅读之攻略flatten</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/f3b00e90035d" target="_blank" rel="external">ReactiveCocoa源码阅读之switchToLatest/combineLatestWith</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/a151e5cb0aae" target="_blank" rel="external">ReactiveCocoa源码阅读之RACScheduler</a></p>
-</li>
-</ul>
-<h5 id="MVVM-With-ReactiveCocoa"><a href="#MVVM-With-ReactiveCocoa" class="headerlink" title="MVVM With ReactiveCocoa"></a>MVVM With ReactiveCocoa</h5><ul>
-<li><p><a href="http://www.jianshu.com/p/b2fe0920e3aa" target="_blank" rel="external">MVVM与ReactiveCocoa的运用(Part1)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/b51344f4f3a3" target="_blank" rel="external">MVVM与ReactiveCocoa的运用(Part2)</a></p>
-</li>
-<li><p><a href="https://www.raywenderlich.com/74106/mvvm-tutorial-with-reactivecocoa-part-1" target="_blank" rel="external">MVVM Tutorial with ReactiveCocoa: Part 1/2</a></p>
-</li>
-<li><p><a href="https://www.raywenderlich.com/74131/mvvm-tutorial-with-reactivecocoa-part-2" target="_blank" rel="external">MVVM Tutorial with ReactiveCocoa: Part 2/2</a></p>
-</li>
-<li><p><a href="http://leichunfeng.github.io/blog/2016/02/27/mvvm-with-reactivecocoa" target="_blank" rel="external">MVVM With ReactiveCocoa</a></p>
-</li>
-</ul>
-<h5 id="RAC其它"><a href="#RAC其它" class="headerlink" title="RAC其它"></a>RAC其它</h5><ul>
-<li><p><a href="http://www.jianshu.com/p/fccba7be1ca1" target="_blank" rel="external">ReactiveCocoa 4 文档翻译目录</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/0ea216239efb" target="_blank" rel="external">ReactiveCocoa 4 图解之一——事件（Event）</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/ba5247d713a9" target="_blank" rel="external">ReactiveCocoa 4 图解之二——监听器（Observer）</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/7a4a1d005aee" target="_blank" rel="external">ReactiveCocoa 4 图解之三——存根（Disposable)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/f0c945e5b2fe" target="_blank" rel="external">ReactiveCocoa 4 图解之五——信号（Signal)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/617063a81136" target="_blank" rel="external">ReactiveCocoa 4 图解之六——信号发生器（SignalProducer）</a></p>
-</li>
-</ul>
+<h3 id="关于CFRunLoop-h的总结"><a href="#关于CFRunLoop-h的总结" class="headerlink" title="关于CFRunLoop.h的总结"></a>关于CFRunLoop.h的总结</h3><pre><code>
+
+//Runloop
+typedef struct __CFRunLoop * CFRunLoopRef;
+//事件源
+typedef struct __CFRunLoopSource * CFRunLoopSourceRef;
+//观察者
+typedef struct __CFRunLoopObserver * CFRunLoopObserverRef;
+//定时器
+typedef struct CF_BRIDGED_MUTABLE_TYPE(NSTimer) __CFRunLoopTimer * CFRunLoopTimerRef;
+
+/* Reasons for CFRunLoopRunInMode() to Return */
+enum {
+    kCFRunLoopRunFinished = 1, //Run Loop结束，没有Timer或者其他Input Source
+    kCFRunLoopRunStopped = 2, //Run Loop被停止，使用CFRunLoopStop停止Run Loop
+    kCFRunLoopRunTimedOut = 3, //RunLoop 超时
+    kCFRunLoopRunHandledSource = 4 //Run Loop处理完事件，注意Timer事件的触发是不会让Run Loop退出返回的，即使CFRunLoopRunInMode的第三个参数是YES也不行
+};
+
+/* Run Loop Observer Activities */
+typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
+    kCFRunLoopEntry = (1UL << 0), // 即将进入Loop
+    kCFRunLoopBeforeTimers = (1UL << 1), // 即将处理 Timer
+    kCFRunLoopBeforeSources = (1UL << 2), // 即将处理 Source
+    kCFRunLoopBeforeWaiting = (1UL << 5), // 即将进入休眠
+    kCFRunLoopAfterWaiting = (1UL << 6), // 刚从休眠中唤醒
+    kCFRunLoopExit = (1UL << 7), // 即将退出Loop
+    kCFRunLoopAllActivities = 0x0FFFFFFFU
+};
+
+//默认model
+CF_EXPORT const CFStringRef kCFRunLoopDefaultMode;
+//当uiscrollView滑动时Model
+CF_EXPORT const CFStringRef kCFRunLoopCommonModes;
+
+//获取当前RunLoop 当当前RunLoop没有的时候回创建一个  一个线程对应一个RunLoop
+CF_EXPORT CFRunLoopRef CFRunLoopGetCurrent(void);
+//获取主线程的RunLoop
+CF_EXPORT CFRunLoopRef CFRunLoopGetMain(void);
+//复制当前RunLoop
+CF_EXPORT CFStringRef CFRunLoopCopyCurrentMode(CFRunLoopRef rl);
+//复制当前RunLoop的所有Model
+CF_EXPORT CFArrayRef CFRunLoopCopyAllModes(CFRunLoopRef rl);
+//给当前RunLoop添加Model
+CF_EXPORT void CFRunLoopAddCommonMode(CFRunLoopRef rl, CFStringRef mode);
+//获取RunLoop model的超时时间
+CF_EXPORT CFAbsoluteTime CFRunLoopGetNextTimerFireDate(CFRunLoopRef rl, CFStringRef mode);
+//手动启动RunLoop
+CF_EXPORT void CFRunLoopRun(void);
+/**
+ *  切换当前RunLoop的model
+ *
+ *  @param mode                     model
+ *  @param seconds                  执行时间
+ *  @param returnAfterSourceHandled 执行完是否结束
+ */
+CF_EXPORT SInt32 CFRunLoopRunInMode(CFStringRef mode, CFTimeInterval seconds, Boolean returnAfterSourceHandled);
+//当前RunLoop是否休眠
+CF_EXPORT Boolean CFRunLoopIsWaiting(CFRunLoopRef rl);
+//唤醒RunLoop
+CF_EXPORT void CFRunLoopWakeUp(CFRunLoopRef rl);
+//手动停止RunLoop
+CF_EXPORT void CFRunLoopStop(CFRunLoopRef rl);
+
+#if __BLOCKS__
+//在RunLoop 特定Model执行 操作
+CF_EXPORT void CFRunLoopPerformBlock(CFRunLoopRef rl, CFTypeRef mode, void (^block)(void)) CF_AVAILABLE(10_6, 4_0); 
+#endif
+//RunLoop下是否包含某个Source
+CF_EXPORT Boolean CFRunLoopContainsSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
+//添加Source
+CF_EXPORT void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
+//移除Source
+CF_EXPORT void CFRunLoopRemoveSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
+//是否包换观察者
+CF_EXPORT Boolean CFRunLoopContainsObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
+//添加某个model下的观察者
+CF_EXPORT void CFRunLoopAddObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
+//移除观察者
+CF_EXPORT void CFRunLoopRemoveObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
+//是否包含定时器
+CF_EXPORT Boolean CFRunLoopContainsTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
+//添加定时器
+CF_EXPORT void CFRunLoopAddTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
+//移除定时器
+CF_EXPORT void CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
+
+typedef struct {
+    CFIndex    version;
+    void *    info;
+    const void *(*retain)(const void *info);
+    void    (*release)(const void *info);
+    CFStringRef    (*copyDescription)(const void *info);
+    Boolean    (*equal)(const void *info1, const void *info2);
+    CFHashCode    (*hash)(const void *info);
+    void    (*schedule)(void *info, CFRunLoopRef rl, CFStringRef mode);
+    void    (*cancel)(void *info, CFRunLoopRef rl, CFStringRef mode);
+    void    (*perform)(void *info);
+} CFRunLoopSourceContext;
+
+typedef struct {
+    CFIndex    version;
+    void *    info;
+    const void *(*retain)(const void *info);
+    void    (*release)(const void *info);
+    CFStringRef    (*copyDescription)(const void *info);
+    Boolean    (*equal)(const void *info1, const void *info2);
+    CFHashCode    (*hash)(const void *info);
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) || (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
+    mach_port_t    (*getPort)(void *info);
+    void *    (*perform)(void *msg, CFIndex size, CFAllocatorRef allocator, void *info);
+#else
+    void *    (*getPort)(void *info);
+    void    (*perform)(void *info);
+#endif
+} CFRunLoopSourceContext1;
+
+CF_EXPORT CFTypeID CFRunLoopSourceGetTypeID(void);
+
+//创建事件源
+CF_EXPORT CFRunLoopSourceRef CFRunLoopSourceCreate(CFAllocatorRef allocator, CFIndex order, CFRunLoopSourceContext *context);
+
+CF_EXPORT CFIndex CFRunLoopSourceGetOrder(CFRunLoopSourceRef source);
+CF_EXPORT void CFRunLoopSourceInvalidate(CFRunLoopSourceRef source);
+CF_EXPORT Boolean CFRunLoopSourceIsValid(CFRunLoopSourceRef source);
+CF_EXPORT void CFRunLoopSourceGetContext(CFRunLoopSourceRef source, CFRunLoopSourceContext *context);
+CF_EXPORT void CFRunLoopSourceSignal(CFRunLoopSourceRef source);
+
+typedef struct {
+    CFIndex    version;
+    void *    info;
+    const void *(*retain)(const void *info);
+    void    (*release)(const void *info);
+    CFStringRef    (*copyDescription)(const void *info);
+} CFRunLoopObserverContext;
+
+typedef void (*CFRunLoopObserverCallBack)(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info);
+
+CF_EXPORT CFTypeID CFRunLoopObserverGetTypeID(void);
+
+CF_EXPORT CFRunLoopObserverRef CFRunLoopObserverCreate(CFAllocatorRef allocator, CFOptionFlags activities, Boolean repeats, CFIndex order, CFRunLoopObserverCallBack callout, CFRunLoopObserverContext *context);
+#if __BLOCKS__
+/**
+ *  创建观察者
+ *
+ *  @param allocator  默认 kCFAllocatorDefault
+ *  @param activities 监听 RunLoop的哪种状态
+ *  @param repeats    是否一直监听
+ *  @param order      优先级 默认 0
+ *  @param ^block     回调
+ *
+ */
+CF_EXPORT CFRunLoopObserverRef CFRunLoopObserverCreateWithHandler(CFAllocatorRef allocator, CFOptionFlags activities, Boolean repeats, CFIndex order, void (^block) (CFRunLoopObserverRef observer, CFRunLoopActivity activity)) CF_AVAILABLE(10_7, 5_0);
+#endif
+
+//获取当前观察者观察的状态
+CF_EXPORT CFOptionFlags CFRunLoopObserverGetActivities(CFRunLoopObserverRef observer);
+//获取当前观察者是否一直观察
+CF_EXPORT Boolean CFRunLoopObserverDoesRepeat(CFRunLoopObserverRef observer);
+//获取优先级
+CF_EXPORT CFIndex CFRunLoopObserverGetOrder(CFRunLoopObserverRef observer);
+CF_EXPORT void CFRunLoopObserverInvalidate(CFRunLoopObserverRef observer);
+CF_EXPORT Boolean CFRunLoopObserverIsValid(CFRunLoopObserverRef observer);
+CF_EXPORT void CFRunLoopObserverGetContext(CFRunLoopObserverRef observer, CFRunLoopObserverContext *context);
+
+typedef struct {
+    CFIndex    version;
+    void *    info;
+    const void *(*retain)(const void *info);
+    void    (*release)(const void *info);
+    CFStringRef    (*copyDescription)(const void *info);
+} CFRunLoopTimerContext;
+
+typedef void (*CFRunLoopTimerCallBack)(CFRunLoopTimerRef timer, void *info);
+
+CF_EXPORT CFTypeID CFRunLoopTimerGetTypeID(void);
+//创建定时器
+CF_EXPORT CFRunLoopTimerRef CFRunLoopTimerCreate(CFAllocatorRef allocator, CFAbsoluteTime fireDate, CFTimeInterval interval, CFOptionFlags flags, CFIndex order, CFRunLoopTimerCallBack callout, CFRunLoopTimerContext *context);
+#if __BLOCKS__
+//使用Block创建定时器
+CF_EXPORT CFRunLoopTimerRef CFRunLoopTimerCreateWithHandler(CFAllocatorRef allocator, CFAbsoluteTime fireDate, CFTimeInterval interval, CFOptionFlags flags, CFIndex order, void (^block) (CFRunLoopTimerRef timer)) CF_AVAILABLE(10_7, 5_0);
+#endif
+//获取超时时间
+CF_EXPORT CFAbsoluteTime CFRunLoopTimerGetNextFireDate(CFRunLoopTimerRef timer);
+//设置超时时间
+CF_EXPORT void CFRunLoopTimerSetNextFireDate(CFRunLoopTimerRef timer, CFAbsoluteTime fireDate);
+CF_EXPORT CFTimeInterval CFRunLoopTimerGetInterval(CFRunLoopTimerRef timer);
+//是否循环执行
+CF_EXPORT Boolean CFRunLoopTimerDoesRepeat(CFRunLoopTimerRef timer);
+//获取优先级
+CF_EXPORT CFIndex CFRunLoopTimerGetOrder(CFRunLoopTimerRef timer);
+CF_EXPORT void CFRunLoopTimerInvalidate(CFRunLoopTimerRef timer);
+CF_EXPORT Boolean CFRunLoopTimerIsValid(CFRunLoopTimerRef timer);
+CF_EXPORT void CFRunLoopTimerGetContext(CFRunLoopTimerRef timer, CFRunLoopTimerContext *context);
+
+// Setting a tolerance for a timer allows it to fire later than the scheduled fire date, improving the ability of the system to optimize for increased power savings and responsiveness. The timer may fire at any time between its scheduled fire date and the scheduled fire date plus the tolerance. The timer will not fire before the scheduled fire date. For repeating timers, the next fire date is calculated from the original fire date regardless of tolerance applied at individual fire times, to avoid drift. The default value is zero, which means no additional tolerance is applied. The system reserves the right to apply a small amount of tolerance to certain timers regardless of the value of this property.
+// As the user of the timer, you will have the best idea of what an appropriate tolerance for a timer may be. A general rule of thumb, though, is to set the tolerance to at least 10% of the interval, for a repeating timer. Even a small amount of tolerance will have a significant positive impact on the power usage of your application. The system may put a maximum value of the tolerance.
+CF_EXPORT CFTimeInterval CFRunLoopTimerGetTolerance(CFRunLoopTimerRef timer) CF_AVAILABLE(10_9, 7_0);
+CF_EXPORT void CFRunLoopTimerSetTolerance(CFRunLoopTimerRef timer, CFTimeInterval tolerance) CF_AVAILABLE(10_9, 7_0);
+
+CF_EXTERN_C_END
+CF_IMPLICIT_BRIDGING_DISABLED
+
+
+</code></pre>
+
+
+
+
+
+
 <!-- more -->
 
             
@@ -314,7 +442,7 @@
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">标签</span><br/>
                 
-    <a class="tag tag--primary tag--small t-link" href="/tags/ReactiveCocoa/">ReactiveCocoa</a>
+    <a class="tag tag--primary tag--small t-link" href="/tags/RunLoop/">RunLoop</a>
 
             </div>
         
@@ -323,7 +451,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/08/RunLoop总结/"  data-tooltip="RunLoop总结">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/6666/01/01/欢迎来到贵大头的博客/"  data-tooltip="欢迎来到贵大头的博客">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -331,7 +459,7 @@
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/06/ReactiveCocoa和RXSwift速查表/" data-tooltip="ReactiveCocoa和RXSwift速查表">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/06/关于RAC的一些资料/" data-tooltip="关于RAC的一些资料">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -346,17 +474,17 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-google-plus"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-facebook-official"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-twitter"></i>
             </a>
         </li>
@@ -394,7 +522,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/08/RunLoop总结/"  data-tooltip="RunLoop总结">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/6666/01/01/欢迎来到贵大头的博客/"  data-tooltip="欢迎来到贵大头的博客">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -402,7 +530,7 @@
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/06/ReactiveCocoa和RXSwift速查表/" data-tooltip="ReactiveCocoa和RXSwift速查表">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/06/关于RAC的一些资料/" data-tooltip="关于RAC的一些资料">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -417,17 +545,17 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-google-plus"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-facebook-official"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-twitter"></i>
             </a>
         </li>
@@ -447,17 +575,17 @@
                 <div id="share-options-bar" class="share-options-bar" data-behavior="4">
     <ul class="share-options">
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/06/关于RAC的一些资料/">
+            <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://yoursite.com/2016/09/08/RunLoop总结/">
                 <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
             </a>
         </li>
