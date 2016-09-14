@@ -18,7 +18,7 @@
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/GCD1.png?raw=true">
-<meta property="og:updated_time" content="2016-09-14T06:49:46.000Z">
+<meta property="og:updated_time" content="2016-09-14T06:52:32.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="聊一聊GCD的那些事">
 <meta name="twitter:description" content="GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。">
@@ -794,7 +794,7 @@ return instance;</code></pre>
 <li>这会在超时之前等待信号量。这个调用阻塞了当前线程直到信号量被发射。这个函数的一个非零返回值表示到达超时了。在这个例子里，测试将会失败因为它以为网络请求不会超过 10 秒钟就会返回——一个平衡点！</li>
 </ol>
 <hr>
-<h3 id="13-dispatch-time-t"><a href="#13-dispatch-time-t" class="headerlink" title="13.dispatch_time_t"></a>13.dispatch_time_t</h3><p>基于以前讲的runloop中的CFRunLoopTimerRef :</p>
+<h3 id="13-GCD定时器"><a href="#13-GCD定时器" class="headerlink" title="13.GCD定时器"></a>13.GCD定时器</h3><p>基于以前讲的runloop中的CFRunLoopTimerRef :</p>
 <ul>
 <li>CFRunLoopTimerRef是基于时间的触发器</li>
 <li>CFRunLoopTimerRef基本上说的就是NSTimer,它受RunLoop的Mode的影响(Tracking,Defalult)</li>
