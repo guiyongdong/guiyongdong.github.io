@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>欢迎来到贵大头的博客 - 贵大头的博客</title>
+    <title>iOS动画之CATransition动画 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -14,16 +14,16 @@
         <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
     
-    <meta name="description" content="本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！">
+    <meta name="description" content="快乐的程序猿">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="欢迎来到贵大头的博客">
-<meta property="og:url" content="http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/index.html">
+<meta property="og:title" content="iOS动画之CATransition动画">
+<meta property="og:url" content="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！">
-<meta property="og:updated_time" content="2016-08-26T09:32:57.000Z">
+<meta property="og:description" content="快乐的程序猿">
+<meta property="og:updated_time" content="2016-09-22T07:35:15.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="欢迎来到贵大头的博客">
-<meta name="twitter:description" content="本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！">
+<meta name="twitter:title" content="iOS动画之CATransition动画">
+<meta name="twitter:description" content="快乐的程序猿">
     
     
         
@@ -32,12 +32,6 @@
         <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
     
     
-        <meta property="og:image" content="http://d1u9biwaxjngwg.cloudfront.net/welcome-to-tranquilpeak/city-750.jpg"/>
-        <meta class="swiftype" name="image" data-type="enum" content="http://d1u9biwaxjngwg.cloudfront.net/welcome-to-tranquilpeak/city-750.jpg" />
-    
-    
-        <meta property="og:image" content="https://images3.alphacoders.com/183/183425.jpg"/>
-        <meta class="swiftype" name="image" data-type="enum" content="https://images3.alphacoders.com/183/183425.jpg" />
     
     
     <!--STYLES-->
@@ -172,43 +166,34 @@
 </nav>
 
             
-        <div class="post-header-cover
-                    text-center
-                    post-header-cover--full"
-             style="background-image:url('https://images3.alphacoders.com/183/183425.jpg');"
-             data-behavior="4">
-            
-                <div class="post-header main-content-wrap text-center">
-    
-        <h1 class="post-title" itemprop="headline">
-            欢迎来到贵大头的博客
-        </h1>
-    
-    <div class="post-meta">
-    <time itemprop="datePublished" datetime="6666-01-01T17:40:49+08:00">
-	
-		    1月 01, 6666
-    	
-    </time>
-    
-</div>
-
-</div>
-            
-        </div>
-
             <div id="main" data-behavior="4"
-                 class="hasCover
+                 class="
                         hasCoverMetaIn
                         ">
                 
 <article class="post" itemscope itemType="http://schema.org/BlogPosting">
     
     
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            iOS动画之CATransition动画
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2016-09-22T15:35:15+08:00">
+	
+		    9月 22, 2016
+    	
+    </time>
+    
+</div>
+
+</div>
+    
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
-            <p>本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！<br><a id="more"></a></p>
-
+            
             
         </div>
     </div>
@@ -219,7 +204,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/6666/01/01/欢迎来到贵大头的博客/"  data-tooltip="欢迎来到贵大头的博客">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -227,7 +212,7 @@
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/22/iOS动画之CATransition动画/" data-tooltip="iOS动画之CATransition动画">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/22/iOS动画篇之CoreAnimation动画/" data-tooltip="iOS动画篇之CoreAnimation动画">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -242,17 +227,17 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-google-plus"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-facebook-official"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-twitter"></i>
             </a>
         </li>
@@ -290,7 +275,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/6666/01/01/欢迎来到贵大头的博客/"  data-tooltip="欢迎来到贵大头的博客">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -298,7 +283,7 @@
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/22/iOS动画之CATransition动画/" data-tooltip="iOS动画之CATransition动画">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/22/iOS动画篇之CoreAnimation动画/" data-tooltip="iOS动画篇之CoreAnimation动画">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -313,17 +298,17 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-google-plus"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-facebook-official"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-twitter"></i>
             </a>
         </li>
@@ -343,17 +328,17 @@
                 <div id="share-options-bar" class="share-options-bar" data-behavior="4">
     <ul class="share-options">
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
                 <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
             </a>
         </li>

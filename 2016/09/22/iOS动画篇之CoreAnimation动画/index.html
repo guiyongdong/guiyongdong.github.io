@@ -1,0 +1,938 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="贵大头的博客">
+    <title>iOS动画篇之CoreAnimation动画 - 贵大头的博客</title>
+    <meta name="author" content="贵永冬">
+<link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+    <meta name="description" content="App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="iOS动画篇之CoreAnimation动画">
+<meta property="og:url" content="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/index.html">
+<meta property="og:site_name" content="贵大头的博客">
+<meta property="og:description" content="App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-d100739721e365aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-91f738a7671c3806.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-efa44642512c4ad5.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-8f2cf55bd41794c4.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-5961613d51dfd834.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-9f1855df91be9937.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-c9511bb53e651411.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-2747dae4c911077c.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-855f4e555e284490.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-bd188d60870c97ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-07265d8f2ab9272f.gif?imageMogr2/auto-orient/strip">
+<meta property="og:updated_time" content="2016-09-22T07:36:17.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS动画篇之CoreAnimation动画">
+<meta name="twitter:description" content="App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/727768-d100739721e365aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-yrst5vo1nxaxbp2g3v9na2wg1lixlpr3ghbjdvskeixmu79deycecx3rh4bt.min.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">贵大头的博客</a>
+    </div>
+    
+        
+            <a  class="header-right-icon "
+                href="#about">
+        
+        
+            <i class="fa fa-lg fa-header.jpg"></i>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a href="/#about">
+                    <img class="sidebar-profile-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">贵永冬</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>快乐的程序猿，目前主要研究方向是iOS和ReactNative</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="https://github.com/guiyongdong" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            iOS动画篇之CoreAnimation动画
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2016-09-22T14:08:56+08:00">
+	
+		    9月 22, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/动画/">动画</a>
+
+
+    
+</div>
+
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br><a id="more"></a></p>
+<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>开发中用的最多的是<code>CoreAnimation</code>动画库，简称是CA，所以动画类都是CA开头。所有的动画类都在<code>QuartzCore</code>库中，在iOS7之前使用需要<code>#import &lt;QuartzCore/QuartzCore.h&gt;</code>,iOS7之后系统已经将其自动导入了。<code>CoreAnimation</code>动画都是作用在<code>layer</code>上。<br>先来看下动画类的层级关系：</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-d100739721e365aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="动画层级结构"><br></div><br>关于上图中的层级结构只需要了解一下，用的多了，自然就记住了。本篇只讲述<code>CABasicAnimation</code>、<code>CAKeyframeAnimation</code>、<code>CAAnimationGroup</code>的使用。<br><br>### 使用<br>上面讲了CA动画都是作用在Layer上，而CA动画中修改的也是Layer的动画属性，可以产生动画的layer属性也有<code>Animatable</code>标识。<br>#### 1.CABasicAnimation<br><code>CABasicAnimation</code>动画主要是设置某个动画属性的初始值fromValue和结束值toValue，来产生动画效果。<br>先上个示例代码，将一个视图往上移动一段距离：<br><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-91f738a7671c3806.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<pre><code>
+CABasicAnimation *postionAnimation = [CABasicAnimation animationWithKeyPath:@"position.y"];
+postionAnimation.duration = 1.0f;
+postionAnimation.fromValue = @(self.squareView.center.y);
+postionAnimation.toValue = @(self.squareView.center.y - 300);
+postionAnimation.removedOnCompletion = NO;
+postionAnimation.delegate = self;
+postionAnimation.autoreverses = YES;
+postionAnimation.fillMode = kCAFillModeForwards;
+postionAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+[self.squareView.layer addAnimation:postionAnimation forKey:@"posstionAnimation"];
+</code></pre>
+
+<blockquote>
+<ul>
+<li>动画的创建使用<code>animationWithKeyPath:</code>,因为使用的keyPath所以动画属性或者其结构体中元素都可以产生动画。</li>
+<li><code>duration</code> 动画的时长。</li>
+<li><code>fromValue</code>和<code>toValue</code> 是<code>CABasicAnimation</code>的属性，都是id类型的，所以要将基本类型包装成对象。</li>
+<li><code>removedOnCompletion</code> 决定动画执行完之后是否将该动画的影响移除，默认是YES,则layer回到动画前的状态。</li>
+<li><code>fillMode</code> 是个枚举值（四种），当<code>removedOnCompletion</code>设置为NO之后才会起作用。可以设置layer是保持动画开始前的状态还是动画结束后的状态，或是其他的。</li>
+<li><code>autoreverses</code> 表示动画结束后是否 backwards(回退) 到动画开始前的状态。可与上面两个属性组合出不同效果。</li>
+<li><code>timingFunction</code> 动画的运动是匀速线性的还是先快后慢等，类似UIView动画的opitions。另外，CAMediaTimingFunction 方法可以自定义。</li>
+<li><code>delegate</code> 代理，两个动画代理方法：<code>- (void)animationDidStart:(CAAnimation *)anim</code>; 和<code>- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag</code>;</li>
+<li><code>-(void)addAnimation:(CAAnimation *)anim forKey:(nullable NSString *)key</code>; 给某个layer添加动画，与之对应的移除某个动画是<code>- (void)removeAnimationForKey:(NSString *)key</code>;</li>
+<li>还有一些其他的属性，就不一一介绍了，可以在使用的使用去.h文件中查看。</li>
+</ul>
+</blockquote>
+<p>在这里简单介绍一下fillMode<br>注意：fillMode这个属性，必须要配合下面这个属性来使用。这个属性的默认值是YES(回到原处),此时fillMode是没有作用的如果设置为NO那么就需要设置一个fillMode属性，就是动画结束之后的状态，如果不设置，动画也会回到原处。</p>
+<p><code>postionAnimation.removedOnCompletion = NO;</code></p>
+<pre><code>
+kCAFillModeRemoved 这个是默认值,也就是说当动画开始前和动画结束后,动画对layer都没有影响,动画结束后,layer会恢复到之前的状态 
+kCAFillModeForwards 当动画结束后,layer会一直保持着动画最后的状态 
+kCAFillModeBackwards 这个和kCAFillModeForwards是相对的,就是在动画开始前,你只要将动画加入了
+一个layer,layer便立即进入动画的初始状态并等待动画开始.你可以这样设定测试代码,将一个动画加入一个
+layer的时候延迟5秒执行.然后就会发现在动画没有开始的时候,只要动画被加入了layer,layer便处于动画初
+始状态 
+kCAFillModeBoth 理解了上面两个,这个就很好理解了,这个其实就是上面两个的合成.动画加入后开始之
+前,layer便处于动画初始状态,动画结束后layer保持动画最后的状态.</code></pre>    
+
+
+<h5 id="Rotation旋转"><a href="#Rotation旋转" class="headerlink" title="Rotation旋转"></a>Rotation旋转</h5><ul>
+<li><strong>Z轴</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *rotationAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
+rotationAnimation.fromValue = [NSNumber numberWithFloat:0.0];
+rotationAnimation.toValue = [NSNumber numberWithFloat:2*M_PI];
+rotationAnimation.repeatCount = MAXFLOAT;
+rotationAnimation.duration =10;
+[self.rotationImgView.layer addAnimation:rotationAnimation forKey:@"transform.rotation.z"];
+</code></pre>
+
+<ul>
+<li><strong>X轴</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *rotationXAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.x"];
+rotationXAnimation.fromValue = [NSNumber numberWithFloat:0.0];
+rotationXAnimation.toValue = [NSNumber numberWithFloat:2*M_PI];
+rotationXAnimation.repeatCount = MAXFLOAT;
+rotationXAnimation.duration =3;
+[self.rotationXImgView.layer addAnimation:rotationXAnimation forKey:@"transform.rotation.x"];
+</code></pre>
+
+<ul>
+<li><strong>Y轴</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *rotationYAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.y"];
+rotationYAnimation.fromValue = [NSNumber numberWithFloat:0.0];
+rotationYAnimation.toValue = [NSNumber numberWithFloat:2*M_PI];
+rotationYAnimation.repeatCount = MAXFLOAT;
+rotationYAnimation.duration =10;
+[self.rotationYImgView.layer addAnimation:rotationYAnimation forKey:@"transform.rotation.y"];
+</code></pre>
+
+<h5 id="Scale放大缩小"><a href="#Scale放大缩小" class="headerlink" title="Scale放大缩小"></a>Scale放大缩小</h5><ul>
+<li><strong>任意方向放大</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *scaleAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+scaleAnimation.fromValue = [NSNumber numberWithFloat:1.0];
+scaleAnimation.toValue = [NSNumber numberWithFloat:1.5];
+scaleAnimation.autoreverses = YES;//自动反向执行动画效果
+scaleAnimation.repeatCount = MAXFLOAT;
+scaleAnimation.duration = 0.8;
+[self.scaleImgView.layer addAnimation:scaleAnimation forKey:@"FlyElephant.scale"];
+</code></pre>
+
+<ul>
+<li><strong>X轴放大</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *scaleXAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.x"];
+scaleXAnimation.fromValue = [NSNumber numberWithFloat:1.0];
+scaleXAnimation.toValue = [NSNumber numberWithFloat:1.5];
+scaleXAnimation.autoreverses = YES;//自动反向执行动画效果
+scaleXAnimation.repeatCount = MAXFLOAT;
+scaleXAnimation.duration = 0.8;
+[self.scaleXImgView.layer addAnimation:scaleXAnimation forKey:@"FlyElephant.scale.x"];
+</code></pre>
+
+<ul>
+<li><strong>Y轴放大</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *scaleYAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.y"];
+scaleYAnimation.fromValue = [NSNumber numberWithFloat:1.0];
+scaleYAnimation.toValue = [NSNumber numberWithFloat:1.5];
+scaleYAnimation.autoreverses = YES;//自动反向执行动画效果
+scaleYAnimation.repeatCount = MAXFLOAT;
+scaleYAnimation.duration = 0.8;
+[self.scaleYImgView.layer addAnimation:scaleYAnimation forKey:@"FlyElephant.scale.y"];
+</code></pre>
+
+<ul>
+<li><strong>Z轴放大</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *scaleZAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.z"];
+scaleZAnimation.fromValue = [NSNumber numberWithFloat:1.0];
+scaleZAnimation.toValue = [NSNumber numberWithFloat:1.5];
+scaleZAnimation.autoreverses = YES;//自动反向执行动画效果
+scaleZAnimation.repeatCount = MAXFLOAT;
+scaleZAnimation.duration = 0.8;
+[self.scaleZImgView.layer addAnimation:scaleZAnimation forKey:@"FlyElephant.scale.z"];
+</code></pre>
+
+<h5 id="Translation平移"><a href="#Translation平移" class="headerlink" title="Translation平移"></a>Translation平移</h5><ul>
+<li><strong>X轴平移</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *translationX=[CABasicAnimation animationWithKeyPath:@"transform.translation.x"];
+translationX.toValue=@(200);
+translationX.duration=5;
+translationX.removedOnCompletion=NO;
+translationX.fillMode=kCAFillModeForwards;
+translationX.repeatCount=MAXFLOAT;
+translationX.autoreverses=YES;
+[self.translationXImgView.layer addAnimation:translationX forKey:@"FlyElephant.translation.x"];
+
+</code></pre>
+
+<ul>
+<li><strong>Y轴平移</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *translationY=[CABasicAnimation animationWithKeyPath:@"transform.translation.y"];
+translationY.toValue=@(100);
+translationY.duration=5;
+translationY.removedOnCompletion=NO;
+translationY.fillMode=kCAFillModeForwards;
+translationY.repeatCount=MAXFLOAT;
+translationY.autoreverses=YES;
+[self.translationYImgView.layer addAnimation:translationY forKey:@"FlyElephant.translation.y"];
+</code></pre>
+
+<ul>
+<li><strong>XY轴平移</strong></li>
+</ul>
+<pre><code>
+CABasicAnimation *translation=[CABasicAnimation animationWithKeyPath:@"transform.translation"];
+translation.toValue=[NSValue valueWithCGPoint:CGPointMake(100, 100)];
+translation.duration=5;
+translation.removedOnCompletion=NO;
+translation.fillMode=kCAFillModeForwards;
+translation.repeatCount=MAXFLOAT;
+translation.autoreverses=YES;
+[self.translationImgView.layer addAnimation:translation forKey:@"FlyElephant.translation"];
+</code></pre>
+
+<p><font color="blue"><strong>动画实例图：</strong></font></p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-efa44642512c4ad5.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<h4 id="2-CAKeyframeAnimation"><a href="#2-CAKeyframeAnimation" class="headerlink" title="2.CAKeyframeAnimation"></a>2.CAKeyframeAnimation</h4><p>CAKeyframeAnimation我们一般称为关键帧动画，主要是利用其values属性，设置多个关键帧属性值，来产生动画。</p>
+<h5 id="基于Scale变换"><a href="#基于Scale变换" class="headerlink" title="基于Scale变换:"></a>基于Scale变换:</h5><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-8f2cf55bd41794c4.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<pre><code>
+CAKeyframeAnimation *keyAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform"];
+keyAnimation.duration = 1.0f;
+keyAnimation.beginTime = CACurrentMediaTime() + 1.0;
+
+CATransform3D transform1 = CATransform3DMakeScale(1.5, 1.5, 0);
+CATransform3D transform2 = CATransform3DMakeScale(0.8, 0.8, 0);
+CATransform3D transform3 = CATransform3DMakeScale(3, 3, 0);
+
+keyAnimation.values = @[[NSValue valueWithCATransform3D:transform1],[NSValue valueWithCATransform3D:transform2],[NSValue valueWithCATransform3D:transform3]];
+keyAnimation.keyTimes = @[@0,@0.5,@1];
+keyAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+keyAnimation.removedOnCompletion = NO;
+keyAnimation.fillMode = kCAFillModeForwards;
+[_someView.layer addAnimation:keyAnimation forKey:nil];
+</code></pre>
+
+<blockquote>
+<ul>
+<li><code>beginTime</code> 也是<code>CAAnimation</code>类的属性，可以设置动画延迟多久执行，示例代码是延迟1秒执行。</li>
+<li><code>values</code> 是<code>CAKeyframeAnimation</code>的属性，设置keyPath属性在几个关键帧的值，也是id类型的。</li>
+<li><code>keyTimes</code> 也是<code>CAKeyframeAnimation</code>的属性，每个值对应相应关键帧的时间比例值。</li>
+<li><code>timingFunctions</code> 也是<code>CAKeyframeAnimation</code>的属性，对应每个动画段的动画过渡情况；而<code>timingFunction</code>是<code>CAAnimation</code>的属性。</li>
+</ul>
+</blockquote>
+<h5 id="基于Point的变换"><a href="#基于Point的变换" class="headerlink" title="基于Point的变换:"></a>基于Point的变换:</h5><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-5961613d51dfd834.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<pre><code>
+CGPoint p1=CGPointMake(self.positionImgView.center.x, self.positionImgView.center.y);
+CGPoint p2=CGPointMake(80, 100);
+CGPoint p3=CGPointMake(100, 120);
+
+CGPoint p4=CGPointMake(120, 150);
+CGPoint p5=CGPointMake(140, 160);
+NSArray *values=[NSArray arrayWithObjects:[NSValue valueWithCGPoint:p1],[NSValue valueWithCGPoint:p2],[NSValue valueWithCGPoint:p3],[NSValue valueWithCGPoint:p4],[NSValue valueWithCGPoint:p5], nil];
+CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+[animation setValues:values];
+[animation setDuration:10.0];
+[animation setCalculationMode:kCAAnimationCubic];
+animation.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+[self.positionImgView.layer addAnimation:animation forKey:@"FlyElephant.point"];
+</code></pre>
+
+<h5 id="基于Path的变换"><a href="#基于Path的变换" class="headerlink" title="基于Path的变换:"></a>基于Path的变换:</h5><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-9f1855df91be9937.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<pre><code>
+CGMutablePathRef path = CGPathCreateMutable();
+CGPathMoveToPoint(path,NULL,self.positionImgView.center.x,self.positionImgView.center.y);
+for(NSInteger i = 1; i < 5 i++){
+    CGPathAddLineToPoint(path, NULL, self.positionImgView.center.x+i*10,     self.positionImgView.center.y);
+}
+//曲线
+CGPathAddCurveToPoint(path,NULL,50.0,275.0,150.0,275.0,70.0,120.0);
+CGPathAddCurveToPoint(path,NULL,150.0,275.0,250.0,275.0,90.0,120.0);
+CGPathAddCurveToPoint(path,NULL,250.0,275.0,350.0,275.0,110.0,120.0);
+CGPathAddCurveToPoint(path,NULL,350.0,275.0,450.0,275.0,130.0,120.0);
+CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+[animation setPath:path];
+[animation setDuration:3.0];
+// [animation setAutoreverses:YES];
+CFRelease(path);
+[self.positionImgView.layer addAnimation:animation:@"FlyElephant"];
+</code></pre>
+
+<p>通过代码我们发现，Path和values接收都是一个数组，而不是一个固定值，这里面我们没有设置keyTimes，下面看一个常见的抖动效果:</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-c9511bb53e651411.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<pre><code>
+CAKeyframeAnimation *animation = [CAKeyframeAnimation animation];
+animation.keyPath = @"position.x";
+animation.values = @[ @0, @20, @-20, @20, @0 ];
+animation.keyTimes = @[ @0, @(1 /8.0), @(1/ 2.0), @(7/ 8.0), @1 ];
+animation.duration =0.5;
+animation.additive = YES;
+[self.textField.layer addAnimation:animation forKey:@"FlyElephant.Shake"];
+</code></pre>
+
+<h4 id="3-CAAnimationGroup"><a href="#3-CAAnimationGroup" class="headerlink" title="3.CAAnimationGroup"></a>3.CAAnimationGroup</h4><p>CAAnimationGroup的用法与其他动画类一样，都是添加到layer上，比CAAnimation多了一个animations属性。<br>先看示例代码，动画效果是视图一边向上移动，一边绕Y轴旋转：</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-2747dae4c911077c.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<pre><code>
+CABasicAnimation *rotationYAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.y"];
+rotationYAnimation.fromValue = @0;
+rotationYAnimation.toValue = @(M_PI);
+rotationYAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+
+CABasicAnimation *postionAnimation = [CABasicAnimation animationWithKeyPath:@"position.y"];
+postionAnimation.fromValue = @(_markView.center.y);
+postionAnimation.toValue = @(_markView.center.y - 100);
+postionAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+
+CAAnimationGroup *animationGroup = [CAAnimationGroup animation];
+animationGroup.duration = kUpDuration;
+animationGroup.removedOnCompletion = NO;
+animationGroup.fillMode = kCAFillModeForwards;
+animationGroup.delegate = self;
+animationGroup.animations = @[rotationYAnimation, postionAnimation];
+
+[_markView.layer addAnimation:animationGroup forKey:kJumpAnimation];
+</code></pre>
+
+<blockquote>
+<p>CAAnimationGroup的animations中可以放其他任何动画类（包括CAAnimationGroup），需要注意的是animations里的动画设置了duration之后动画可能会有不同，一般里面不设置，在最外层设置group的duration即可。</p>
+</blockquote>
+<h5 id="AnimationWithKeyPath的值"><a href="#AnimationWithKeyPath的值" class="headerlink" title="AnimationWithKeyPath的值"></a>AnimationWithKeyPath的值</h5><p>最开始做动画一般都会对keyPath这个值莫名其妙，因为它不是常量，需要变换的时候找不到对应的需要设置的值，如果你在网上搜索，很可能看到的是这张图:</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-855f4e555e284490.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="animation"><br></div><br>下面这张图你基本上是找不到的，如下:<br><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-bd188d60870c97ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="animation"><br></div>
+
+<h4 id="4-CATransition"><a href="#4-CATransition" class="headerlink" title="4.CATransition"></a>4.CATransition</h4><p>CATransition一般来做转场动画。先上gif动画效果</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-07265d8f2ab9272f.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<p><pre><code><br>  //修改视图的背景色<br>    _someView.backgroundColor = [UIColor greenColor];<br>    CATransition <em>animation = [CATransition animation];<br>    animation.duration = 0.5;<br>    /</em> 这里可设置的参数有：kCATransitionFade、kCATransitionPush、kCATransitionReveal、kCATransitionMoveIn、<br>    “cube”、”suckEffect”、”oglFlip”、”rippleEffect”、”pageCurl”、”pageUnCurl”、”cameraIrisHollowOpen”、<br>     “cameraIrisHollowClose”，这些都是动画类型<br>    */<br>    animation.type = @”cube”;<br>    // 动画执行的方向，kCATransitionFromRight、kCATransitionFromLeft、kCATransitionFromTop、kCATransitionFromBottom<br>    animation.subtype = kCATransitionFromRight;<br>    animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;<br>    [_someView.layer addAnimation:animation forKey:nil];<br>    //也可以写这里<br>//    _someView.backgroundColor = [UIColor greenColor];<br></code></pre><br>只需要在动画开始前或者动画开始后替换掉视图上显示的内容即可。具体可以看我的这篇博客<a href="">iOS动画之CATransition动画</a></p>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/动画/">动画</a>
+
+            </div>
+        
+        <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/22/iOS动画之CATransition动画/"  data-tooltip="iOS动画之CATransition动画">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/21/iOS动画篇-transfrom/" data-tooltip="iOS动画篇之UIView动画">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-google-plus"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-facebook-official"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-twitter"></i>
+            </a>
+        </li>
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2016 贵永冬. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/22/iOS动画之CATransition动画/"  data-tooltip="iOS动画之CATransition动画">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/21/iOS动画篇-transfrom/" data-tooltip="iOS动画篇之UIView动画">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-google-plus"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-facebook-official"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-twitter"></i>
+            </a>
+        </li>
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <ul class="share-options">
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">贵永冬</h4>
+        
+            <div id="about-card-bio"><p>快乐的程序猿，目前主要研究方向是iOS和ReactNative</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>河南酒运达电子商务有限公司</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker"></i>
+                <br/>
+                河南 郑州
+            </div>
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    autofocus="autofocus"/>
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/11/初识ReactiveCocoa/">
+                            <h3 class="media-heading">初识ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月11日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/12/深入ReactiveCocoa/">
+                            <h3 class="media-heading">深入ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月12日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                            <h3 class="media-heading">ReactiveCocoa和RXSwift速查表</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/关于RAC的一些资料/">
+                            <h3 class="media-heading">关于RAC的一些资料</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+                            <h3 class="media-heading">RunLoop总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/13/聊一聊GCD的那些事/">
+                            <h3 class="media-heading">聊一聊GCD的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月13日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/">
+                            <h3 class="media-heading">聊一聊NSOperation的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/">
+                            <h3 class="media-heading">iOS动画篇之UIView动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                            <h3 class="media-heading">iOS动画篇之CoreAnimation动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
+                            <h3 class="media-heading">iOS动画之CATransition动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 11 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-rt08quwts7iav5x0cfd2ym0gb5qkd1lvrsmwrakxtkhefmaaes4ywkmnjnwf.min.js"></script>
+<!--SCRIPTS END-->
+
+    
+
+
+
+    </body>
+</html>
