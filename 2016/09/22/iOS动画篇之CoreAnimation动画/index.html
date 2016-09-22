@@ -31,7 +31,10 @@
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-855f4e555e284490.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-bd188d60870c97ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-07265d8f2ab9272f.gif?imageMogr2/auto-orient/strip">
-<meta property="og:updated_time" content="2016-09-22T07:36:17.000Z">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-becc66baab401cd8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-8b1e98120e171c7c.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-f7722c20b5ad9bb2.gif?imageMogr2/auto-orient/strip">
+<meta property="og:updated_time" content="2016-09-22T07:51:04.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS动画篇之CoreAnimation动画">
 <meta name="twitter:description" content="App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线">
@@ -502,7 +505,116 @@ animationGroup.animations = @[rotationYAnimation, postionAnimation];
 <h4 id="4-CATransition"><a href="#4-CATransition" class="headerlink" title="4.CATransition"></a>4.CATransition</h4><p>CATransition一般来做转场动画。先上gif动画效果</p>
 <div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-07265d8f2ab9272f.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
 
-<p><pre><code><br>  //修改视图的背景色<br>    _someView.backgroundColor = [UIColor greenColor];<br>    CATransition <em>animation = [CATransition animation];<br>    animation.duration = 0.5;<br>    /</em> 这里可设置的参数有：kCATransitionFade、kCATransitionPush、kCATransitionReveal、kCATransitionMoveIn、<br>    “cube”、”suckEffect”、”oglFlip”、”rippleEffect”、”pageCurl”、”pageUnCurl”、”cameraIrisHollowOpen”、<br>     “cameraIrisHollowClose”，这些都是动画类型<br>    */<br>    animation.type = @”cube”;<br>    // 动画执行的方向，kCATransitionFromRight、kCATransitionFromLeft、kCATransitionFromTop、kCATransitionFromBottom<br>    animation.subtype = kCATransitionFromRight;<br>    animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;<br>    [_someView.layer addAnimation:animation forKey:nil];<br>    //也可以写这里<br>//    _someView.backgroundColor = [UIColor greenColor];<br></code></pre><br>只需要在动画开始前或者动画开始后替换掉视图上显示的内容即可。具体可以看我的这篇博客<a href="">iOS动画之CATransition动画</a></p>
+<pre><code>
+//修改视图的背景色
+_someView.backgroundColor = [UIColor greenColor];
+CATransition *animation = [CATransition animation];
+animation.duration = 0.5;
+/* 这里可设置的参数有：kCATransitionFade、kCATransitionPush、kCATransitionReveal、kCATransitionMoveIn、
+"cube"、"suckEffect"、"oglFlip"、"rippleEffect"、"pageCurl"、"pageUnCurl"、"cameraIrisHollowOpen"、
+ "cameraIrisHollowClose"，这些都是动画类型
+*/
+animation.type = @"cube";
+// 动画执行的方向，kCATransitionFromRight、kCATransitionFromLeft、kCATransitionFromTop、kCATransitionFromBottom
+animation.subtype = kCATransitionFromRight;
+animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;
+[_someView.layer addAnimation:animation forKey:nil];
+//也可以写这里
+//    _someView.backgroundColor = [UIColor greenColor];
+</code></pre>
+
+<p>只需要在动画开始前或者动画开始后替换掉视图上显示的内容即可。具体可以看我的这篇博客<a href="http://www.guiyongdong.com/2016/09/22/iOS%E5%8A%A8%E7%94%BB%E4%B9%8BCATransition%E5%8A%A8%E7%94%BB/">iOS动画之CATransition动画</a></p>
+<h4 id="附加"><a href="#附加" class="headerlink" title="附加"></a>附加</h4><p>附加的内容是关于CALayer和UIBezierPath。个人觉得理解了UIBezierPath和CALayer,才能更好的理解CoreAnimation动画。</p>
+<h5 id="1-UIBezierPath"><a href="#1-UIBezierPath" class="headerlink" title="1.UIBezierPath"></a>1.UIBezierPath</h5><p>UIBezierPath主要是用来绘制路径的，分为一阶、二阶…..n阶。一阶是直线，二阶以上才是曲线。而最终路径的显示还是得依靠CALayer。用CoreGraphics将路径绘制出来，最终也是绘制到CALayer上。</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-becc66baab401cd8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="animation"><br></div>
+
+<blockquote>
+<p>方法一：构造bezierPath对象，一般用于自定义路径。<br>方法二：绘制圆弧路径，参数1是中心点位置，参数2是半径，参数3是开始的弧度值，参数4是结束的弧度值，参数5是是否顺时针(YES是顺时针方向，NO逆时针)。<br>方法三：根据某个路径绘制路径。<br>方法四：根据某个CGRect绘制内切圆或椭圆（CGRect是正方形即为圆，为长方形则为椭圆）。<br>方法五：根据某个CGRect绘制路径。<br>方法六：绘制带圆角的矩形路径，参数2哪个角，参数3，横、纵向半径。<br>方法七：绘制每个角都是圆角的矩形，参数2是半径。</p>
+</blockquote>
+<p>自定义路径时常用的API:</p>
+<pre><code>
+- (void)moveToPoint:(CGPoint)point; // 移到某个点
+- (void)addLineToPoint:(CGPoint)point; // 绘制直线
+- (void)addCurveToPoint:(CGPoint)endPoint controlPoint1:(CGPoint)controlPoint1 controlPoint2:(CGPoint)controlPoint2; //绘制贝塞尔曲线
+- (void)addQuadCurveToPoint:(CGPoint)endPoint controlPoint:(CGPoint)controlPoint; // 绘制规则的贝塞尔曲线
+- (void)addArcWithCenter:(CGPoint)center radius:(CGFloat)radius startAngle:(CGFloat)startAngle endAngle:(CGFloat)endAngle clockwise:(BOOL)clockwise
+// 绘制圆形曲线
+- (void)appendPath:(UIBezierPath *)bezierPath; // 拼接曲线
+</code></pre>
+
+<h5 id="如果将路径显示的图案显示到视图上呢？"><a href="#如果将路径显示的图案显示到视图上呢？" class="headerlink" title="如果将路径显示的图案显示到视图上呢？"></a>如果将路径显示的图案显示到视图上呢？</h5><p>有三种方式：1、直接使用UIBezierPath的方法；2、使用CoreGraphics绘制；3、利用CAShapeLayer绘制。<br>示例代码如下，绘制一个右侧为弧型的视图：</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-8b1e98120e171c7c.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+
+<pre><code>
+- (void)drawRect:(CGRect)rect
+{
+    UIColor *fillColor = [UIColor colorWithRed:0.0 green:0.722 blue:1.0 alpha:1.0];
+
+    UIBezierPath *bezierPath = [UIBezierPath bezierPath];
+    [bezierPath moveToPoint:CGPointMake(0, 0)];
+    [bezierPath addLineToPoint:CGPointMake(rect.size.width - spaceWidth, 0)];
+    [bezierPath addQuadCurveToPoint:CGPointMake(rect.size.width - spaceWidth, rect.size.height) controlPoint:CGPointMake(rect.size.width - spaceWidth + _deltaWith, rect.size.height * 0.5)];
+    [bezierPath addLineToPoint:CGPointMake(0, rect.size.height)];
+    [bezierPath addLineToPoint:CGPointMake(0, 0)];
+    [bezierPath closePath];
+
+    // 1、bezierPath方法
+//    [fillColor setFill];
+//    [bezierPath fill];
+
+    // 2、使用CoreGraphics
+//    CGContextRef ctx = UIGraphicsGetCurrentContext();
+//    CGContextAddPath(ctx, bezierPath.CGPath);
+//    CGContextSetFillColorWithColor(ctx, fillColor.CGColor);
+//    CGContextFillPath(ctx);
+
+    // 3.CAShaperLayer
+    [self.layer.sublayers makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
+    CAShapeLayer *shapeLayer = [CAShapeLayer layer];
+    shapeLayer.path = bezierPath.CGPath;
+    shapeLayer.fillColor = fillColor.CGColor;
+    [self.layer addSublayer:shapeLayer];
+}
+</code></pre>
+
+<p><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-f7722c20b5ad9bb2.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div><br>上图这样的视图是用UIBezierPath用多个CAShapeLayer制作出来的，而动画效果只需要改变进度的layer的strokeEnd和修改下面代表水面进度的视图位置即可。动画的组合也可以有多种方式组合<br>动画的示例代码：</p>
+<pre><code>
+- (void)setProgress:(CGFloat)progress animated:(BOOL)animated duration:(NSTimeInterval)duration
+{
+    CGFloat tempPro = progress;
+    if (tempPro > 1.0) {
+        tempPro = 1.0;
+    } else if (progress < 0.0){
+        tempPro = 0.0;
+    }
+    _progress = tempPro;
+
+    CABasicAnimation *pathAniamtion = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
+    pathAniamtion.duration = duration;
+    pathAniamtion.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    pathAniamtion.fromValue = [NSNumber numberWithFloat:0.0f];
+    pathAniamtion.toValue = [NSNumber numberWithFloat:_progress];
+    pathAniamtion.autoreverses = NO;
+    [_progressLayer addAnimation:pathAniamtion forKey:nil];
+
+    // 水位上升的动画
+    if (!_showSolidAnimation) {
+        return;
+    }
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        _imageView.transform = CGAffineTransformIdentity;
+        [UIView animateWithDuration:duration animations:^{
+            CGRect rect = _imageView.frame;
+            CGFloat dy = rect.size.height * progress;
+            _imageView.transform = CGAffineTransformMakeTranslation(0, -dy);
+        }];
+    });
+}
+</code></pre>
+
+<p>在用自定义的CAShapeLayer做动画时，建议在动画开始前先将动画属性与最终的属性值一致，再开始动画，不要使用removedOnCompletion控制最终的状态，这在WWDC苹果这么建议。</p>
+<p><strong>具体UIBezierPath可以看这篇文章<a href="">UIBezierPath详解</a></strong></p>
 
             
         </div>
@@ -919,7 +1031,7 @@ animationGroup.animations = @[rotationYAnimation, postionAnimation];
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 11 篇文章
+                找到 12 篇文章
             </p>
         </div>
     </div>
