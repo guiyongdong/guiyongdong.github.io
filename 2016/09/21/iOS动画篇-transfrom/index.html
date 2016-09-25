@@ -20,13 +20,13 @@
 <meta property="og:url" content="http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1527983-6db60a84adb7631a.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1527983-685c5eacf6ea5205.gif?imageMogr2/auto-orient/strip">
-<meta property="og:updated_time" content="2016-09-22T02:59:10.000Z">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_26.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_27.gif?raw=true">
+<meta property="og:updated_time" content="2016-09-25T01:23:28.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS动画篇之UIView动画">
 <meta name="twitter:description" content="UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。">
-<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1527983-6db60a84adb7631a.gif?imageMogr2/auto-orient/strip">
+<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_26.gif?raw=true">
     
     
         
@@ -313,10 +313,10 @@ options    :   转场动画的类型
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">struct CGAffineTransform &#123;</div><div class="line">   CGFloat a;</div><div class="line">   CGFloat b;</div><div class="line">   CGFloat c;</div><div class="line">   CGFloat d;</div><div class="line">   CGFloat tx;</div><div class="line">   CGFloat ty;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 <p>结构体矩阵图为：</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1527983-6db60a84adb7631a.gif?imageMogr2/auto-orient/strip" alt="矩阵图"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_26.gif?raw=true" alt="矩阵图"><br></div>
 
 <p>因为最后一列总是是(0,0,1)，所以有用的信息就是前面两列<br>对一个view进行仿射变化就相当于对view上的每个点做一个乘法<br>结果就是：</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1527983-685c5eacf6ea5205.gif?imageMogr2/auto-orient/strip" alt="映射变换"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_27.gif?raw=true" alt="映射变换"><br></div>
 
 <p><strong>相当于：</strong><br>(x, y, 1 ) –&gt; (ax + cy + tx, bx + dy + ty, 1) </p>
 <p>如果不看c和b的话<br>a表示x水平方向的缩放，tx表示x水平方向的偏移<br>d表示y垂直方向的缩放，ty表示y垂直方向的偏移<br>如果b和c不为零的话，那么视图肯定发生了旋转</p>

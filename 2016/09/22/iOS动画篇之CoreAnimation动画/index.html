@@ -20,25 +20,25 @@
 <meta property="og:url" content="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-d100739721e365aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-91f738a7671c3806.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-efa44642512c4ad5.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-8f2cf55bd41794c4.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-5961613d51dfd834.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-9f1855df91be9937.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-c9511bb53e651411.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-2747dae4c911077c.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-855f4e555e284490.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1048365-bd188d60870c97ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-07265d8f2ab9272f.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-becc66baab401cd8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-8b1e98120e171c7c.gif?imageMogr2/auto-orient/strip">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727768-f7722c20b5ad9bb2.gif?imageMogr2/auto-orient/strip">
-<meta property="og:updated_time" content="2016-09-22T07:57:05.000Z">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_12.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_13.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_14.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_15.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_16.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_17.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_18.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_19.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_20.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_21.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_22.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_23.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_24.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_25.gif?raw=true">
+<meta property="og:updated_time" content="2016-09-25T01:21:08.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS动画篇之CoreAnimation动画">
 <meta name="twitter:description" content="App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线">
-<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/727768-d100739721e365aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_12.png?raw=true">
     
     
         
@@ -216,7 +216,7 @@
         <div class="main-content-wrap">
             <p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br><a id="more"></a></p>
 <h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>开发中用的最多的是<code>CoreAnimation</code>动画库，简称是CA，所以动画类都是CA开头。所有的动画类都在<code>QuartzCore</code>库中，在iOS7之前使用需要<code>#import &lt;QuartzCore/QuartzCore.h&gt;</code>,iOS7之后系统已经将其自动导入了。<code>CoreAnimation</code>动画都是作用在<code>layer</code>上。<br>先来看下动画类的层级关系：</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-d100739721e365aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="动画层级结构"><br></div><br>关于上图中的层级结构只需要了解一下，用的多了，自然就记住了。本篇只讲述<code>CABasicAnimation</code>、<code>CAKeyframeAnimation</code>、<code>CAAnimationGroup</code>的使用。<br><br>### 使用<br>上面讲了CA动画都是作用在Layer上，而CA动画中修改的也是Layer的动画属性，可以产生动画的layer属性也有<code>Animatable</code>标识。<br>#### 1.CABasicAnimation<br><code>CABasicAnimation</code>动画主要是设置某个动画属性的初始值fromValue和结束值toValue，来产生动画效果。<br>先上个示例代码，将一个视图往上移动一段距离：<br><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-91f738a7671c3806.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_12.png?raw=true" alt="动画层级结构"><br></div><br>关于上图中的层级结构只需要了解一下，用的多了，自然就记住了。本篇只讲述<code>CABasicAnimation</code>、<code>CAKeyframeAnimation</code>、<code>CAAnimationGroup</code>的使用。<br><br>### 使用<br>上面讲了CA动画都是作用在Layer上，而CA动画中修改的也是Layer的动画属性，可以产生动画的layer属性也有<code>Animatable</code>标识。<br>#### 1.CABasicAnimation<br><code>CABasicAnimation</code>动画主要是设置某个动画属性的初始值fromValue和结束值toValue，来产生动画效果。<br>先上个示例代码，将一个视图往上移动一段距离：<br><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_13.gif?raw=true" alt="animation"><br></div>
 
 <pre><code>
 CABasicAnimation *postionAnimation = [CABasicAnimation animationWithKeyPath:@"position.y"];
@@ -390,10 +390,10 @@ translation.autoreverses=YES;
 </code></pre>
 
 <p><font color="blue"><strong>动画实例图：</strong></font></p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-efa44642512c4ad5.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_14.gif?raw=true" alt="animation"><br></div>
 
 <h4 id="2-CAKeyframeAnimation"><a href="#2-CAKeyframeAnimation" class="headerlink" title="2.CAKeyframeAnimation"></a>2.CAKeyframeAnimation</h4><p>CAKeyframeAnimation我们一般称为关键帧动画，主要是利用其values属性，设置多个关键帧属性值，来产生动画。</p>
-<h5 id="基于Scale变换"><a href="#基于Scale变换" class="headerlink" title="基于Scale变换:"></a>基于Scale变换:</h5><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-8f2cf55bd41794c4.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<h5 id="基于Scale变换"><a href="#基于Scale变换" class="headerlink" title="基于Scale变换:"></a>基于Scale变换:</h5><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_15.gif?raw=true" alt="animation"><br></div>
 
 <pre><code>
 CAKeyframeAnimation *keyAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform"];
@@ -420,7 +420,7 @@ keyAnimation.fillMode = kCAFillModeForwards;
 <li><code>timingFunctions</code> 也是<code>CAKeyframeAnimation</code>的属性，对应每个动画段的动画过渡情况；而<code>timingFunction</code>是<code>CAAnimation</code>的属性。</li>
 </ul>
 </blockquote>
-<h5 id="基于Point的变换"><a href="#基于Point的变换" class="headerlink" title="基于Point的变换:"></a>基于Point的变换:</h5><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-5961613d51dfd834.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<h5 id="基于Point的变换"><a href="#基于Point的变换" class="headerlink" title="基于Point的变换:"></a>基于Point的变换:</h5><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_16.gif?raw=true" alt="animation"><br></div>
 
 <pre><code>
 CGPoint p1=CGPointMake(self.positionImgView.center.x, self.positionImgView.center.y);
@@ -438,7 +438,7 @@ animation.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingF
 [self.positionImgView.layer addAnimation:animation forKey:@"FlyElephant.point"];
 </code></pre>
 
-<h5 id="基于Path的变换"><a href="#基于Path的变换" class="headerlink" title="基于Path的变换:"></a>基于Path的变换:</h5><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-9f1855df91be9937.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<h5 id="基于Path的变换"><a href="#基于Path的变换" class="headerlink" title="基于Path的变换:"></a>基于Path的变换:</h5><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_17.gif?raw=true" alt="animation"><br></div>
 
 <pre><code>
 CGMutablePathRef path = CGPathCreateMutable();
@@ -460,7 +460,7 @@ CFRelease(path);
 </code></pre>
 
 <p>通过代码我们发现，Path和values接收都是一个数组，而不是一个固定值，这里面我们没有设置keyTimes，下面看一个常见的抖动效果:</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-c9511bb53e651411.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_18.gif?raw=true" alt="animation"><br></div>
 
 <pre><code>
 CAKeyframeAnimation *animation = [CAKeyframeAnimation animation];
@@ -473,7 +473,7 @@ animation.additive = YES;
 </code></pre>
 
 <h4 id="3-CAAnimationGroup"><a href="#3-CAAnimationGroup" class="headerlink" title="3.CAAnimationGroup"></a>3.CAAnimationGroup</h4><p>CAAnimationGroup的用法与其他动画类一样，都是添加到layer上，比CAAnimation多了一个animations属性。<br>先看示例代码，动画效果是视图一边向上移动，一边绕Y轴旋转：</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-2747dae4c911077c.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_19.gif?raw=true" alt="animation"><br></div>
 
 <pre><code>
 CABasicAnimation *rotationYAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.y"];
@@ -500,10 +500,10 @@ animationGroup.animations = @[rotationYAnimation, postionAnimation];
 <p>CAAnimationGroup的animations中可以放其他任何动画类（包括CAAnimationGroup），需要注意的是animations里的动画设置了duration之后动画可能会有不同，一般里面不设置，在最外层设置group的duration即可。</p>
 </blockquote>
 <h5 id="AnimationWithKeyPath的值"><a href="#AnimationWithKeyPath的值" class="headerlink" title="AnimationWithKeyPath的值"></a>AnimationWithKeyPath的值</h5><p>最开始做动画一般都会对keyPath这个值莫名其妙，因为它不是常量，需要变换的时候找不到对应的需要设置的值，如果你在网上搜索，很可能看到的是这张图:</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-855f4e555e284490.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="animation"><br></div><br>下面这张图你基本上是找不到的，如下:<br><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1048365-bd188d60870c97ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="animation"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_20.png?raw=true" alt="animation"><br></div><br>下面这张图你基本上是找不到的，如下:<br><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_21.png?raw=true" alt="animation"><br></div>
 
 <h4 id="4-CATransition"><a href="#4-CATransition" class="headerlink" title="4.CATransition"></a>4.CATransition</h4><p>CATransition一般来做转场动画。先上gif动画效果</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-07265d8f2ab9272f.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_22.gif?raw=true" alt="animation"><br></div>
 
 <pre><code>
 //修改视图的背景色
@@ -526,7 +526,7 @@ animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;
 <p>只需要在动画开始前或者动画开始后替换掉视图上显示的内容即可。具体可以看我的这篇博客<a href="http://www.guiyongdong.com/2016/09/22/iOS%E5%8A%A8%E7%94%BB%E4%B9%8BCATransition%E5%8A%A8%E7%94%BB/">iOS动画之CATransition动画</a></p>
 <h4 id="附加"><a href="#附加" class="headerlink" title="附加"></a>附加</h4><p>附加的内容是关于CALayer和UIBezierPath。个人觉得理解了UIBezierPath和CALayer,才能更好的理解CoreAnimation动画。</p>
 <h5 id="1-UIBezierPath"><a href="#1-UIBezierPath" class="headerlink" title="1.UIBezierPath"></a>1.UIBezierPath</h5><p>UIBezierPath主要是用来绘制路径的，分为一阶、二阶…..n阶。一阶是直线，二阶以上才是曲线。而最终路径的显示还是得依靠CALayer。用CoreGraphics将路径绘制出来，最终也是绘制到CALayer上。</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-becc66baab401cd8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="animation"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_23.png?raw=true" alt="animation"><br></div>
 
 <blockquote>
 <p>方法一：构造bezierPath对象，一般用于自定义路径。<br>方法二：绘制圆弧路径，参数1是中心点位置，参数2是半径，参数3是开始的弧度值，参数4是结束的弧度值，参数5是是否顺时针(YES是顺时针方向，NO逆时针)。<br>方法三：根据某个路径绘制路径。<br>方法四：根据某个CGRect绘制内切圆或椭圆（CGRect是正方形即为圆，为长方形则为椭圆）。<br>方法五：根据某个CGRect绘制路径。<br>方法六：绘制带圆角的矩形路径，参数2哪个角，参数3，横、纵向半径。<br>方法七：绘制每个角都是圆角的矩形，参数2是半径。</p>
@@ -543,7 +543,7 @@ animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;
 </code></pre>
 
 <h5 id="如果将路径显示的图案显示到视图上呢？"><a href="#如果将路径显示的图案显示到视图上呢？" class="headerlink" title="如果将路径显示的图案显示到视图上呢？"></a>如果将路径显示的图案显示到视图上呢？</h5><p>有三种方式：1、直接使用UIBezierPath的方法；2、使用CoreGraphics绘制；3、利用CAShapeLayer绘制。<br>示例代码如下，绘制一个右侧为弧型的视图：</p>
-<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-8b1e98120e171c7c.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_24.gif?raw=true" alt="animation"><br></div>
 
 <pre><code>
 - (void)drawRect:(CGRect)rect
@@ -577,7 +577,7 @@ animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;
 }
 </code></pre>
 
-<p><div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/727768-f7722c20b5ad9bb2.gif?imageMogr2/auto-orient/strip" alt="animation"><br></div><br>上图这样的视图是用UIBezierPath用多个CAShapeLayer制作出来的，而动画效果只需要改变进度的layer的strokeEnd和修改下面代表水面进度的视图位置即可。动画的组合也可以有多种方式组合<br>动画的示例代码：</p>
+<p><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_25.gif?raw=true" alt="animation"><br></div><br>上图这样的视图是用UIBezierPath用多个CAShapeLayer制作出来的，而动画效果只需要改变进度的layer的strokeEnd和修改下面代表水面进度的视图位置即可。动画的组合也可以有多种方式组合<br>动画的示例代码：</p>
 <pre><code>
 - (void)setProgress:(CGFloat)progress animated:(BOOL)animated duration:(NSTimeInterval)duration
 {

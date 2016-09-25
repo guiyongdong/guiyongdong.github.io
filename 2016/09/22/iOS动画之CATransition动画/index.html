@@ -20,22 +20,22 @@
 <meta property="og:url" content="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121710078375833.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121723047906597.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121728297283768.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121730580565348.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121732513841605.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121734290719149.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121742192432356.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121741041184172.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121746276818654.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121745555255331.png">
-<meta property="og:image" content="http://images.cnitblog.com/blog/545446/201412/121748313686675.png">
-<meta property="og:updated_time" content="2016-09-23T07:47:06.000Z">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_1.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_2.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_3.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_4.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_5.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_6.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_7.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_8.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_9.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_10.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_11.png?raw=true">
+<meta property="og:updated_time" content="2016-09-25T01:07:59.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS动画之CATransition动画">
 <meta name="twitter:description" content="今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。">
-<meta name="twitter:image" content="http://images.cnitblog.com/blog/545446/201412/121710078375833.png">
+<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_1.png?raw=true">
     
     
         
@@ -275,7 +275,7 @@
  }
 </code></pre>
 
-<h3 id="二-调用上面的方法实现我们想要的动画"><a href="#二-调用上面的方法实现我们想要的动画" class="headerlink" title="二.调用上面的方法实现我们想要的动画"></a>二.调用上面的方法实现我们想要的动画</h3><h5 id="1-我们在View上添加多个Button-给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示："><a href="#1-我们在View上添加多个Button-给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示：" class="headerlink" title="1.我们在View上添加多个Button,给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示："></a>1.我们在View上添加多个Button,给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示：</h5><div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121710078375833.png" alt="image" width="375" height="667/"><br></div>
+<h3 id="二-调用上面的方法实现我们想要的动画"><a href="#二-调用上面的方法实现我们想要的动画" class="headerlink" title="二.调用上面的方法实现我们想要的动画"></a>二.调用上面的方法实现我们想要的动画</h3><h5 id="1-我们在View上添加多个Button-给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示："><a href="#1-我们在View上添加多个Button-给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示：" class="headerlink" title="1.我们在View上添加多个Button,给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示："></a>1.我们在View上添加多个Button,给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示：</h5><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_1.png?raw=true" alt="image" width="375" height="667/"><br></div>
 
 <h5 id="2-下面我们就开始编写点击button要回调的方法"><a href="#2-下面我们就开始编写点击button要回调的方法" class="headerlink" title="2.下面我们就开始编写点击button要回调的方法"></a>2.下面我们就开始编写点击button要回调的方法</h5><ul>
 <li>定义枚举来标示按钮所对应的动画类型，代码如下：</li>
@@ -367,7 +367,7 @@ case Push:
 </code></pre>
 
 <p>效果如下：</p>
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121723047906597.png" alt="image" width="375" height="667"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_2.png?raw=true" alt="image" width="375" height="667"><br></div>
 
 <ul>
 <li>揭开效果：</li>
@@ -379,7 +379,7 @@ case Reveal:
 </code></pre>
 
 <p>效果如下：</p>
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121728297283768.png" alt="image" width="375" height="667"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_3.png?raw=true" alt="image" width="375" height="667"><br></div>
 
 <ul>
 <li>覆盖效果：</li>
@@ -391,7 +391,7 @@ case MoveIn:
 </code></pre>
 
 <p>效果如下：</p>
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121730580565348.png" alt="image" width="375" height="667"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_4.png?raw=true" alt="image" width="375" height="667"><br></div>
 
 <ul>
 <li>立方体效果：</li>
@@ -403,7 +403,7 @@ case Cube:
 </code></pre>
 
 <p>效果如下：</p>
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121732513841605.png" alt="image" width="375" height="667"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_5.png?raw=true" alt="image" width="375" height="667"><br></div>
 
 <ul>
 <li>吮吸效果：</li>
@@ -415,7 +415,7 @@ case SuckEffect:
 </code></pre>
 
 <p>效果如下：</p>
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121734290719149.png" alt="image" width="375" height="667"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_6.png?raw=true" alt="image" width="375" height="667"><br></div>
 
 <ul>
 <li>翻转效果：</li>
@@ -427,7 +427,7 @@ case OglFlip:
 </code></pre>
 
 <p>效果如下：</p>
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121742192432356.png" alt="image" width="375" height="667"><br></div> 
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_7.png?raw=true" alt="image" width="375" height="667"><br></div> 
 
 <ul>
 <li>波纹效果：</li>
@@ -439,7 +439,7 @@ case RippleEffect:
 </code></pre>
 
 <p>效果如下：</p>
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121741041184172.png" alt="image" width="375" height="667"><br></div> 
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_8.png?raw=true" alt="image" width="375" height="667"><br></div> 
 
 <ul>
 <li>翻页和反翻页效果：</li>
@@ -455,7 +455,7 @@ case PageCurl:
 </code></pre>
 
 <p>效果如下：</p>
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121746276818654.png" alt="image" width="375" height="667"><br></div><br><div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121745555255331.png" alt="image" width="375" height="667"><br></div> 
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_9.png?raw=true" alt="image" width="375" height="667"><br></div><br><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_10.png?raw=true" alt="image" width="375" height="667"><br></div> 
 
 <ul>
 <li>相机打开效果：</li>
@@ -470,7 +470,7 @@ case CameraIrisHollowOpen:
             break;
 </code></pre>
 
-<div align="center"><br><img src="http://images.cnitblog.com/blog/545446/201412/121748313686675.png" alt="image" width="375" height="667"><br></div> 
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_11.png?raw=true" alt="image" width="375" height="667"><br></div> 
 
 <ul>
 <li>调用上面封装的第二个动画方法</li>
