@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>标签: ReactiveCocoa - 贵大头的博客</title>
+    <title>标签: runtime - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -17,7 +17,7 @@
     <meta name="description" content="快乐的程序猿">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="贵大头的博客">
-<meta property="og:url" content="http://www.guiyongdong.com/tags/ReactiveCocoa/index.html">
+<meta property="og:url" content="http://www.guiyongdong.com/tags/runtime/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="快乐的程序猿">
 <meta name="twitter:card" content="summary">
@@ -179,32 +179,26 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/09/06/关于RAC的一些资料/">
-                            关于RAC的一些资料
+                        <a class="link-unstyled" href="/2016/08/24/runtime之NSMutableDictionary安全/">
+                            runtime之NSMutableDictionary安全
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T14:47:26+08:00">
+    <time itemprop="datePublished" datetime="2016-08-24T17:02:10+08:00">
 	
-		    9月 06, 2016
+		    8月 24, 2016
     	
     </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
     
 </div>
 
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p>
+                    <p>众所周知,apple要求我们在NSMutableDictionary中不能插入nil,所以我们一旦出现这种操作就会crash,但是我们不能保证完全不会出现这种操作,除非使用大量if去做参数合法性判断</p>
                     
-                        <a href="/2016/09/06/关于RAC的一些资料/" class="postShorten-excerpt_link link">
+                        <a href="/2016/08/24/runtime之NSMutableDictionary安全/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         
@@ -222,32 +216,26 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/09/06/ReactiveCocoa和RXSwift速查表/">
-                            ReactiveCocoa和RXSwift速查表
+                        <a class="link-unstyled" href="/2016/08/24/runtime之NSDictionary安全/">
+                            runtime之NSDictionary安全
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T09:55:48+08:00">
+    <time itemprop="datePublished" datetime="2016-08-24T15:09:10+08:00">
 	
-		    9月 06, 2016
+		    8月 24, 2016
     	
     </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
     
 </div>
 
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p>
+                    <p>昨天已经写文章探讨<a href="http://www.guiyongdong.com/2016/08/23/runtime之NSMutableArray安全/">runtime之NSDictionary安全</a>那么今天我们就来探讨一下怎样让NSDictionary安全,使NSDictionary操作nil而不crash<br>
                     
-                        <a href="/2016/09/06/ReactiveCocoa和RXSwift速查表/" class="postShorten-excerpt_link link">
+                        <a href="/2016/08/24/runtime之NSDictionary安全/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         
@@ -265,32 +253,26 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/08/12/深入ReactiveCocoa/">
-                            深入ReactiveCocoa
+                        <a class="link-unstyled" href="/2016/08/23/runtime之NSMutableArray安全/">
+                            runtime之NSMutableArray安全
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-08-12T17:37:47+08:00">
+    <time itemprop="datePublished" datetime="2016-08-23T11:23:31+08:00">
 	
-		    8月 12, 2016
+		    8月 23, 2016
     	
     </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
     
 </div>
 
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p>
+                    <p>昨天的<strong><a href="http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/">博文:runtime之NSArray安全</a></strong>已经介绍了有关通过<font color = "red"> Swizzing </font>使NSArray安全的操作,那么今天我们来谈一下相对繁琐的使用Swizzing让NSMutableArray安全的操作.<small>PS:文笔不行,望海涵</small></p>
                     
-                        <a href="/2016/08/12/深入ReactiveCocoa/" class="postShorten-excerpt_link link">
+                        <a href="/2016/08/23/runtime之NSMutableArray安全/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         
@@ -308,32 +290,26 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/08/11/初识ReactiveCocoa/">
-                            初识ReactiveCocoa
+                        <a class="link-unstyled" href="/2016/08/22/runtime之NSArray、NSDictionary安全/">
+                            runtime之NSArray安全
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-08-11T17:44:58+08:00">
+    <time itemprop="datePublished" datetime="2016-08-22T10:48:14+08:00">
 	
-		    8月 11, 2016
+		    8月 22, 2016
     	
     </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
     
 </div>
 
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p>
+                    <p>看了<a href="http://www.cnblogs.com/muyushifang07/p/5737564.html"><strong>沐雨十方07</strong></a>的这篇博客之后，我决定将自己开发过程中用的一个小技巧分享一下,以方便各种猿的程序开发。</p>
                     
-                        <a href="/2016/08/11/初识ReactiveCocoa/" class="postShorten-excerpt_link link">
+                        <a href="/2016/08/22/runtime之NSArray、NSDictionary安全/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         

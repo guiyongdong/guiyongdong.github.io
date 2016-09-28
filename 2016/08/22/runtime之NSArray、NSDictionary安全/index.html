@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>欢迎来到贵大头的博客 - 贵大头的博客</title>
+    <title>runtime之NSArray安全 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -14,16 +14,16 @@
         <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
     
-    <meta name="description" content="本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！">
+    <meta name="description" content="看了沐雨十方07的这篇博客之后，我决定将自己开发过程中用的一个小技巧分享一下,以方便各种猿的程序开发。">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="欢迎来到贵大头的博客">
-<meta property="og:url" content="http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/index.html">
+<meta property="og:title" content="runtime之NSArray安全">
+<meta property="og:url" content="http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！">
-<meta property="og:updated_time" content="2016-09-26T07:07:15.000Z">
+<meta property="og:description" content="看了沐雨十方07的这篇博客之后，我决定将自己开发过程中用的一个小技巧分享一下,以方便各种猿的程序开发。">
+<meta property="og:updated_time" content="2016-09-28T02:31:34.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="欢迎来到贵大头的博客">
-<meta name="twitter:description" content="本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！">
+<meta name="twitter:title" content="runtime之NSArray安全">
+<meta name="twitter:description" content="看了沐雨十方07的这篇博客之后，我决定将自己开发过程中用的一个小技巧分享一下,以方便各种猿的程序开发。">
     
     
         
@@ -32,12 +32,6 @@
         <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
     
     
-        <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/top.jpg?raw=true"/>
-        <meta class="swiftype" name="image" data-type="enum" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/top.jpg?raw=true" />
-    
-    
-        <meta property="og:image" content="https://images3.alphacoders.com/183/183425.jpg"/>
-        <meta class="swiftype" name="image" data-type="enum" content="https://images3.alphacoders.com/183/183425.jpg" />
     
     
     <!--STYLES-->
@@ -172,54 +166,125 @@
 </nav>
 
             
-        <div class="post-header-cover
-                    text-center
-                    post-header-cover--full"
-             style="background-image:url('https://images3.alphacoders.com/183/183425.jpg');"
-             data-behavior="4">
-            
-                <div class="post-header main-content-wrap text-center">
-    
-        <h1 class="post-title" itemprop="headline">
-            欢迎来到贵大头的博客
-        </h1>
-    
-    <div class="post-meta">
-    <time itemprop="datePublished" datetime="6666-01-01T17:40:49+08:00">
-	
-		    1月 01, 6666
-    	
-    </time>
-    
-</div>
-
-</div>
-            
-        </div>
-
             <div id="main" data-behavior="4"
-                 class="hasCover
+                 class="
                         hasCoverMetaIn
                         ">
                 
 <article class="post" itemscope itemType="http://schema.org/BlogPosting">
     
     
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            runtime之NSArray安全
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2016-08-22T10:48:14+08:00">
+	
+		    8月 22, 2016
+    	
+    </time>
+    
+</div>
+
+</div>
+    
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
-            <p>本人名叫贵永冬,现就职于河南酒运达电子商务有限公司，iOS工程师。希望在以后的学习工作中能和大家多多的交流，希望大家对我的博客提出宝贵的意见，我的邮箱为564024928@qq.com，谢谢！<br><a id="more"></a></p>
+            <p>看了<a href="http://www.cnblogs.com/muyushifang07/p/5737564.html" target="_blank" rel="external"><strong>沐雨十方07</strong></a>的这篇博客之后，我决定将自己开发过程中用的一个小技巧分享一下,以方便各种猿的程序开发。</p>
+   <a id="more"></a>  
+<p>众所周知，在apple的淫威下NSArray,NSDictionary,NSMutableArray,NSMutableDictionary是不不能出现有关nil的操作,一旦操作就会出现<strong>crash</strong>的后果,如果我们要避免这种<strong>crash</strong>那么就要增加许多if,现在我们来利用runtime彻底解决这个问题.<br><br><br><a href="https://github.com/OneHalfTooth/Runtime_Safe" target="_blank" rel="external">demo地址 : https://github.com/OneHalfTooth/Runtime_Safe</a></p>
+<p><strong>首先我们可能用到几个函数</strong>（需要包含<font color="red">运行时库</font>）<br><br> <font color="red">class_getInstanceMethod(Class cls, SEL name):得到类的实例方法</font></p>
+  <font color="red">class_getClassMethod(Class cls, SEL name):得到类的类方法</font>
+
+<p>  <font color="red"> method_exchangeImplementations(Method m1, Method m2) : 交换方法m1 和方法m2的实现</font></p>
+<h2 id="runtime之NSArray的nil操作"><a href="#runtime之NSArray的nil操作" class="headerlink" title="runtime之NSArray的nil操作"></a>runtime之NSArray的nil操作</h2><p>码代码的过程中我们一不小心可能就会出现类似于这种情况</p>
+<pre><code>NSArray * temp = @[@&quot;0&quot;,@&quot;1&quot;,@&quot;2&quot;];
+NSString * str = [temp objectAtIndex:4];
+</code></pre><p>后果就是<strong>crash</strong><br><br>但是我们发现大牛们写代码的时候通常<strong>很少出现对数组越界</strong>的异常处理情况,到底是什么原因呢，其实我也不知道😝<br><br>而我是使用runtime的黑魔法来解决这种情况的,请看源码<br></p>
+<pre><code>- (id)custmeObjectAtIndex:(NSInteger)index{
+if (index &gt;= self.count) {
+    return nil;
+}
+//或许你对这里有个疑问，稍后解答
+return [self custmeObjectAtIndex:index];
+}
+</code></pre><p>首先我声明一个方法,因为我要用黑魔法<font color="red">（Method Swizzling）</font>将系统的<strong>objectAtIndex:</strong>方法实现给替换掉,这样做的目的是在<strong>NSArray调用objectAtIndex:</strong>方法的时候，首先调用<strong>(custmeObjectAtIndex:)</strong>本人定义好的方法,然后在custmeObjectAtIndex:这个方法中去判断参数合法性，再做下一步打算.<br><br>然后我们开始使用<font color="red">（Method Swizzling）</font>将系统<strong>objectAtIndex:</strong>的实现和<strong>(custmeObjectAtIndex:)</strong>的实现进行交换</p>
+<pre><code>//NSArray 在编译的时候名字并不是NSarray而是__NSArray0
+Class arrayM = NSClassFromString(@&quot;__NSArray0&quot;);
+
+//获取到系统objectAtIndex:
+Method objectAtIndex = class_getInstanceMethod(arrayM, @selector(objectAtIndex:));
+
+//获取自定义的custmeObjectAtIndex:
+Method customeObjectAtIndex = class_getInstanceMethod(arrayM, @selector(custmeObjectAtIndex:));
+
+//交换两个方法的实现
+method_exchangeImplementations(objectAtIndex, customeObjectAtIndex);
+</code></pre><p>至此,我们常见的数组越界crash已经被解决了,但是你是不是已经蒙圈了😁,为什么在<strong>- (id)custmeObjectAtIndex:(NSInteger)index</strong>方法中出现了 <strong>[self custmeObjectAtIndex:index];</strong>自己调用自己这种情况呢,前边我已经说了是交换两个方法的实现,所以说两个方法的内容<strong>(简单的说就是方法里边的代码)</strong>已经被交换,所以[self custmeObjectAtIndex:index]这句代码调用的系统objectAtIndex:的实现，所以并不是自己调用自己</p>
+<p><strong>我们还需要注意一点,我们必须保证任何时间,只要是有关NSArray的操作,我们的runtime已经执行过了<br>所以我们要在+ (void)load方法去执行这个Swizzing</strong></p>
+<pre><code>#import &lt;UIKit/UIKit.h&gt;
+#import &lt;objc/runtime.h&gt;
+
+//分类
+@implementation NSArray (Safe)
+//初始化的时候会被执行一次
++ (void)load {
+
+Method originalMethod = class_getClassMethod(self, @selector(arrayWithObjects:count:));
+Method swizzledMethod = class_getClassMethod(self, @selector(customArrayWithObjects:count:));
+method_exchangeImplementations(originalMethod, swizzledMethod);
+
+Class arrayM = NSClassFromString(@&quot;__NSArray0&quot;);
+Method objectAtIndex = class_getInstanceMethod(arrayM, @selector(objectAtIndex:));
+Method customeObjectAtIndex = class_getInstanceMethod(arrayM, @selector(custmeObjectAtIndex:));
+method_exchangeImplementations(objectAtIndex, customeObjectAtIndex);
+
+}
+
+
++ (instancetype)customArrayWithObjects:(const id [])objects count:(NSUInteger)cnt {
+
+    id nObjects[cnt];
+    int i=0, j=0;
+    for (; i&lt;cnt &amp;&amp; j&lt;cnt; i++) {
+        if (objects[i]) {
+            nObjects[j] = objects[i];
+            j++;
+        }
+    }
+    return [self customArrayWithObjects:nObjects count:j];
+}
+
+- (id)custmeObjectAtIndex:(NSInteger)index{
+
+    if (index &gt;= self.count) {
+        return nil;
+    }
+return [self custmeObjectAtIndex:index];
+}
+</code></pre><p><strong>至此一个关于NSArray的安全类已经结束,当然这只是一部分,更详细请<a href="https://github.com/OneHalfTooth/Runtime_Safe" target="_blank" rel="external">查看demo:https://github.com/OneHalfTooth/Runtime_Safe</a></strong><br></p>
 
             
         </div>
     </div>
     <div id="post-footer" class="post-footer main-content-wrap">
         
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/runtime/">runtime</a>
+
+            </div>
+        
         <div class="post-actions-wrap">
     <nav>
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/08/23/runtime之NSMutableArray安全/"  data-tooltip="runtime之NSMutableArray安全">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -227,7 +292,7 @@
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/22/UIBezierPath详解/" data-tooltip="UIBezierPath详解">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/08/12/深入ReactiveCocoa/" data-tooltip="深入ReactiveCocoa">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -242,12 +307,12 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/&amp;title=欢迎来到贵大头的博客">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/&amp;title=runtime之NSArray安全">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -265,7 +330,7 @@
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -286,7 +351,7 @@
             
                 <div class="duoshuo">
 	<!-- 多说评论框 start -->
-	<div class="ds-thread" data-thread-key=“欢迎来到贵大头的博客" data-title="欢迎来到贵大头的博客" data-url="http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/"></div>
+	<div class="ds-thread" data-thread-key=“runtime之NSArray、NSDictionary安全" data-title="runtime之NSArray安全" data-url="http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/"></div>
 	<!-- 多说评论框 end -->
 	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 	<script type="text/javascript">
@@ -323,7 +388,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/08/23/runtime之NSMutableArray安全/"  data-tooltip="runtime之NSMutableArray安全">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -331,7 +396,7 @@
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/22/UIBezierPath详解/" data-tooltip="UIBezierPath详解">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/08/12/深入ReactiveCocoa/" data-tooltip="深入ReactiveCocoa">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -346,12 +411,12 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/&amp;title=欢迎来到贵大头的博客">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/&amp;title=runtime之NSArray安全">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -369,7 +434,7 @@
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -390,12 +455,12 @@
                 <div id="share-options-bar" class="share-options-bar" data-behavior="4">
     <ul class="share-options">
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/">
                 <i class="fa fa-weibo"></i><span>微博</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/">
                 <i class="fa fa-qq"></i><span>QQ</span>
             </a>
         </li>
@@ -410,7 +475,7 @@
 
 
 
-<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/6666/01/01/欢迎来到贵大头的博客/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/08/22/runtime之NSArray、NSDictionary安全/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
