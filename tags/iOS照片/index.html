@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>标签: RunLoop - 贵大头的博客</title>
+    <title>标签: iOS照片 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -17,7 +17,7 @@
     <meta name="description" content="快乐的程序猿">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="贵大头的博客">
-<meta property="og:url" content="http://www.guiyongdong.com/tags/RunLoop/index.html">
+<meta property="og:url" content="http://www.guiyongdong.com/tags/iOS照片/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="快乐的程序猿">
 <meta name="twitter:card" content="summary">
@@ -179,21 +179,21 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/09/08/RunLoop总结/">
-                            RunLoop总结
+                        <a class="link-unstyled" href="/2016/11/02/iOS照片开发之AssetsLibrary/">
+                            iOS照片开发之AssetsLibrary
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-08T17:05:52+08:00">
+    <time itemprop="datePublished" datetime="2016-11-02T11:25:30+08:00">
 	
-		    9月 08, 2016
+		    11月 02, 2016
     	
     </time>
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/categories/RunLoop/">RunLoop</a>
+    <a class="category-link" href="/categories/iOS照片/">iOS照片</a>
 
 
     
@@ -202,9 +202,53 @@
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p>
+                    <p>上一篇博客讲解了UIImagePickerController的使用，这篇博客简单说一下AssetsLibrary。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架。这里主要说AssetsLibrary。</p>
+<p>另外值得强调的是，在 iOS 中，照片库并不只是照片的集合，同时也包含了视频。在 AssetsLibrary 中两者都有相同类型的对象去描述，只是类型不同而已。文中为了方便，大部分时候会使用「资源」代表 iOS 中的「照片和视频」。</p>
                     
-                        <a href="/2016/09/08/RunLoop总结/" class="postShorten-excerpt_link link">
+                        <a href="/2016/11/02/iOS照片开发之AssetsLibrary/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/11/02/iOS照片开发之UIImagePickerController/">
+                            iOS照片开发之UIImagePickerController
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-11-02T10:37:08+08:00">
+	
+		    11月 02, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/iOS照片/">iOS照片</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>iOS开发中，通常获取照片的方式有三种，1.直接调用摄像头拍照 2.从相册中选择 3.从图库中选择。 通常使用到的类或框架有UIImagePickerController,AssetsLibrary,PhotoKit(iOS8later)。本篇博客主要讲解UIImagePickerController，其他的后续会讲解到。</p>
+                    
+                        <a href="/2016/11/02/iOS照片开发之UIImagePickerController/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         
