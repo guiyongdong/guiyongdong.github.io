@@ -14,16 +14,18 @@
         <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
     
-    <meta name="description" content="快乐的程序猿">
+    <meta name="description" content="PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。它是iOS8之后出现的框架，在使用框架之前需要导入#import &amp;lt;Photos/Photos.h&amp;gt;库">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="iOS照片开发之PhotoKit（上）">
 <meta property="og:url" content="http://www.guiyongdong.com/2016/11/02/iOS照片开发之PhotoKit（上）/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="快乐的程序猿">
-<meta property="og:updated_time" content="2016-11-02T08:44:37.000Z">
+<meta property="og:description" content="PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。它是iOS8之后出现的框架，在使用框架之前需要导入#import &amp;lt;Photos/Photos.h&amp;gt;库">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/PhotoKit_1.png?raw=true">
+<meta property="og:updated_time" content="2016-11-03T09:51:55.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS照片开发之PhotoKit（上）">
-<meta name="twitter:description" content="快乐的程序猿">
+<meta name="twitter:description" content="PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。它是iOS8之后出现的框架，在使用框架之前需要导入#import &amp;lt;Photos/Photos.h&amp;gt;库">
+<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/PhotoKit_1.png?raw=true">
     
     
         
@@ -187,17 +189,169 @@
     	
     </time>
     
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/iOS照片/">iOS照片</a>
+
+
+    
 </div>
 
 </div>
     
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
-            
+            <p>PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。它是iOS8之后出现的框架，在使用框架之前需要导入<code>#import &lt;Photos/Photos.h&gt;</code>库</p>
+<a id="more"></a>
+<p>首先简单介绍几个概念：</p>
+<ul>
+<li><strong>PHAsset</strong>: 代表照片库中的一个资源，跟 ALAsset 类似，通过 PHAsset 可以获取和保存资源</li>
+<li><strong>PHFetchOptions</strong>: 获取资源时的参数，可以传 nil，即使用系统默认值</li>
+<li><strong>PHFetchResult</strong>: 表示一系列的资源集合，也可以是相册的集合</li>
+<li><strong>PHAssetCollection</strong>: 表示一个相册或者一个时刻，或者是一个「智能相册（系统提供的特定的一系列相册，例如：最近删除，视频列表，收藏等等，如下图所示）</li>
+<li><strong>PHImageManager</strong>: 用于处理资源的加载，加载图片的过程带有缓存处理，可以通过传入一个 PHImageRequestOptions 控制资源的输出尺寸等规格</li>
+<li><strong>PHImageRequestOptions</strong>: 如上面所说，控制加载图片时的一系列参数</li>
+</ul>
+<p>这里还有一个额外的概念PHCollectionList，表示一组PHCollection，它本身也是一个PHCollection，因此PHCollection 作为一个集合，可以包含其他集合，这使到 PhotoKit 的组成比 ALAssetLibrary 要复杂一些。另外与 ALAssetLibrary 相似，一个 PHAsset 可以同时属于多个不同的 PHAssetCollection，最常见的例子就是刚刚拍摄的照片，至少同时属于“最近添加”、“相机胶卷”以及“照片 - 精选”这三个 PHAssetCollection。关于这几个概念的关系如下图：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/PhotoKit_1.png?raw=true"><br></div>
+
+<h3 id="PhotoKit-的机制"><a href="#PhotoKit-的机制" class="headerlink" title="PhotoKit 的机制"></a>PhotoKit 的机制</h3><h5 id="1-获取资源"><a href="#1-获取资源" class="headerlink" title="1. 获取资源"></a>1. 获取资源</h5><p>在 ALAssetLibrary 中获取数据，无论是相册，还是资源，本质上都是使用枚举的方式，遍历照片库取得相应的数据，并且数据是从 ALAssetLibrary（照片库） - ALAssetGroup（相册）- ALAsset（资源）这一路径逐层获取，即使有直接从 ALAssetLibrary 这一层获取 ALAsset 的接口，本质上也是枚举 ALAssetLibrary 所得，并不是直接获取，这样的好处很明显，就是非常符合实际应用中资源的显示路径：照片库 - 相册 - 图片或视频，但由于采用枚举的方式获取资源，效率低而且不灵活。</p>
+<p>而在 PhotoKit 中，则是采用“获取”的方式拉取资源，这些获取的手段，都是一系列形如 class func fetchXXX(…, options: PHFetchOptions) -&gt; PHFetchResult 的类方法，具体使用哪个类方法，则视乎需要获取的是相册、时刻还是资源，这类方法中的 option 充当了过滤器的作用，可以过滤相册的类型，日期，名称等，从而直接获取对应的资源而不需要枚举。</p>
+<p><strong>获取相册-PHAssetCollection:</strong></p>
+<pre><code>- (IBAction)getAllSmartAlbums:(id)sender {
+    // 列出所有相册智能相册
+    PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
+    //列出用户创建的相册.
+    PHFetchResult *topLevelUserCollections = [PHCollectionList fetchTopLevelUserCollectionsWithOptions:nil];
+
+    for (NSInteger i = 0; i &lt; smartAlbums.count; i++) {
+        PHCollection *collection = smartAlbums[i];
+        if ([collection isKindOfClass:[PHAssetCollection class]]) {
+            PHAssetCollection *assetCollection = (PHAssetCollection *)collection;
+            NSLog(@&quot;%@&quot;,assetCollection);
+        }else {
+            NSAssert(NO, @&quot;Fetch collection not PHCollection: %@&quot;, collection);
+        }
+    }
+}
+</code></pre><p>以上方法第一种需要指定两个参数：</p>
+<pre><code>typedef NS_ENUM(NSInteger, PHAssetCollectionType) {
+    PHAssetCollectionTypeAlbum      = 1,//从 iTunes 同步来的相册，以及用户在 Photos 中自己建立的相册
+    PHAssetCollectionTypeSmartAlbum = 2,//经由相机得来的相册
+    PHAssetCollectionTypeMoment     = 3,//Photos 为我们自动生成的时间分组的相册
+} NS_ENUM_AVAILABLE_IOS(8_0);
+
+typedef NS_ENUM(NSInteger, PHAssetCollectionSubtype) {
+
+    // PHAssetCollectionTypeAlbum regular subtypes  
+    PHAssetCollectionSubtypeAlbumRegular         = 2, //用户在 Photos 中创建的相册，也就是我所谓的逻辑相册
+    PHAssetCollectionSubtypeAlbumSyncedEvent     = 3, //使用 iTunes 从 Photos 照片库或者 iPhoto 照片库同步过来的事件。然而，在iTunes 12 以及iOS 9.0 beta4上，选用该类型没法获取同步的事件相册，而必须使用AlbumSyncedAlbum。
+    PHAssetCollectionSubtypeAlbumSyncedFaces     = 4,//使用 iTunes 从 Photos 照片库或者 iPhoto 照片库同步的人物相册。
+    PHAssetCollectionSubtypeAlbumSyncedAlbum     = 5,//做了 AlbumSyncedEvent 应该做的事
+    PHAssetCollectionSubtypeAlbumImported        = 6,//从相机或是外部存储导入的相册，完全没有这方面的使用经验，没法验证。
+
+    // PHAssetCollectionTypeAlbum shared subtypes
+    PHAssetCollectionSubtypeAlbumMyPhotoStream   = 100,//用户的 iCloud 照片流
+    PHAssetCollectionSubtypeAlbumCloudShared     = 101,//用户使用 iCloud 共享的相册
+
+    // PHAssetCollectionTypeSmartAlbum subtypes
+    PHAssetCollectionSubtypeSmartAlbumGeneric    = 200,//文档解释为非特殊类型的相册，主要包括从 iPhoto 同步过来的相册。由于本人的 iPhoto 已被 Photos 替代，无法验证。不过，在我的 iPad mini 上是无法获取的，而下面类型的相册，尽管没有包含照片或视频，但能够获取到。
+    PHAssetCollectionSubtypeSmartAlbumPanoramas  = 201, //相机拍摄的全景照片
+    PHAssetCollectionSubtypeSmartAlbumVideos     = 202,//相机拍摄的视频
+    PHAssetCollectionSubtypeSmartAlbumFavorites  = 203,//收藏文件夹
+    PHAssetCollectionSubtypeSmartAlbumTimelapses = 204,//延时视频文件夹，同时也会出现在视频文件夹中
+    PHAssetCollectionSubtypeSmartAlbumAllHidden  = 205,//包含隐藏照片或视频的文件夹
+    PHAssetCollectionSubtypeSmartAlbumRecentlyAdded = 206,//相机近期拍摄的照片或视频
+    PHAssetCollectionSubtypeSmartAlbumBursts     = 207,//连拍模式拍摄的照片，在 iPad mini 上按住快门不放就可以了，但是照片依然没有存放在这个文件夹下，而是在相机相册里。
+    PHAssetCollectionSubtypeSmartAlbumSlomoVideos = 208,//Slomo 是 slow motion 的缩写，高速摄影慢动作解析，在该模式下，iOS 设备以120帧拍摄。不过我的 iPad mini 不支持，没法验证。
+    PHAssetCollectionSubtypeSmartAlbumUserLibrary = 209,//这个命名最神奇了，就是相机相册，所有相机拍摄的照片或视频都会出现在该相册中，而且使用其他应用保存的照片也会出现在这里。
+    PHAssetCollectionSubtypeSmartAlbumSelfPortraits NS_AVAILABLE_IOS(9_0) = 210,
+    PHAssetCollectionSubtypeSmartAlbumScreenshots NS_AVAILABLE_IOS(9_0) = 211,
+
+    // Used for fetching, if you don&apos;t care about the exact subtype
+    PHAssetCollectionSubtypeAny = NSIntegerMax //包含所有类型
+} NS_ENUM_AVAILABLE_IOS(8_0);
+</code></pre><p><strong>注意</strong>：获取指定类型的相册时，主类型和子类型要匹配，不要串台。如果不匹配，系统会按照 Any 子类型来处理。对于 Moment 类型，子类型使用 Any。</p>
+<p>如前面提到过的那样，从PHAssetCollection 获取中获取到的可以是相册也可以是资源，但无论是哪种内容，都统一使用PHFetchResult 对象封装起来，因此虽然 PHAssetCollection 获取到的结果可能是多样的，但通过PHFetchResult 就可以使用统一的方法去处理这些内容（即遍历 PHFetchResult）。</p>
+<p><strong>获取资源-PHAsset</strong></p>
+<pre><code>//方式一
+// 列出所有相册智能相册
+PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
+// 这时 smartAlbums 中保存的应该是各个智能相册对应的 PHAssetCollection
+for (NSInteger i = 0; i &lt; fetchResult.count; i++) {
+    // 获取一个相册（PHAssetCollection）
+    PHCollection *collection = fetchResult[i];
+    if ([collection isKindOfClass:[PHAssetCollection class]]) {
+        PHAssetCollection *assetCollection = (PHAssetCollection *)collection;
+        // 从每一个智能相册中获取到的 PHFetchResult 中包含的才是真正的资源（PHAsset）
+        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:fetchOptions];
+        for (NSInteger i = 0; i &lt; fetchResult.count; i++) {
+            // 获取一个资源（PHAsset）
+            PHAsset *asset = fetchResult[i];
+            NSLog(@&quot;%@&quot;,asset);
+        }
+    else {
+        NSAssert(NO, @&quot;Fetch collection not PHCollection: %@&quot;, collection);
+    }
+}
+
+//方式二  
+// 获取所有资源的集合，并按资源的创建时间排序
+PHFetchOptions *options = [[PHFetchOptions alloc] init];
+options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;creationDate&quot; ascending:YES]];
+PHFetchResult *assetsFetchResults = [PHAsset fetchAssetsWithOptions:options];
+// 这时 assetsFetchResults 中包含的，应该就是各个资源（PHAsset）
+for (NSInteger i = 0; i &lt; fetchResult.count; i++) {
+    // 获取一个资源（PHAsset）
+    PHAsset *asset = fetchResult[i];
+}
+</code></pre><h5 id="获取图像的方式与坑点"><a href="#获取图像的方式与坑点" class="headerlink" title="获取图像的方式与坑点"></a>获取图像的方式与坑点</h5><p>经过了上面的步骤，已经可以了解到如何在 PhotoKit 中获取到代表资源的 PHAsset 了，但与 ALAssetLibrary 中从 ALAsset 中直接获取图像的方式不同，PhotoKit 无法直接从 PHAsset 的实例中获取图像，而是引入了一个管理器?PHImageManager 获取图像。PHImageManager 是通过请求的方式拉取图像，并可以控制请求得到的图像的尺寸、剪裁方式、质量，缓存以及请求本身的管理（发出请求、取消请求）等。而请求图像的方法是PHImageManager 的一个实例方法：</p>
+<pre><code>- (PHImageRequestID)requestImageForAsset:(PHAsset *)asset 
+                              targetSize:(CGSize)targetSize 
+                               contentMode:(PHImageContentMode)contentMode 
+                                options:(nullable PHImageRequestOptions *)options 
+                          resultHandler:(void (^)(UIImage *__nullable result, NSDictionary *__nullable info))resultHandler;
+</code></pre><p>这个方法中的参数坑点不少，下面逐个参数列举一下其作用及坑点：</p>
+<ul>
+<li><strong>asset</strong>:图像对应的 PHAsset。</li>
+<li><strong>targetSize</strong>:需要获取的图像的尺寸，如果输入的尺寸大于资源原图的尺寸，则只返回原图。需要注意在 PHImageManager 中，所有的尺寸都是用 Pixel 作为单位（Note that all sizes are in pixels），因此这里想要获得正确大小的图像，需要把输入的尺寸转换为 Pixel。如果需要返回原图尺寸，可以传入 PhotoKit 中预先定义好的常量PHImageManagerMaximumSize，表示返回可选范围内的最大的尺寸，即原图尺寸。</li>
+<li><strong>contentMode</strong>:图像的剪裁方式，与UIView 的 contentMode 参数相似，控制照片应该以按比例缩放还是按比例填充的方式放到最终展示的容器内。注意如果 targetSize 传入PHImageManagerMaximumSize，则 contentMode 无论传入什么值都会被视为?PHImageContentModeDefault。</li>
+<li><strong>options</strong>:一个PHImageRequestOptions 的实例，可以控制的内容相当丰富，包括图像的质量、版本，也会有参数控制图像的剪裁，下面再展开说明。</li>
+<li><strong>resultHandler</strong>:请求结束后被调用的 block，返回一个包含资源对于图像的 UIImage 和包含图像信息的一个 NSDictionary，在整个请求的周期中，这个 block 可能会被多次调用，关于这点连同 options 参数在下面展开说明。</li>
+</ul>
+<h6 id="PHImageRequestOptions-与-iCloud-照片库"><a href="#PHImageRequestOptions-与-iCloud-照片库" class="headerlink" title="PHImageRequestOptions 与 iCloud 照片库"></a>PHImageRequestOptions 与 iCloud 照片库</h6><p>PHImageRequestOptions 中包含了一系列控制请求图像的属性。</p>
+<p>resizeMode 属性控制图像的剪裁，不知道为什么 PhotoKit 会在请求图像方法（requestImageForAsset）中已经有控制图像剪裁的参数后（contentMode），还在 options 中加入控制剪裁的属性，但如果两个地方所控制的剪裁结果有所冲突，PhotoKit 会以 resizeMode 的结果为准。另外，resizeMode 也有控制图像质量的作用。如resizeMode设置为PHImageRequestOptionsResizeModeExact 则返回图像必须和目标大小相匹配，并且图像质量也为高质量图像，而设置为 PHImageRequestOptionsResizeModeFast 则请求的效率更高，但返回的图像可能和目标大小不一样并且质量较低。</p>
+<p>在 PhotoKit 中，对 iCloud 照片库有很好的支持，如果用户开启了 iCloud 照片库，并且选择了“优化 iPhone/iPad 储存空间”，或者选择了“下载并保留原件”但原件还没有加载好的时候，PhotoKit 也会预先拿到这些非本地图像的 PHAsset，但是由于本地并没有原图，所以如果产生了请求高清图的请求，PHotoKit 会尝试从 iCloud 下载图片，而这个行为最终的表现，会被PHImageRequestOptions 中的值所影响。PHImageRequestOptions 中常常会用的几个属性如下：</p>
+<p>networkAccessAllowed 参数控制是否允许网络请求，默认为 NO，如果不允许网络请求，那么就没有然后了，当然也拉取不到 iCloud 的图像原件。deliveryMode 则用于控制请求的图片质量。synchronous 控制是否为同步请求，默认为 NO，如果?synchronous 为 YES，即同步请求时，deliveryMode 会被视为 PHImageRequestOptionsDeliveryModeHighQualityFormat，即自动返回高质量的图片，因此不建议使用同步请求，否则如果界面需要等待返回的图像才能进一步作出反应，则反应时长会很长。</p>
+<p>还有一个与 iCloud 密切相关的属性progressHandler，当图像需要从 iCloud 下载时，这个 block 会被自动调用，block 中会返回图像下载的进度，图像的信息，出错信息。开发者可以利用这些信息反馈给用户当前图像的下载进度以及状况，但需要注意progressHandler 不在主线程上执行，因此在其中需要操作 UI，则需要手工放到主线程执行。</p>
+<p>上面有提到，requestImageForAsset 中的参数resultHandler 可能会被多次调用，这种情况就是图像需要从 iCloud 中下载的情况。在requestImageForAsset 返回的内容中，一开始的那一次请求中会返回一个小尺寸的图像版本，当高清图像还在下载时，开发者可以首先给用户展示这个低清的图像版本，然后 block 在多次调用后，最终会返回高清的原图。至于当前返回的图像是哪个版本的图像，可以通过 block 返回的 NSDictionary info 中获知，PHImageResultIsDegradedKey 表示当前返回的 UIImage 是低清图。如果需要判断是否已经获得高清图，可以这样判断：</p>
+<pre><code>// 排除取消，错误，低清图三种情况，即已经获取到了高清图
+BOOL downloadFinined = ![[info objectForKey:PHImageCancelledKey] boolValue] &amp;&amp; ![info objectForKey:PHImageErrorKey] &amp;&amp; ![[info objectForKey:PHImageResultIsDegradedKey] boolValue];
+</code></pre><p>另外，当我们使用requestImageForAsset 发出对图像的请求时，如果在同一个 PHImageManager 中同时对同一个资源发出图像请求，请求的进度是可以共享的，因此我们可以利用这个特性，把 PHImageManager 以单例的形式使用，这样在切换界面时也不用担心无法传递图像的下载进度。例如，在图像的列表页面触发了下载图像，当我们离开列表页面进入预览大图界面时，并不用担心会重新图像会重新下载，只要没有手工取消图像下载，进入预览大图界面下载图像会自动继续从上次的进度下载图像。</p>
+<p>如果希望取消下载图像，则可以使用PHImageManager 的 cancelImageRequest 方法，它传入的是请求图像的请求 ID，这个 ID 可以从requestImageForAsset 的返回值中获得，也可以从前面提到的包含图像信息的NSDictionary info 中获得，当然前提是这个这个接收取消请求的 PHImageManager 与刚刚发出请求的 PHImageManager 是同一个实例，如上面所述使用单例是最为简单有效的方式。</p>
+<p>最后，还要介绍一个PHImageRequestOptions 的属性 versions，这个属性是指获取的图像是否需要包含系统相册“编辑”功能处理过的信息（如滤镜，旋转等），这一点比 ALAssetLibrary 要灵活很多，ALAssetLibrary 中并不能灵活地控制获取的图像是否带有“编辑”处理过的效果，例如在 ALAsset 中获取原图的接口 fullResolutionImage 获取到的是不带“编辑”效果的图像，要想获取带有“编辑”效果的图像，只能自行处理获取这些滤镜效果，并手工叠加上去。在我们的 UI 框架 QMUI 中就有对获取原图作出这样的封装，整个过程也较为繁琐，而框架中处理 PhotoKit 的部分则灵活很多，这也体现了 PhotoKit 相比 ALAssetLibrary 的最主要特点——复杂但灵活。文章的第三部分也会详细列出如何处理这个问题。</p>
+<h6 id="获取图像的优化"><a href="#获取图像的优化" class="headerlink" title="获取图像的优化"></a>获取图像的优化</h6><p>PHImageManager 提供了一个子类PHImageCachingManager 用于处理图像的缓存，但是这个子类并不只是图像本身的缓存，而是更加实用——处理图像的整个加载过程的缓存。例如要在一个collectionView 上展示图像列表这类大量的资源图像的缩略图时，可以利用 PHImageCachingManager预先将一些图像加载到内存中，这对优化 collectionView 滚动时的表现很有帮助。然而，这只是官方说法，实际上由于加载图像的过程并不确定，每个业务加载图像的实际需求都可能不一样，因此PHImageCachingManager 也采用比较松散的方法去控制这些缓存，其中的关键方法：</p>
+<pre><code>- (void)startCachingImagesForAssets:(NSArray&lt;PHAsset *&gt; *)assets targetSize:(CGSize)targetSize contentMode:(PHImageContentMode)contentMode options:(nullable PHImageRequestOptions *)options;
+</code></pre><p>需要传入一组 PHAsset，以及 targetSize，contentMode，以及一个PHImageRequestOptions，如上面所述，这些参数之间的有着互相影响的作用，因此实际上不同的场景对于每个参数要求都不一样，而这些参数的最佳取值也只能通过实际在场景中测试所得。因此，比起使用PHImageCachingManager，我总结了一些更为简易可行的缓存方法：</p>
+<ul>
+<li>获取图片时尽量获取预览图，不要直接显示原件，建议获取与设备屏幕同样大小的图像即可，实际上系统相册预览大图时使用的也是预览图，这也是系统相册加载速度快的原因。</li>
+<li>获取图片使用异步请求，如上面所述，当请求为异步时返回图像的 block 会被多次调用，先返回低清图，再返回高清图，这样一来可以大大减少 UI 的等待时间。</li>
+<li>获取到高清图后可以缓存下来，简单地使用变量缓存即可，尽量在获取到高清图后避免再次发起请求获取图像。因为即使图像原件已经下载下来，重新请求高清图时因为图片的尺寸比较大，因此系统生成图像和剪裁图像也会花费一些时间。</li>
+<li>预先加载图像，如像预览大图这类情景中，用户同时只会看到一张大图，因此在观看某一张图片时，预先请求其邻近两张图片，对于加快 UI 的响应很有帮助。</li>
+</ul>
+<p>经过实际测试，如果请求的是缩略图（即尺寸小的图像），那么即使请求的图像很多，仍不会产生任何不流畅的表现，但如果请求的是高清大图，那么即使只是同时请求几张图都会产生不流畅的状况。如上面提到过的那样，这些的状况的出现很可能是请求大图时由图片元数据产生图像，以及剪裁图像的过程耗时较多。所以按实际表现来看，即使 PhotoKit 有自己的缓存策略，仍然很难避免这部分耗时。因此上面几点优化获取图像的策略重点也是放在减少图像大小，异步请求以及做缓存几个方面。</p>
+
             
         </div>
     </div>
     <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/iOS照片/">iOS照片</a>
+
+            </div>
         
         <div class="post-actions-wrap">
     <nav>

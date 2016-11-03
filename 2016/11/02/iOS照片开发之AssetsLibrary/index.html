@@ -26,7 +26,7 @@
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/AssetsLibrary_photo.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/AssetsLibrary_cons1.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/ALAssetsLibrary_release.png?raw=true">
-<meta property="og:updated_time" content="2016-11-02T08:39:15.000Z">
+<meta property="og:updated_time" content="2016-11-02T10:12:35.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS照片开发之AssetsLibrary">
 <meta name="twitter:description" content="上一篇博客讲解了UIImagePickerController的使用，这篇博客简单说一下AssetsLibrary。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架。这里主要说AssetsLibrary。
@@ -366,7 +366,61 @@ _currentIndex = 0;
 }
 </code></pre><p>对于一个 ALAssetRepresentation，里面包含了图片的多个版本。最常用的是 fullResolutionImage 和 fullScreenImage。fullResolutionImage 是图片的原图，通过 fullResolutionImage 获取的图片没有任何处理，包括通过系统相册中“编辑”功能处理后的信息也没有被包含其中，因此需要展示“编辑”功能处理后的信息，使用 fullResolutionImage 就比较不方便，另外 fullResolutionImage 的拉取也会比较慢，在多张 fullResolutionImage 中切换时能明显感觉到图片的加载过程。因此这里建议获取图片的 fullScreenImage，它是图片的全屏图版本，这个版本包含了通过系统相册中“编辑”功能处理后的信息，同时也是一张缩略图，但图片的失真很少，缺点是图片的尺寸是一个适应屏幕大小的版本，因此展示图片时需要作出额外处理，但考虑到加载速度非常快的原因（在多张图片之间切换感受不到图片加载耗时），仍建议使用 fullScreenImage。另外ALAssetRepresentation还包含的其他的资源属性，例如：acale(长宽比例),filename(文件名字)等。</p>
 <p>系统相册的处理过程大概也是如上，可以看出，在整个过程中并没有使用到图片的 fullResolutionImage，从相册列表展示到最终查看资源，都是使用缩略图，这也是 iOS 相册加载快的一个重要原因。</p>
-<h3 id="AssetsLibrary-的坑点"><a href="#AssetsLibrary-的坑点" class="headerlink" title="AssetsLibrary 的坑点"></a>AssetsLibrary 的坑点</h3><p>作为一套老框架，AssetsLibrary 不但有坑，而且还不少，除了上面提到的资源异步拉取时需要注意的事项，下面几点也是值得注意的：</p>
+<h3 id="AssetsLibrary的写"><a href="#AssetsLibrary的写" class="headerlink" title="AssetsLibrary的写"></a>AssetsLibrary的写</h3><p><strong>创建相册组：</strong></p>
+<pre><code>- (IBAction)createFileName:(id)sender {
+    [self.assetLibrary addAssetsGroupAlbumWithName:@&quot;rrrrr&quot; resultBlock:^(ALAssetsGroup *group) {
+        if (group) {
+            //表明本地没有这个相册组
+            NSLog(@&quot;本地没有这个相册组&quot;);
+        }else {
+            //表明本地有这个相册组
+            NSLog(@&quot;本地有这个相册组&quot;);
+        }
+        NSLog(@&quot;%@&quot;,group);
+    } failureBlock:^(NSError *error) {
+
+    }];
+}
+</code></pre><p><strong>保存图片到指定相册组</strong></p>
+<pre><code>- (IBAction)addImage:(id)sender {
+    UIImage *image = [UIImage imageNamed:@&quot;aaa&quot;];
+    //保存到系统照片 并保存到指定相册组
+    __weak typeof (self)weakSelf = self;
+    [self.assetLibrary writeImageToSavedPhotosAlbum:[image CGImage] orientation:ALAssetOrientationUp completionBlock:^(NSURL *assetURL, NSError *error) {
+
+        [weakSelf.assetLibrary addAssetsGroupAlbumWithName:@&quot;Www&quot; resultBlock:^(ALAssetsGroup *group) {
+            if (group) {
+                //如果group不为空 表明新创建一个 ALAssetsGroup
+
+
+                [weakSelf.assetLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+                    //添加资源
+                    [group addAsset:asset];
+                } failureBlock:^(NSError *error) {
+                    NSLog(@&quot;查询照片失败&quot;);
+                }];
+            }else {
+                //如果group为空 表明系统内已经有一个 ALAssetsGroup
+                [weakSelf.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+                    NSString *groupName = [group valueForProperty:ALAssetsGroupPropertyName];
+                    if ([groupName isEqualToString:@&quot;Www&quot;]) {
+                        [weakSelf.assetLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+                            [group addAsset:asset];
+                        } failureBlock:^(NSError *error) {
+                            NSLog(@&quot;查询照片失败&quot;);
+                        }];
+                    }
+                } failureBlock:^(NSError *error) {
+
+                }];
+            }
+            NSLog(@&quot;%@&quot;,group);
+        } failureBlock:^(NSError *error) {
+
+        }];   
+    }];
+}
+</code></pre><h3 id="AssetsLibrary-的坑点"><a href="#AssetsLibrary-的坑点" class="headerlink" title="AssetsLibrary 的坑点"></a>AssetsLibrary 的坑点</h3><p>作为一套老框架，AssetsLibrary 不但有坑，而且还不少，除了上面提到的资源异步拉取时需要注意的事项，下面几点也是值得注意的：</p>
 <h5 id="1-AssetsLibrary-实例需要强引用"><a href="#1-AssetsLibrary-实例需要强引用" class="headerlink" title="1. AssetsLibrary 实例需要强引用"></a>1. AssetsLibrary 实例需要强引用</h5><p>实例一个 AssetsLibrary 后，如上面所示，我们可以通过一系列枚举方法获取到需要的相册和资源，并把其储存到数组中，方便用于展示。但是，当我们把这些获取到的相册和资源储存到数组时，实际上只是在数组中储存了这些相册和资源在 AssetsLibrary 中的引用（指针），因而无论把相册和资源储存数组后如何利用这些数据，都首先需要确保 AssetsLibrary 没有被 ARC 释放，否则把数据从数组中取出来时，会发现对应的引用数据已经丢失（参见下图）。这一点较为容易被忽略，因此建议在使用 AssetsLibrary 的 viewController 中，把 AssetsLibrary 作为一个强持有的 property 或私有变量，避免在枚举出 AssetsLibrary 中所需要的数据后，AssetsLibrary 就被 ARC 释放了。</p>
 <p>如下图：实例化一个 AssetsLibrary 的局部变量，枚举所有相册并储存在名为 _albumsArray 的数组中，展示相册时再次查看数组，发现 ALAssetsGroup 中的数据已经丢失。</p>
 <div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/ALAssetsLibrary_release.png?raw=true"><br></div>
@@ -374,7 +428,7 @@ _currentIndex = 0;
 <h5 id="2-AssetsLibrary-遵循写入优先原则"><a href="#2-AssetsLibrary-遵循写入优先原则" class="headerlink" title="2. AssetsLibrary 遵循写入优先原则"></a>2. AssetsLibrary 遵循写入优先原则</h5><p>写入优先也就是說，在利用 AssetsLibrary 读取资源的过程中，有任何其它的进程（不一定是同一个 App）在保存资源时，就会收到 ALAssetsLibraryChangedNotification，让用户自行中断读取操作。最常见的就是读取 fullResolutionImage 时，用进程在写入，由于读取 fullResolutionImage 耗时较长，很容易就会 exception。</p>
 <h5 id="开启-Photo-Stream-容易导致-exception"><a href="#开启-Photo-Stream-容易导致-exception" class="headerlink" title="开启 Photo Stream 容易导致 exception"></a>开启 Photo Stream 容易导致 exception</h5><p>本质上，这跟上面的 AssetsLibrary 遵循写入优先原则是同一个问题。如果用户开启了共享照片流（Photo Stream），共享照片流会以 mstreamd 的方式“偷偷”执行，当有人把相片写入 Camera Roll 时，它就会自动保存到 Photo Stream Album 中，如果用户刚好在读取，那就跟上面说的一样产生 exception 了。由于共享照片流是用户决定是否要开启的，所以开发者无法改变，但是可以通过下面的接口在需要保护的时刻关闭监听共享照片流产生的频繁通知信息。</p>
 <pre><code>[ALAssetsLibrary disableSharedPhotoStreamsSupport];
-</code></pre><p>下一篇博客会介绍iOS8以后出现的框架 <strong>PhotoKit</strong> 敬请关注!</p>
+</code></pre><p>下一篇博客会介绍iOS8以后出现的框架 <a href="http://www.guiyongdong.com/2016/11/02/iOS%E7%85%A7%E7%89%87%E5%BC%80%E5%8F%91%E4%B9%8BPhotoKit%EF%BC%88%E4%B8%8A%EF%BC%89/"><strong>PhotoKit</strong></a> 敬请关注!</p>
 
             
         </div>
