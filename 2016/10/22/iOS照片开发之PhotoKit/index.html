@@ -21,7 +21,7 @@
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。它是iOS8之后出现的框架，在使用框架之前需要导入#import &amp;lt;Photos/Photos.h&amp;gt;库">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/PhotoKit_1.png?raw=true">
-<meta property="og:updated_time" content="2016-11-07T08:33:20.000Z">
+<meta property="og:updated_time" content="2016-11-08T02:32:26.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS照片开发之PhotoKit">
 <meta name="twitter:description" content="PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。它是iOS8之后出现的框架，在使用框架之前需要导入#import &amp;lt;Photos/Photos.h&amp;gt;库">
@@ -340,7 +340,7 @@ BOOL downloadFinined = ![[info objectForKey:PHImageCancelledKey] boolValue] &amp
 <li>预先加载图像，如像预览大图这类情景中，用户同时只会看到一张大图，因此在观看某一张图片时，预先请求其邻近两张图片，对于加快 UI 的响应很有帮助。</li>
 </ul>
 <p>经过实际测试，如果请求的是缩略图（即尺寸小的图像），那么即使请求的图像很多，仍不会产生任何不流畅的表现，但如果请求的是高清大图，那么即使只是同时请求几张图都会产生不流畅的状况。如上面提到过的那样，这些的状况的出现很可能是请求大图时由图片元数据产生图像，以及剪裁图像的过程耗时较多。所以按实际表现来看，即使 PhotoKit 有自己的缓存策略，仍然很难避免这部分耗时。因此上面几点优化获取图像的策略重点也是放在减少图像大小，异步请求以及做缓存几个方面。</p>
-<p>由于AssetsLibrary在ios9以后被苹果废弃，所有我基于AssetsLibrary和PhotoKit封装了一个简单的相册获取库，能够快速的获取相册、图片。欢迎大家访问。<a href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/PhotoManager.gif?raw=true" target="_blank" rel="external">传送门:PhotoDemo</a></p>
+<p>由于AssetsLibrary在ios9以后被苹果废弃，所有我基于AssetsLibrary和PhotoKit封装了一个简单的相册获取库，能够快速的获取相册、图片。欢迎大家访问。<a href="https://github.com/guiyongdong/PhotoManager" target="_blank" rel="external">传送门:GGPhotoManager</a></p>
 
             
         </div>
