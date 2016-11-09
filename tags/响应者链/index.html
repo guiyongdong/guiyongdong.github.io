@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>归档 - 贵大头的博客</title>
+    <title>标签: 响应者链 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -17,7 +17,7 @@
     <meta name="description" content="快乐的程序猿">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="贵大头的博客">
-<meta property="og:url" content="http://www.guiyongdong.com/archives/page/2/index.html">
+<meta property="og:url" content="http://www.guiyongdong.com/tags/响应者链/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="快乐的程序猿">
 <meta name="twitter:card" content="summary">
@@ -179,21 +179,21 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/09/08/RunLoop总结/">
-                            RunLoop总结
+                        <a class="link-unstyled" href="/2016/11/09/iOS触摸事件处理详解/">
+                            iOS触摸事件处理详解
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-08T17:05:52+08:00">
+    <time itemprop="datePublished" datetime="2016-11-09T14:39:39+08:00">
 	
-		    9月 08, 2016
+		    11月 09, 2016
     	
     </time>
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/categories/RunLoop/">RunLoop</a>
+    <a class="category-link" href="/categories/杂类/">杂类</a>
 
 
     
@@ -202,181 +202,10 @@
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p>
+                    <p>当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。</p>
+<p>当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，该触摸时事件对象是一系列触摸信息包装集。例如手势事件，该事件是一个动态的变量它取决于你使用了什么框架以及你感兴趣的手势事件类型。</p>
                     
-                        <a href="/2016/09/08/RunLoop总结/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/06/关于RAC的一些资料/">
-                            关于RAC的一些资料
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T14:47:26+08:00">
-	
-		    9月 06, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p>
-                    
-                        <a href="/2016/09/06/关于RAC的一些资料/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/06/ReactiveCocoa和RXSwift速查表/">
-                            ReactiveCocoa和RXSwift速查表
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T09:55:48+08:00">
-	
-		    9月 06, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p>
-                    
-                        <a href="/2016/09/06/ReactiveCocoa和RXSwift速查表/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/08/12/深入ReactiveCocoa/">
-                            深入ReactiveCocoa
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-08-12T17:37:47+08:00">
-	
-		    8月 12, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p>
-                    
-                        <a href="/2016/08/12/深入ReactiveCocoa/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/08/11/初识ReactiveCocoa/">
-                            初识ReactiveCocoa
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-08-11T17:44:58+08:00">
-	
-		    8月 11, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p>
-                    
-                        <a href="/2016/08/11/初识ReactiveCocoa/" class="postShorten-excerpt_link link">
+                        <a href="/2016/11/09/iOS触摸事件处理详解/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         
@@ -390,22 +219,12 @@
     <div class="pagination-bar">
     <ul class="pagination">
         
-        <li class="pagination-prev">
-            
-                <a class="btn btn--default btn--small" href="/ ">
-            
-                <i class="fa fa-angle-left text-base icon-mr"></i>
-                    <span>上一页</span>
-            </a>
-        </li>
         
-        
-        <li class="pagination-number">第 2 页 共 2 页</li>
+        <li class="pagination-number">第 1 页 共 1 页</li>
     </ul>
 </div>
 
 </section>
-
 
 
                 <footer id="footer" class="main-content-wrap">

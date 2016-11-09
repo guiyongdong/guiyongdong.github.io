@@ -1,0 +1,992 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="贵大头的博客">
+    <title>iOS触摸事件处理详解 - 贵大头的博客</title>
+    <meta name="author" content="贵永冬">
+<link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+    <meta name="description" content="当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。
+当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="iOS触摸事件处理详解">
+<meta property="og:url" content="http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/index.html">
+<meta property="og:site_name" content="贵大头的博客">
+<meta property="og:description" content="当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。
+当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responder1.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responser2.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responser3.png?raw=true">
+<meta property="og:updated_time" content="2016-11-09T11:08:27.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS触摸事件处理详解">
+<meta name="twitter:description" content="当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。
+当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，">
+<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responder1.png?raw=true">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-yrst5vo1nxaxbp2g3v9na2wg1lixlpr3ghbjdvskeixmu79deycecx3rh4bt.min.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">贵大头的博客</a>
+    </div>
+    
+        
+            <a  class="header-right-icon "
+                href="#about">
+        
+        
+            <i class="fa fa-lg fa-header.jpg"></i>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a href="/#about">
+                    <img class="sidebar-profile-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">贵永冬</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>快乐的程序猿，目前主要研究方向是iOS和ReactNative</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="https://github.com/guiyongdong" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            iOS触摸事件处理详解
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2016-11-09T14:39:39+08:00">
+	
+		    11月 09, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/杂类/">杂类</a>
+
+
+    
+</div>
+
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。</p>
+<p>当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，该触摸时事件对象是一系列触摸信息包装集。例如手势事件，该事件是一个动态的变量它取决于你使用了什么框架以及你感兴趣的手势事件类型。</p>
+<a id="more"></a>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>iOS 事件分为三大类</p>
+<ul>
+<li>触摸事件</li>
+<li>加速器事件</li>
+<li>远程控制事件</li>
+</ul>
+<p>这篇博客主要讲解触摸事件<br>触摸事件是我们平时遇到最多的事件，例如单击、长按、滑动等等。当用户点击按钮，到按钮处理回调。整个过程是如何发生，需要什么样的原则，这些都是问题。为了使系统能更加鲜明符合用户的操作逻辑，iOS系统将事件相应过程拆分成两部分：</p>
+<ol>
+<li>寻找响应链；</li>
+<li>事件响应，先将事件通过某种规则来分发，找到处理事件的控件，其次是将事件传递分发，响应。</li>
+</ol>
+<h3 id="触摸事件"><a href="#触摸事件" class="headerlink" title="触摸事件"></a>触摸事件</h3><p><strong>UIEvent</strong><br>iOS将触摸事件定义为第一个手指开始触摸屏幕到最后一个手指离开屏幕定义为一个触摸事件。用类UIEvent表示。</p>
+<p><strong>UITouch</strong><br>一个手指第一次点击屏，会形成一个UITouch对象，直到离开销毁。表示触碰。UITouch对象能表明了当前手指触碰的屏幕位置，状态。状态分为开始触碰、移动、离开。</p>
+<p>根据定义，UIEvent实际包括了多个UITouch对象。有几个手指触碰，就会有几个UITouch对象。<br>定义代码如下:</p>
+<pre><code>@interface UIEvent : NSObject
+@property(nonatomic,readonly) UIEventType     type NS_AVAILABLE_IOS(3_0);
+@property(nonatomic,readonly) UIEventSubtype  subtype NS_AVAILABLE_IOS(3_0);
+@property(nonatomic,readonly) NSTimeInterval  timestamp;
+#if UIKIT_DEFINE_AS_PROPERTIES
+//UITouch SET
+@property(nonatomic, readonly, nullable) NSSet &lt;UITouch *&gt; *allTouches;
+//省略部分代码
+@end
+</code></pre><p>UIEventType表明了事件类型，UIEvent表示了三大事件。allTouches是该事件的所有UITouch对象的集合。</p>
+<pre><code>//UITouch
+@interface UITouch : NSObject
+@property(nonatomic,readonly) NSTimeInterval      timestamp;
+@property(nonatomic,readonly) UITouchPhase        phase;
+@property(nonatomic,readonly) NSUInteger          tapCount;   // touch down within a certain point within a certain amount of time
+@property(nonatomic,readonly) UITouchType         type NS_AVAILABLE_IOS(9_0);
+
+@property(ullable,nonatomic,readonly,strong) UIWindow                        *window;
+@property(nullable,nonatomic,readonly,strong) UIView                          *view;
+@property(nullable,nonatomic,readonly,copy)   NSArray &lt;UIGestureRecognizer *&gt; *gestureRecognizers 
+NS_AVAILABLE_IOS(3_2);
+//省略部分代码
+@end
+//Touch 状态枚举
+typedef NS_ENUM(NSInteger, UITouchPhase) {
+    UITouchPhaseBegan,             // whenever a finger touches the surface.
+    UITouchPhaseMoved,             // whenever a finger moves on the surface.
+    UITouchPhaseStationary,        // whenever a finger is touching the surface but hasn&apos;t moved since the previous event.
+    UITouchPhaseEnded,             // whenever a finger leaves the surface.
+    UITouchPhaseCancelled,         // whenever a touch doesn&apos;t end but we need to stop tracking (e.g. putting device to face)
+};
+</code></pre><p>UITouch中phase表明了手指移动的状态，包括1.开始点击；2.移动；3.保持; 4.离开；5.被取消（手指没有离开屏幕，但是系统不再跟踪它了）</p>
+<p>综上，UIEvent就是一组UITouch。每当该组中任何一个UITouch对象的phase发生变化，系统都会产生一条TouchMessage。也就是说每次用户手指的移动和变化，UITouch都会形成状态改变，系统变回会形成Touch message进行传递和派发。那么 一次触摸事件是由一组UITouch对象状态变化引起的一组Touch message的转发和派送。那么事件派发的原则是什么？</p>
+<h3 id="响应者"><a href="#响应者" class="headerlink" title="响应者"></a>响应者</h3><p>我们先来了解一下什么是响应者。<br>只要继承了UIResponder的对象就可以作为事件的响应者，下面看一下 UIResponder及其子类的继承关系：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responder1.png?raw=true"><br></div>
+
+<p>平常开发中所使用到的控件例如：UIButton,UiView,UIViController,APPDelegate，UIApplication等都能响应事件。与用户交互的控件就是第一响应者，它将作为响应者链的开始，事件首先发送给第一响应者，然后再依次传递下去，直到该事件被某个响应者处理。</p>
+<h3 id="响应链"><a href="#响应链" class="headerlink" title="响应链"></a>响应链</h3><p>响应链是“事件派发”的原则和规定，那么响应链是什么？顾名思义事件链是一个链条，详细的定义如下:</p>
+<ul>
+<li>每条链是一个 链表状结构，整个是一棵树</li>
+<li>链表的每一个node是一个 UIResponser对象</li>
+</ul>
+<p>UIResponser,响应链中的响应者，用来接收和处理事件的类，先抛开iOS中的具体传递细节，系统发送UIEvent的Touch message给UIResponser类。UIResponser提供了一下几个函数来做事件处理</p>
+<pre><code>//触摸事件
+- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+- (void)touchesMoved:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+- (void)touchesEnded:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+- (void)touchesCancelled:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+- (void)touchesEstimatedPropertiesUpdated:(NSSet&lt;UITouch *&gt; *)touches NS_AVAILABLE_IOS(9_1);
+
+//物理按钮，遥控器上面的按钮在按压状态等状态下的回调
+- (void)pressesBegan:(NSSet&lt;UIPress *&gt; *)presses withEvent:(nullable UIPressesEvent *)event NS_AVAILABLE_IOS(9_0);
+- (void)pressesChanged:(NSSet&lt;UIPress *&gt; *)presses withEvent:(nullable UIPressesEvent *)event NS_AVAILABLE_IOS(9_0);
+- (void)pressesEnded:(NSSet&lt;UIPress *&gt; *)presses withEvent:(nullable UIPressesEvent *)event NS_AVAILABLE_IOS(9_0);
+- (void)pressesCancelled:(NSSet&lt;UIPress *&gt; *)presses withEvent:(nullable UIPressesEvent *)event NS_AVAILABLE_IOS(9_0);
+
+//设备的陀螺仪和加速传感器使用
+- (void)motionBegan:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event NS_AVAILABLE_IOS(3_0);
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event NS_AVAILABLE_IOS(3_0);
+- (void)motionCancelled:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event NS_AVAILABLE_IOS(3_0);
+</code></pre><p>UIResponser包括了各种Touch message 的处理，比如开始，移动，停止等等。</p>
+<p>回到响应链，响应链是由UIResponser组成的，那么是按照哪种规则形成的。</p>
+<ol>
+<li>程序启动<ul>
+<li>UIApplication会生成一个单例，并会关联一个APPDelegate。APPDelegate作为整个响应链的根建立起来，而UIApplication会将自己与这个单例链接，即UIApplication的nextResponser(下一个事件处理者)为APPDelegate。</li>
+</ul>
+</li>
+<li>创建UIWindow<ul>
+<li>程序启动后，任何的UIWindow被创建时，UIWindow内部都会把nextResponser设置为UIApplication单例。</li>
+<li>UIWindow初始化rootViewController, rootViewController的nextResponser会设置为UIWindow</li>
+</ul>
+</li>
+<li>UIViewController初始化<ul>
+<li>loadView, VC的view的nextResponser会被设置为VC。</li>
+</ul>
+</li>
+<li>addSubView<ul>
+<li>addSubView操作过程中，如果子subView不是VC的View,那么subView的nextResponser会被设置为superView。如果是VC的View,那就是 subView -&gt; subView.VC -&gt;superView</li>
+<li>如果在中途，subView.VC被释放，就会变成subView.nextResponser = superView</li>
+</ul>
+</li>
+</ol>
+<p>最终形成类似这样一张图</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responser2.png?raw=true"><br></div>
+
+<p>其中应该是由箭头的，箭头的方向是朝上，也就是subView指向superView.</p>
+<h3 id="事件传递"><a href="#事件传递" class="headerlink" title="事件传递"></a>事件传递</h3><p>有了响应网为基础，事件的传递就比较简单，只需要选择其中一条响应链，但是选择那一条响应链来传递呢？为了弄清真个过程，我们先来查看一下从触摸硬件事件转化为UIEvent消息。</p>
+<ol>
+<li>首先用户触摸屏幕，系统的硬件进程会获取到这个点击事件，将事件简单处理封装后存到系统中，由于硬件检测进程和当前运行的APP是两个进程，所以进程两者之间传递事件用的是端口通信。硬件检测进程会将事件放入到APP检测的那个端口。</li>
+<li>其次，APP启动主线程RunLoop会注册一个端口事件，来检测触摸事件的发生。当时事件到达，系统会唤起当前APP主线程的Runloop。唤起原因就是端口触摸事件，主线程会分析这个事件。</li>
+<li>最后，系统判断该次触摸是否导致了一个新的事件, 也就是说是否是第一个手指开始触碰，如果是，系统会先从响应网中 寻找响应链。如果不是，说明该事件是当前正在进行中的事件产生的一个Touch message， 也就是说已经有保存好的响应链。</li>
+</ol>
+<p>如果是新事件，系统会寻找响应链，为了符合用户的操作习惯，系统会根据用户的点击位置，在当前的整个APP的显示层级中寻找。过程如下：</p>
+<ol>
+<li>将所有的显示在屏幕上的 “合格的”UIWindow对象 按照层级结构从上到下排列成一个数组。</li>
+<li>从第一个UIWindow对象开始，先判断UIWindow是否合格，其次判断 点击位置在不在这个Window内，如果不在 ，返回nil, 就换下一个UIWindow;如果在的话，并且UIWindow没有subView就返回自己，整个过程结束。如果UIWindow有subViews,就从后往前遍历整个subViews,做和UIWindow类似的事情，直到找到一个View。如果没有找到到就不做传递。</li>
+<li><strong>合格的UIWindow，UIView。意思是控件被允许接受事件。符合三个条件：1.不能被隐藏；2.alpha值大于0.01(不是backgroundColor为clearColor)；3.isUserInteractionEnabled为YES，打开状态。一般UILabel,UIImageView纯显示的控件默认是关闭状态，也就是不处理事件。</strong></li>
+</ol>
+<p>显示控件有了两个方法来做上面这件事，就是常说的hitTest</p>
+<pre><code> // 先判断点是否在View内部，然后遍历subViews
+- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event;  
+//判断点是否在这个View内部
+- (BOOL)pointInside:(CGPoint)point withEvent:(nullable UIEvent *)event;   // default returns YES if point is in bounds
+</code></pre><p>整个过程的系统实现大致如下</p>
+<pre><code>- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {
+  //判断是否合格
+    if (!self.hidden &amp;&amp; self.alpha &gt; 0.01 &amp;&amp; self.isUserInteractionEnabled) {
+        //判断点击位置是否在自己区域内部
+        if ([self pointInside: point withEvent:event]) {
+            UIView *attachedView;
+            for (int i = self.subviews.count - 1; i &gt;= 0; i--) {
+                UIView *view  = self.subviews[i];
+                //对子view进行hitTest
+                attachedView =  [view hitTest:point withEvent:event];
+                if (attachedView)
+                    break;
+            }
+            if (attachedView)  {
+                return attachedView;
+            } else {
+                return self;
+            }
+        }
+    }
+    return nil;
+}
+</code></pre><h4 id="技巧"><a href="#技巧" class="headerlink" title="技巧"></a>技巧</h4><p>以上可知默认情况下，用户点击哪个View,系统就会在寻找过程中返回哪个view，但是我们可以重载上面两个方法做如下事情：</p>
+<ul>
+<li>将控件外部点规整到控件内部。 例如控件较小，点击位置在控件边缘外部，可以重载- (BOOL)pointInside:(CGPoint)point withEvent:(nullable UIEvent *)event; 将外部的点也判断为内部点，这样hitTest就会遍历自己。</li>
+<li>重载HitTest更改默认行为。 有时候点击subView的某些特殊位置需要superView处理，我们可以在superView的hitTest，返回superView。这样superView变成首部响应者</li>
+</ul>
+<blockquote>
+<p>hitTest的逻辑代码中会把隐藏，透明（alpha&lt;0.01,不是backgroundColor为clearColor），不交互的view滤过，但不代表hitTest不会被调用，我们可以重载hitTest去让 已经隐藏、透明、不交互的view响应事件。不过最正规的方法是打开控件交互属性。</p>
+</blockquote>
+<p>以上过程返回的View被称作hitTestView，顺着hitTestView的nextResponser,可以形成一个链，即响应链。 最后指向appDelegate. 并且返回hitTestView之后，系统会持有hitTestView。事件不结束，这个hitTestView不会发生变化，即使用户点击之后将手指移动到其他控件上面，该点击都会绑定开始的hitTestView。当所有手指离开屏幕，事件结束。再次点击，事件重新开始。以上过程再来一次。</p>
+<h3 id="事件响应"><a href="#事件响应" class="headerlink" title="事件响应"></a>事件响应</h3><p>形成响应链之后，UIWindow会把事件目标锁定为hitTestView(响应链头的控件)，当手指状态发生变化， 会不停的发送UITouch Message 给这个hitTestView。 下面这几个方法会被调用。<br>然后控件的以下方法会陆续被调用</p>
+<pre><code>//点击刚开始，回调这个方法
+- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+//点击之后移动，回调这个方法
+- (void)touchesMoved:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+//手指移开，点击结束
+- (void)touchesEnded:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+//点击过程中，事件被手势识别，会回调这个方法，关于手势后面会讲解
+- (void)touchesCancelled:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+- (void)touchesEstimatedPropertiesUpdated:(NSSet&lt;UITouch *&gt; *)touches NS_AVAILABLE_IOS(9_1);
+</code></pre><h4 id="技巧-1"><a href="#技巧-1" class="headerlink" title="技巧"></a>技巧</h4><p>由于系统只会把事件发送给 hitTestView，如果你想让hitTestView之后的其他响应者处理该Touch Mesage ，需要自己实现以上几个方法做派发，例如</p>
+<pre><code>- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event
+{
+    //do someThiing
+  [self.nextResponser touchesBegan: touches withEvent:event];
+}
+</code></pre><p>事件转发可以做很多事情。大家可以尽可能的想象</p>
+<h3 id="手势处理"><a href="#手势处理" class="headerlink" title="手势处理"></a>手势处理</h3><p>以上看来所有的事情都很平稳，无非就是寻找响应链，传递事件等等。但是接下来大家可能需要蒙圈。先来道题目</p>
+<ul>
+<li>AView 有子view BView，AView上面有一个<strong>单击手势</strong>，这个时候点击BView。默认情况下，Bview的四个Touch方法中，那些方法会被调用？</li>
+</ul>
+<p>可能很多人会说没有任何影响，基本都会调用，答案是整个过程会调用这两个方法。</p>
+<pre><code>- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+- (void)touchesCancelled:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
+</code></pre><p>touchEnd不会被调用。<br>为什么？因为有手势的存在，我们先看一下手势。</p>
+<h4 id="手势"><a href="#手势" class="headerlink" title="手势"></a>手势</h4><p>手势是苹果为处理常用的用户交互所推出了一个优先级更高的处理技术。为了让用户完成对多种控件的基本操作，苹果实现了以下几个手势</p>
+<blockquote>
+<p><strong>UITapGestureRecognizer</strong><br><strong>UIPinchGestureRecognizer</strong><br><strong>UIRotationGestureRecognizer</strong><br><strong>UISwipeGestureRecognizer</strong><br><strong>UIPanGestureRecognizer</strong><br><strong>UIScreenEdgePanGestureRecognizer</strong><br><strong>UILongPressGestureRecognizer</strong></p>
+</blockquote>
+<p>上面包括点击，长按，旋转，滑动等等手势。这样开发者就可以随便将其关联到某个控件上完成交互。<br>先抛开刚才的问题，先看单纯的手势如何识别用户操作。</p>
+<p>系统会将用户触摸屏幕的点事件 发送给手势，手势会根据具体的点击位置和序列，判断是否是某种特定行为。具体的判断方法如下</p>
+<pre><code>- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
+- (void)touchesMoved:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
+- (void)touchesCancelled:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
+</code></pre><p>和UIResponser一样，手势也有这几个方法，点击的每个阶段手势都会响应不同的方法，手势会在以上四个方法中去对手势的State做更改，手势的State表明当前手势是识别还是失败等等。比如单击手势会在touchesBegan 时记录点击位置，然后在touchesEnded判断点击次数、时间、是否移动过，最后得出是否识别该手势。这几个方法一般在自定义手势里面使用。</p>
+<h4 id="手势状态"><a href="#手势状态" class="headerlink" title="手势状态"></a>手势状态</h4><pre><code>typedef NS_ENUM(NSInteger, UIGestureRecognizerState) {
+    //未知状态
+    UIGestureRecognizerStatePossible,   // the recognizer has not yet recognized its gesture, but may be evaluating touch events. this is the default state
+    //首次识别状态，对于连续手势，例如长按，有这种状态
+    UIGestureRecognizerStateBegan,      // the recognizer has received touches recognized as the gesture. the action method will be called at the next turn of the run loop
+    //再次识别，当手连续手势识别之后，再次受到touch事件
+    UIGestureRecognizerStateChanged,    // the recognizer has received touches recognized as a change to the gesture. the action method will be called at the next turn of the run loop
+    //识别完成，受到touchend 消息之后
+    UIGestureRecognizerStateEnded,      // the recognizer has received touches recognized as the end of the gesture. the action method will be called at the next turn of the run loop and the recognizer will be reset to UIGestureRecognizerStatePossible
+    //取消识别
+    UIGestureRecognizerStateCancelled,  // the recognizer has received touches resulting in the cancellation of the gesture. the action method will be called at the next turn of the run loop. the recognizer will be reset to UIGestureRecognizerStatePossible
+    //识别失败
+    UIGestureRecognizerStateFailed,     // the recognizer has received a touch sequence that can not be recognized as the gesture. the action method will not be called and the recognizer will be reset to UIGestureRecognizerStatePossible
+    // Discrete Gestures – gesture recognizers that recognize a discrete event but do not report changes (for example, a tap) do not transition through the Began and Changed states and can not fail or be cancelled
+    //识别状态，与识别结束一个意思
+    UIGestureRecognizerStateRecognized = UIGestureRecognizerStateEnded // the recognizer has received touches recognized as the gesture. the action method will be called at the next turn of the run loop and the recognizer will be reset to UIGestureRecognizerStatePossible
+};
+</code></pre><p>手势的状态有以上几种,我们来看手势的整个迁移过程，先明确几个信息</p>
+<ol>
+<li>手势的状态迁移只有在它们收到Touch message的时候，才能做状态变化处理代码。</li>
+<li>手势分为连续状态手势和不连续状态手势。连续手势有长按，慢滑等。不连续手势有单击，双击等等。</li>
+<li>当用户没有点击屏幕，所有手势都处于Possiable状态。</li>
+</ol>
+<p>当用户点击屏幕，手势会收到Touch Began Message， 手势的touchBegan方法会被调用。手势开始记录点击位置和时间。仍处于Possiable状态。如果用户按住不放，间隔超过一定时间，单击手势会变化为失败状态，并在下个一runloop变为possiable。如果时间大于长按手势设定时间，长按手势就会变化为Began状态，当用户移动手指，长按手势的touch move方法被调用，长按手势将自己状态设置为Change，并且也会回调处理方法。最后手指离开，系统调用长按手势touchEnd方法，手势状态回归为Recognized状态。</p>
+<h4 id="手势混合处理"><a href="#手势混合处理" class="headerlink" title="手势混合处理"></a>手势混合处理</h4><p>如果一个View上既有单击，又有双击，用户点击该view两次， 默认情况下，单击被处理，双击不管用。因为默认情况下，一旦事件被某个手势处理，第二个手势会识别失败 幸运的是苹果提供了方法让我们修改这种默认行为，具体的方法如下</p>
+<pre><code>@protocol UIGestureRecognizerDelegate &lt;NSObject&gt;
+@optional
+// called when a gesture recognizer attempts to transition out of UIGestureRecognizerStatePossible. returning NO causes it to transition to UIGestureRecognizerStateFailed
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer;
+
+// called when the recognition of one of gestureRecognizer or otherGestureRecognizer would be blocked by the other
+// return YES to allow both to recognize simultaneously. the default implementation returns NO (by default no two gestures can be recognized simultaneously)
+//
+// note: returning YES is guaranteed to allow simultaneous recognition. returning NO is not guaranteed to prevent simultaneous recognition, as the other gesture&apos;s delegate may return YES
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
+
+// called once per attempt to recognize, so failure requirements can be determined lazily and may be set up between recognizers across view hierarchies
+// return YES to set up a dynamic failure requirement between gestureRecognizer and otherGestureRecognizer
+//
+// note: returning YES is guaranteed to set up the failure requirement. returning NO does not guarantee that there will not be a failure requirement as the other gesture&apos;s counterpart delegate or subclass methods may return YES
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer NS_AVAILABLE_IOS(7_0);
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer NS_AVAILABLE_IOS(7_0);
+
+// called before touchesBegan:withEvent: is called on the gesture recognizer for a new touch. return NO to prevent the gesture recognizer from seeing this touch
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch;
+
+// called before pressesBegan:withEvent: is called on the gesture recognizer for a new press. return NO to prevent the gesture recognizer from seeing this press
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceivePress:(UIPress *)press;
+
+@end
+</code></pre><p>上面是手势的代理方法，你可以实现手势的这几个代理方法，更改默认行为。</p>
+<ul>
+<li>(BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer;<br>手势已经应分析出该事件可以响应，再对自己的状态进行更改之前，会询问代理的这个方法是否允许更改。默认为YES，如果你实现并设置为NO,那么手势会变为失败状态，这个可以用在手势只识别View的某几个区域的相应。</li>
+<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer )otherGestureRecognizer;<br>当两个手势都对该事件进行识别，但只有一个能响应，另外一个会失败。比如一个View上绑定两个单击事件。为了让两个手势都响应，我们可以实现此方法，让两个手势都响应。</li>
+<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer )otherGestureRecognizer NS_AVAILABLE_IOS(7_0);</li>
+<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer )otherGestureRecognizer NS_AVAILABLE_IOS(7_0);<br>这两个方法是iOS 7引入的，目的是让两个手势之间增加依赖，比如单击和双击，如果需要单击在双击失败的情况下识别，那么可以实现这两个方法。</li>
+<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldReceiveTouch:(UITouch )touch;</li>
+<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldReceivePress:(UIPress )press;<br>这两个方法是判断手势在新的Touch和Press Began阶段是否关注该UITouch和UIPress对象，默认为YES，如果设置为NO,手势不会关注该Touch的任何状态变化。</li>
+</ul>
+<h4 id="手势与事件响应"><a href="#手势与事件响应" class="headerlink" title="手势与事件响应"></a>手势与事件响应</h4><p>回到我们上面问过的问题，BView只有touchBegan， touchesCancelle 的原因是什么？答案在于整个触摸事件全过程</p>
+<ol>
+<li>系统会通过hitTest的方法寻找响应链，完成之后会形成下图模型。</li>
+</ol>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responser3.png?raw=true"><br></div>
+
+<blockquote>
+<p>图中最右边是响应链，中间是关联在相应链在视图上的手势</p>
+</blockquote>
+<ol>
+<li>有了模型之后就会发生图上的三个步骤</li>
+</ol>
+<p>第一步：系统会将所有的 Touch message 优先发送给 关联在响应链上的全部手势。手势根据Touch序列消息和手势基本规则更改自己的状态（有的可能失败，有的可能识别等等）。如果没有一个手势对Touch message 进行拦截（拦截:系统不会将Touch message 发送给响应链顶部响应者)，系统会进入第二步</p>
+<p>第二步：系统将Touch message 发送给响应链 顶部的 视图控件，顶部视图控件这个时候就会调用Touch相关的四个方法中的某一个。之后进入自定义Touch message转发</p>
+<p>第三步：自定义Touch message转发可以继承UIResponser的四个Touch函数做转发。</p>
+<p>解释一下第一步中说的拦截，手势会表明是否拦截该Touch Message,主要由下面三个属性控制。</p>
+<p>再回到那道题目，如果我们想hitTestView的toucheEnd函数依然能得到调用，怎么办？其实UIGestureRecognizer有三个属性</p>
+<pre><code>@property(nonatomic) BOOL cancelsTouchesInView;       // default is YES. causes touchesCancelled:withEvent: or pressesCancelled:withEvent: to be sent to the view for all touches or presses recognized as part of this gesture immediately before the action method is called.
+@property(nonatomic) BOOL delaysTouchesBegan;         // default is NO.  causes all touch or press events to be delivered to the target view only after this gesture has failed recognition. set to YES to prevent views from processing any touches or presses that may be recognized as part of this gesture
+@property(nonatomic) BOOL delaysTouchesEnded;         // default is YES. causes touchesEnded or pressesEnded events to be delivered to the target view only after this gesture has failed recognition. this ensures that a touch or press that is part of the gesture can be cancelled if the gesture is recognized
+</code></pre><ul>
+<li>cancelsTouchesInView<br>  默认为YES,表明当手势识别了该事件，系统会将Touch cancel消息发送给hitTestView ，并调用hitTestView的TouchCancel。设置为NO，不会再收到TouchCancel</li>
+<li>delaysTouchesBegan<br>  默认为NO, 表明无论什么情况下，不会拦截Touch began消息。如果设置为YES，只要有一个手势不识别失败，都不会发送Touch began到响应链的第一响应者。</li>
+<li>delaysTouchesEnded<br>  默认为NO, 和delaysTouchesBegan类似，不过它是用来控制TouchEnd message的拦截</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>iOS整个事件处理的过程就是这样，系统为完成整个交互做了很多东西，核心点如下：</p>
+<ul>
+<li>事件分发过程分为：1.寻找响应链；2.事件消息分发</li>
+<li>响应网是事件响应的基础，响应链是事件响应的具体路径。</li>
+<li>事件消息分发优先发送给手势集合，手势内部会做冲突处理，过滤消息。不被过滤的消息会传递给响应链对象。</li>
+</ul>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/响应者链/">响应者链</a>
+
+            </div>
+        
+        <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/10/22/iOS照片开发之PhotoKit/" data-tooltip="iOS照片开发之PhotoKit">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/&amp;title=iOS触摸事件处理详解">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+        
+            
+                <div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=“iOS触摸事件处理详解" data-title="iOS触摸事件处理详解" data-url="http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"guiyongdong"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2016 贵永冬. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/10/22/iOS照片开发之PhotoKit/" data-tooltip="iOS照片开发之PhotoKit">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/&amp;title=iOS触摸事件处理详解">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <ul class="share-options">
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/">
+                <i class="fa fa-weibo"></i><span>微博</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/">
+                <i class="fa fa-qq"></i><span>QQ</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i><span>微信</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+
+
+
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">贵永冬</h4>
+        
+            <div id="about-card-bio"><p>快乐的程序猿，目前主要研究方向是iOS和ReactNative</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>河南酒运达电子商务有限公司</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker"></i>
+                <br/>
+                河南 郑州
+            </div>
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    autofocus="autofocus"/>
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/11/初识ReactiveCocoa/">
+                            <h3 class="media-heading">初识ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月11日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/12/深入ReactiveCocoa/">
+                            <h3 class="media-heading">深入ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月12日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                            <h3 class="media-heading">ReactiveCocoa和RXSwift速查表</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/关于RAC的一些资料/">
+                            <h3 class="media-heading">关于RAC的一些资料</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+                            <h3 class="media-heading">RunLoop总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/13/聊一聊GCD的那些事/">
+                            <h3 class="media-heading">聊一聊GCD的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月13日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/">
+                            <h3 class="media-heading">聊一聊NSOperation的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/">
+                            <h3 class="media-heading">iOS动画篇之UIView动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                            <h3 class="media-heading">iOS动画篇之CoreAnimation动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
+                            <h3 class="media-heading">iOS动画之CATransition动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 15 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-rt08quwts7iav5x0cfd2ym0gb5qkd1lvrsmwrakxtkhefmaaes4ywkmnjnwf.min.js"></script>
+<!--SCRIPTS END-->
+
+    
+        <script type="text/javascript">
+            var duoshuoQuery = {short_name:'guiyongdong'};
+            (function() {
+                var ds = document.createElement('script');
+                ds.type = 'text/javascript';ds.async = true;
+                ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+                ds.charset = 'UTF-8';
+                (document.getElementsByTagName('head')[0]
+                || document.getElementsByTagName('body')[0]).appendChild(ds);
+            })();
+        </script>
+    
+
+
+
+    </body>
+</html>
