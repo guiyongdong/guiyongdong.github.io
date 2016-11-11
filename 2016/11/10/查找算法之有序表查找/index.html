@@ -25,7 +25,12 @@
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/3.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/4.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/5.png?raw=true">
-<meta property="og:updated_time" content="2016-11-10T11:38:58.000Z">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/6.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/7.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/8.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/9.png?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/10.png?raw=true">
+<meta property="og:updated_time" content="2016-11-11T08:34:22.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="查找算法之有序表查找">
 <meta name="twitter:description" content="折半查找法折半查找(Binary Search)技术，又称为二分查找。它的前提是线性表中的记录必须是关键码有序(通常从小到大)，线性表必须采用顺序存储。折半查找的基本思想是：在有序表中，取中间记录作为比较对象，若给定值与中间记录的关键字相等，则查找成功；若给定值小于中间记录的关键字，则在中间记录的左半区继续查找；若给定值大于中间记录的关键字，则在中间记录的右半区继续查找，不断重复上述过程，直到查找">
@@ -245,6 +250,70 @@
 
 <p>由<strong>“具有n个结点的完全二叉树的深度为「log2n」+1”</strong> 可以看出，查找关键字的最坏为「log2n」+1  最好情况为1 所以折半算法的时间复杂度为0(logn),它显然好于顺序查找的O(n)时间复杂度了。</p>
 <p>不过由于折半查找的前提条件是需要有序顺序存储，对于静态查找表，一次排序后不再变化，这样的算法已经比较好了，但对于需要频繁执行插入或删除操作的数据集来说，维护有序的排序会带来不小的工作量，那就不建议使用。</p>
+<h3 id="插值查找"><a href="#插值查找" class="headerlink" title="插值查找"></a>插值查找</h3><p>如果对折半查找的第8句代码进行改造，得到如下公式mid=(low+high)/2=low+(high-low)/2;<br>也就是mid等于最低下标low加上最高下标high与low的差的一半，再进一步的改进得到如下方案：mid=low+(high-low)*(key-targetArray[low])/(targetArray[high]-targetArray[low]);<br>这就是插值查找的算法。</p>
+<p><strong>插值查找（Interpolation Search）是根据要查找的关键字key与查找表中最大最小记录的关键字做比较后的查找方法，其核心就在于插值的计算公式：<br>（key-targetArray[low]）/(targetArray[high]-targetArray[low])。</strong> 应该说从时间复杂度来看，它也是O(logn),但对于表长较大，而关键字分布又比较均匀的查找表来说，插值查找算法的平均性能比折半查找要好的多，反之，数组中如果分布类似{0,1,2,2000,200,…..,999998,999999}这种极端不均匀的数据，用插值查找未必是最合适的选择。</p>
+<h3 id="斐波那契查找"><a href="#斐波那契查找" class="headerlink" title="斐波那契查找"></a>斐波那契查找</h3><p><strong>斐波那契查找(Fibonacci Search)，它是利用了黄金分割原理来实现的。斐波那契数列：</strong></p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/6.png?raw=true"><br></div>
+
+<p>上代码：</p>
+<pre><code>/* 斐波那契查找 */
+1  - (NSInteger)fibonacci_Search:(NSMutableArray *)targetArray key:(NSInteger)key {
+2     NSArray *F = @[@0,@1,@1,@2,@3,@5,@8,@13,@21,@34];  /*斐波那契数列*/
+3     NSInteger low,high,mid,i,k,n;
+4     low = 0;  /*定义最低下标为记录首位*/
+5     high = targetArray.count-1;  /*定义最高下标为记录末位*/
+6     k = 0;
+7     n = targetArray.count-1;
+8     while (n &gt; [F[k] integerValue] - 1) {
+9         k++;
+10    }
+11    for (i = n; i&lt;[F[k] integerValue]-1; i++) {  /*将不满的数值补齐*/
+12        targetArray[i]=targetArray[n];
+13    }
+
+14    while (low &lt;= high) {
+15        mid = low + [F[k-1] integerValue] - 1;  /*计算当前分割的下标*/
+16        if (key &lt; [targetArray[mid] integerValue]) {  /*若查找记录小于当前分割记录*/
+17            high = mid - 1;   /*最高下标调整到分割下标mid-1处*/
+18            k = k - 1;  /*斐波那契数列下标减一位*/
+19        }else if (key &gt; [targetArray[mid] integerValue]) {  /*若查找记录大于当前分割记录*/
+20            low = mid + 1;   /*最低下标调整到分割下标mid+1处*/
+21            k = k - 2;   /*斐波那契数列下标减两位*/
+22        }else {
+23            if (mid &lt;= n) {
+24                return mid;  /*若相等则说明mid即为查找到的位置*/
+25            }else {
+26                return n;   /*若mid&gt;n说明是补全数值，返回n*/
+27            }
+28        }
+29    }
+30    return -1;
+31  }
+</code></pre><p>1.程序开始运行，参数targetArray={0,1,16,24,35,47,59,62,73,88,99},要查找的关键字key=59。注意此时我们已经有了事先计算好的全局变量数值F的具体数据，它的斐波那契数列，F={0,1,1,2,3,5,8,13,21,…..}。</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/7.png?raw=true"><br></div>
+
+<p>2.第6~10行是计算当前的n处于斐波那契数列的位置，现在n=10，F[6]&lt;n&lt;F[7],所以计算得出k=7。</p>
+<p>3.第11~13行，由于k=7,计算时是以F[7]=13<br>为基础，而a中最大的仅是a[10],后面的a[11],a[12]均为赋值，这不能构成有序数列，因此将它们都赋值为最大的数值值，所以此时a[11]=a[12]=a[10]=99。</p>
+<p>4.第14~29行查找正式开始。</p>
+<p>5.第15行，mid=0+F[7-1]-1=7,也就是说，我们第一个要对比的数值是从下标为7开始的。</p>
+<p>6.由于此时key=59 而targetArray[7]=62,因此执行第17~18行，得到high=6,k=6,</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/8.png?raw=true"><br></div>
+
+<p>7.再次循环，mid=0+F[6-1]-1=4。此时targetArray[4]=35&lt;key,因此执行20~21行，得到low=4+1=5,k=6-2=4,注意此时k下调2个单位。</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/9.png?raw=true"><br></div>
+
+<p>8.再次循环，mid=5+F[4-1]-1=6。此时targetArray[6]=59=key,因此执行第24行，返回mid=6。程序结束运行。</p>
+<p>斐波那契查找算法的核心在于：</p>
+<ol>
+<li>当key=targetArray[mid]时，查找就成功；</li>
+<li>当key=targetArray[mid]时,新范围是第low个到第mid-1个，此时范围个数为F[k-1]-1个；</li>
+<li>当key&gt;targetArray[mid]时，新范围是第m+1个到第high个，此时范围个数为F[k-2]-1个。</li>
+</ol>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/10.png?raw=true"><br></div>
+
+<p>也就是说，如果要查找的记录在右侧，则左侧的数据都不用再判断了，不断反复进行下去，对处于当中的大部分数据，其工作效率要高一些，所以尽管斐波那契查找的时间复杂度也为O(logn)，但就平均性能来说，斐波那契查找要优于折半查找。可惜如果最坏情况，比如这里key=1,那么始终都处于左侧长半区在查找，则查找效率要低折半查找。</p>
+<p>还有比较关键的一点，折半查找是进行加法与除法运算(mid=(low+high)/2)，插值查找进行复杂的四则运算(mid=low+(high-low)*(key-targetArray[high]-targetArray[low])),而斐波那契查找只是最简单加减法运算(mid=low+F[k-1]-1),在海量数据的查找过程中，这种细微的差别可能会影响最终的查找效率。</p>
+<p>以上三种有序表的查找本质上是分割点的选择不同，各有各的优劣，实际开发中，可以根据数据的特点综合考虑再做出选择。</p>
 
             
         </div>
