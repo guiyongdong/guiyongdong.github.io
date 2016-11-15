@@ -28,7 +28,7 @@
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/AssetsLibrary_photo.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/AssetsLibrary_cons1.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/photo/ALAssetsLibrary_release.png?raw=true">
-<meta property="og:updated_time" content="2016-11-03T10:24:30.000Z">
+<meta property="og:updated_time" content="2016-11-15T06:33:52.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS照片开发之AssetsLibrary">
 <meta name="twitter:description" content="上一篇博客讲解了UIImagePickerController的使用，这篇博客简单说一下AssetsLibrary。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架。这里主要说AssetsLibrary。
@@ -455,7 +455,7 @@ _currentIndex = 0;
 <h5 id="2-AssetsLibrary-遵循写入优先原则"><a href="#2-AssetsLibrary-遵循写入优先原则" class="headerlink" title="2. AssetsLibrary 遵循写入优先原则"></a>2. AssetsLibrary 遵循写入优先原则</h5><p>写入优先也就是說，在利用 AssetsLibrary 读取资源的过程中，有任何其它的进程（不一定是同一个 App）在保存资源时，就会收到 ALAssetsLibraryChangedNotification，让用户自行中断读取操作。最常见的就是读取 fullResolutionImage 时，用进程在写入，由于读取 fullResolutionImage 耗时较长，很容易就会 exception。</p>
 <h5 id="开启-Photo-Stream-容易导致-exception"><a href="#开启-Photo-Stream-容易导致-exception" class="headerlink" title="开启 Photo Stream 容易导致 exception"></a>开启 Photo Stream 容易导致 exception</h5><p>本质上，这跟上面的 AssetsLibrary 遵循写入优先原则是同一个问题。如果用户开启了共享照片流（Photo Stream），共享照片流会以 mstreamd 的方式“偷偷”执行，当有人把相片写入 Camera Roll 时，它就会自动保存到 Photo Stream Album 中，如果用户刚好在读取，那就跟上面说的一样产生 exception 了。由于共享照片流是用户决定是否要开启的，所以开发者无法改变，但是可以通过下面的接口在需要保护的时刻关闭监听共享照片流产生的频繁通知信息。</p>
 <pre><code>[ALAssetsLibrary disableSharedPhotoStreamsSupport];
-</code></pre><p>下一篇博客会介绍iOS8以后出现的框架 <a href="http://www.guiyongdong.com/2016/11/02/iOS%E7%85%A7%E7%89%87%E5%BC%80%E5%8F%91%E4%B9%8BPhotoKit%EF%BC%88%E4%B8%8A%EF%BC%89/"><strong>PhotoKit</strong></a> 敬请关注!</p>
+</code></pre><p>下一篇博客会介绍iOS8以后出现的框架 <a href="http://www.guiyongdong.com/2016/10/22/iOS%E7%85%A7%E7%89%87%E5%BC%80%E5%8F%91%E4%B9%8BPhotoKit/"><strong>PhotoKit</strong></a> 敬请关注!</p>
 
             
         </div>
