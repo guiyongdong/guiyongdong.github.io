@@ -199,7 +199,7 @@
                 <section class="postShorten-group main-content-wrap">
     
     
-    <article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
         <div class="postShorten-wrap">
             
             <div class="postShorten-header">
@@ -227,17 +227,46 @@
 
             </div>
             
-                <div class="postShorten-content" itemprop="articleBody">
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <h3 id="十大排序算法比较图"><a href="#十大排序算法比较图" class="headerlink" title="十大排序算法比较图"></a>十大排序算法比较图</h3><hr>
+<div align=center><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/15.png?raw=true" /><br></div>
+
+
+
+<h3 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h3><hr>
+<p><strong>算法描述</strong><br><strong>冒冒泡排序是一种简单的排序算法。它重复地走访过要排序的数列，一次比较两个元素，如果它们的顺序错误就把它们交换过来。走访数列的工作是重复地进行直到没有再需要交换，也就是说该数列已经排序完成。这个算法的名字由来是因为越小的元素会经由交换慢慢“浮”到数列的顶端。</strong></p>
+<p><strong>算法实现</strong></p>
+<ol>
+<li>比较相邻的元素。如果第一个比第二个大，就交换它们两个；</li>
+<li>对每一对相邻元素作同样的工作，从开始第一对到结尾的最后一对，这样在最后的元素应该会是最大的数；</li>
+<li>针对所有的元素重复以上的步骤，除了最后一个；</li>
+<li>重复步骤1~3，直到排序完成。</li>
+</ol>
+<p><strong>代码：</strong></p>
+<pre><code>- (void)sortBubble:(NSMutableArray *)targetArray {
+    BOOL flag = true;  //flag 用来做标记
+    NSInteger num = 0; //标记总比较次数
+    for (NSInteger i = 0; i &lt; targetArray.count&amp;&amp;flag; i++) { //若flag为true  则退出循环
+        flag = false;   //初始是false
+        for (NSInteger j = 0; j &lt; targetArray.count - i-1; j++) {
+            num++;
+            NSLog(@&quot;---%ld&quot;,num);
+            if ([targetArray[j] integerValue] &gt; [targetArray[j+1] integerValue]) {
+                id temp = targetArray[j];
+                targetArray[j] = targetArray[j+1];
+                targetArray[j+1] = temp;
+                flag = true;
+            }
+        }
+    }
+    NSLog(@&quot;%@&quot;,targetArray);
+}
+</code></pre>
                     
-                    
+                        <a href="/2016/11/15/排序算法总结/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
                         
-                    
-                    
-                        <p>
-                            <a href="/2016/11/15/排序算法总结/#post-footer" class="postShorten-excerpt_link link">
-                                阅读全文
-                            </a>
-                        </p>
                     
                 </div>
             

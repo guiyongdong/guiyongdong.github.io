@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2016-11-15T04:02:27.000Z</updated>
+  <updated>2016-11-16T08:26:44.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -20,9 +20,363 @@
     <link href="http://www.guiyongdong.com/2016/11/15/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/"/>
     <id>http://www.guiyongdong.com/2016/11/15/排序算法总结/</id>
     <published>2016-11-15T03:40:05.000Z</published>
-    <updated>2016-11-15T04:02:27.000Z</updated>
+    <updated>2016-11-16T08:26:44.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="十大排序算法比较图"><a href="#十大排序算法比较图" class="headerlink" title="十大排序算法比较图"></a>十大排序算法比较图</h3><hr>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/15.png?raw=true"><br></div>
+
+
+
+<h3 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h3><hr>
+<p><strong>算法描述</strong><br><strong>冒冒泡排序是一种简单的排序算法。它重复地走访过要排序的数列，一次比较两个元素，如果它们的顺序错误就把它们交换过来。走访数列的工作是重复地进行直到没有再需要交换，也就是说该数列已经排序完成。这个算法的名字由来是因为越小的元素会经由交换慢慢“浮”到数列的顶端。</strong></p>
+<p><strong>算法实现</strong></p>
+<ol>
+<li>比较相邻的元素。如果第一个比第二个大，就交换它们两个；</li>
+<li>对每一对相邻元素作同样的工作，从开始第一对到结尾的最后一对，这样在最后的元素应该会是最大的数；</li>
+<li>针对所有的元素重复以上的步骤，除了最后一个；</li>
+<li>重复步骤1~3，直到排序完成。</li>
+</ol>
+<p><strong>代码：</strong></p>
+<pre><code>- (void)sortBubble:(NSMutableArray *)targetArray {
+    BOOL flag = true;  //flag 用来做标记
+    NSInteger num = 0; //标记总比较次数
+    for (NSInteger i = 0; i &lt; targetArray.count&amp;&amp;flag; i++) { //若flag为true  则退出循环
+        flag = false;   //初始是false
+        for (NSInteger j = 0; j &lt; targetArray.count - i-1; j++) {
+            num++;
+            NSLog(@&quot;---%ld&quot;,num);
+            if ([targetArray[j] integerValue] &gt; [targetArray[j+1] integerValue]) {
+                id temp = targetArray[j];
+                targetArray[j] = targetArray[j+1];
+                targetArray[j+1] = temp;
+                flag = true;
+            }
+        }
+    }
+    NSLog(@&quot;%@&quot;,targetArray);
+}
+</code></pre><a id="more"></a>
+<p><strong>时间复杂度:</strong><br>分析一下它的时间复杂度。当最好的情况，也就是要排序的表本身就是有序的，那么我们比较次数，根据上面的代码可以推断就是n-1次的比较。没有数据交换，时间复杂度是O(n)。当最坏的情况，即待排序表是逆序的情况，此时需要比较:1+2+3+…+(n-1)=n(n-1)/2次，因此总的时间复杂度是O(n<sup>2</sup>)。</p>
+<p><strong>动图演示：</strong></p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/16.gif?raw=true"><br></div>
+
+
+
+<h3 id="简单选择排序"><a href="#简单选择排序" class="headerlink" title="简单选择排序"></a>简单选择排序</h3><hr>
+<p><strong>算法描述</strong><br><strong>选择排序(Selection-sort)是一种简单直观的排序算法。它的工作原理：首先在未排序序列中找到最小（大）元素，存放到排序序列的起始位置，然后，再从剩余未排序元素中继续寻找最小（大）元素，然后放到已排序序列的末尾。以此类推，直到所有元素均排序完毕。</strong></p>
+<p><strong>算法实现</strong></p>
+<ol>
+<li>初始状态：无序区为R[1..n]，有序区为空；</li>
+<li>第i趟排序(i=1,2,3…n-1)开始时，当前有序区和无序区分别为R[1..i-1]和R(i..n）。该趟排序从当前无序区中-选出关键字最小的记录 R[k]，将它与无序区的第1个记录R交换，使R[1..i]和R[i+1..n)分别变为记录个数增加1个的新有序区和记录个数减少1个的新无序区；</li>
+<li>n-1趟结束，数组有序化了。</li>
+</ol>
+<p><strong>代码：</strong></p>
+<pre><code>- (void)sortSimple:(NSMutableArray *)targetArray {
+    NSInteger min;
+    for (NSInteger i = 0; i &lt; targetArray.count - 1; i++) {
+        min = i; //将当前下标定义为最小值下标
+        for (NSInteger j = i + 1; j &lt; targetArray.count; j++) {
+            if (targetArray[min] &gt; targetArray[j]) { //如果有小于当前最小值得关键字
+                min = j; //将此关键字的下标赋值给min
+            }
+        }
+        if (i != min) {  //如果min和i不相等  说明找到最小值，交换
+            id temp = targetArray[i];
+            targetArray[i] = targetArray[min];
+            targetArray[min] = temp;
+        }
+    }
+    NSLog(@&quot;%@&quot;,targetArray);
+}
+</code></pre><p><strong>时间复杂度：</strong><br>从简单选择排序的过程来看，它最大的特点就是交换移动数据次数相当少，这样也就节约了相应的时间。分析它的时间复杂度发现，无论最好最差的情况，其比较次数都是一样的多，第i趟排序需要进行n-i次关键字的比较，此时需要比较n-1+n-2+…+1=n(n-1)/2次。而对于交换次数而言，当最好的时候，交换为0次，最差的时候，也就是初始降序时2，交换次数为n-1次，基于最终的排序时间是比较与交换的次数总和，因此，总的时间复杂度依然为O(n<sup>2</sup>)。</p>
+<p><strong>动图演示：</strong></p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/17.gif?raw=true"><br></div>
+
+
+<p>应该说，尽管与冒泡排序的时间复杂度同为O(n<sup>2</sup>)，但简单选择排序的性能上还是要略优于冒泡排序。</p>
+<h3 id="插入排序"><a href="#插入排序" class="headerlink" title="插入排序"></a>插入排序</h3><hr>
+<p><strong>算法描述</strong></p>
+<p>插入排序（Insertion-Sort）的算法描述是一种简单直观的排序算法。它的工作原理是通过构建有序序列，对于未排序数据，在已排序序列中从后向前扫描，找到相应位置并插入。插入排序在实现上，通常采用in-place排序（即只需用到O(1)的额外空间的排序），因而在从后向前扫描过程中，需要反复把已排序元素逐步向后挪位，为最新元素提供插入空间。</p>
+<p><strong>算法实现</strong></p>
+<ol>
+<li>从第一个元素开始，该元素可以认为已经被排序；</li>
+<li>取出下一个元素，在已经排序的元素序列中从后向前扫描；</li>
+<li>如果该元素（已排序）大于新元素，将该元素移到下一位置；</li>
+<li>重复步骤3，直到找到已排序的元素小于或者等于新元素的位置；</li>
+<li>将新元素插入到该位置后；</li>
+<li>重复步骤2~5。</li>
+</ol>
+<p><strong>代码：</strong></p>
+<pre><code>- (void)sortInsertion:(NSMutableArray *)targetArray {
+    for (NSInteger i = 1; i &lt; targetArray.count; i++) {
+        id key = targetArray[i];
+        NSInteger j = i - 1;
+        while (j &gt;= 0 &amp;&amp; targetArray[j] &gt; key) {
+            targetArray[j+1] = targetArray[j];
+            j--;
+        }
+        targetArray[j+1]=key;
+    }
+    NSLog(@&quot;%@&quot;,targetArray);
+}
+</code></pre><p><strong>时间复杂度：</strong></p>
+<ul>
+<li>最佳情况：输入数组按升序排列。T(n) = O(n)</li>
+<li>最坏情况：输入数组按降序排列。T(n) = O(n2)</li>
+<li>平均情况：T(n) = O(n2)</li>
+</ul>
+<p><strong>动图演示：</strong></p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/18.gif?raw=true"><br></div>
+
+
+<h3 id="希尔排序"><a href="#希尔排序" class="headerlink" title="希尔排序"></a>希尔排序</h3><hr>
+<p><strong>算法描述</strong><br>希尔排序的核心在于间隔序列的设定。既可以提前设定好间隔序列，也可以动态的定义间隔序列。</p>
+<p><strong>算法实现</strong><br>先将整个待排序的记录序列分割成为若干子序列分别进行直接插入排序，具体算法描述：</p>
+<ol>
+<li>选择一个增量序列t1，t2，…，tk，其中ti&gt;tj，tk=1；</li>
+<li>按增量序列个数k，对序列进行k 趟排序；</li>
+<li>每趟排序，根据对应的增量ti，将待排序列分割成若干长度为m 的子序列，分别对各子表进行直接插入排序。仅增量因子为1 时，整个序列作为一个表来处理，表长度即为整个序列的长度。</li>
+</ol>
+<p><strong>代码：</strong></p>
+<pre><code>- (void)sortShell:(NSMutableArray *)targetArray {
+    NSInteger increment = targetArray.count;
+    NSInteger i,j;
+    do {
+        increment = increment/3+1;//增量序列
+        for (i=increment; i&lt;targetArray.count; i++) {
+            if ([targetArray[i] integerValue] &lt; [targetArray[i-increment] integerValue]) {
+                id temp = targetArray[i];
+                for (j=i-increment; j&gt;=0&amp;&amp;[targetArray[j] integerValue] &gt; [temp integerValue]; j-=increment) {
+                    targetArray[j+increment] = targetArray[j];
+                }
+                targetArray[j+increment] = temp;
+            }
+        }
+
+    } while (increment &gt; 1);
+
+    NSLog(@&quot;%@&quot;,targetArray);
+}
+</code></pre><p><strong>时间复杂度：</strong></p>
+<ul>
+<li>最佳情况：T(n) = O(nlog2 n)</li>
+<li>最坏情况：T(n) = O(nlog2 n)</li>
+<li>平均情况：T(n) =O(nlog n)</li>
+</ul>
+<p><strong>动图演示：</strong></p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/19.jpg?raw=true"><br></div>
+
+
+<h3 id="堆排序"><a href="#堆排序" class="headerlink" title="堆排序"></a>堆排序</h3><hr>
+<p><strong>算法描述</strong><br>堆排序（Heapsort）是指利用堆这种数据结构所设计的一种排序算法。堆积是一个近似完全二叉树的结构，并同时满足堆积的性质：即子结点的键值或索引总是小于（或者大于）它的父节点。</p>
+<p><strong>算法实现</strong></p>
+<ul>
+<li>将初始待排序关键字序列(R1,R2….Rn)构建成大顶堆，此堆为初始的无序区；</li>
+<li>将堆顶元素R[1]与最后一个元素R[n]交换，此时得到新的无序区(R1,R2,……Rn-1)和新的有序区(Rn),且满足R[1,2…n-1]&lt;=R[n]；</li>
+<li>由于交换后新的堆顶R[1]可能违反堆的性质，因此需要对当前无序区(R1,R2,……Rn-1)调整为新堆，然后再次将R[1]与无序区最后一个元素交换，得到新的无序区(R1,R2….Rn-2)和新的有序区(Rn-1,Rn)。不断重复此过程直到有序区的元素个数为n-1，则整个排序过程完成。</li>
+</ul>
+<p><strong>代码：</strong></p>
+<pre><code>- (void)sortHeap:(NSMutableArray *)targetArray {
+    NSInteger heapSize = targetArray.count;
+    id temp;
+    //建堆
+    for (NSInteger i = heapSize/2-1; i&gt;=0; i--) {
+        [self heapify:targetArray index:i lenght:heapSize];
+    }
+    //堆排序
+    for (NSInteger j = heapSize-1; j &gt;= 1; j--) {
+        temp = targetArray[0];
+        targetArray[0] = targetArray[j];
+        targetArray[j] = temp;
+        [self heapify:targetArray index:0 lenght:--heapSize];
+    }
+    NSLog(@&quot;%@&quot;,targetArray);
+}
+
+- (void)heapify:(NSMutableArray *)targetArray index:(NSInteger)x lenght:(NSInteger)len {
+    NSInteger l=2*x+1,r=2*x+2,largest=x;
+    id temp;
+    if (l &lt; len &amp;&amp; [targetArray[l] integerValue] &gt; [targetArray[largest] integerValue]) {
+        largest = l;
+    }
+    if (r &lt; len &amp;&amp; [targetArray[r] integerValue] &gt; [targetArray[largest] integerValue]) {
+        largest = r;
+    }
+    if (largest != x) {
+        temp = targetArray[x];
+        targetArray[x] = targetArray[largest];
+        targetArray[largest] = temp;
+        [self heapify:targetArray index:largest lenght:len];
+    }
+}
+</code></pre><p><strong>时间复杂度：</strong></p>
+<ul>
+<li>最佳情况：T(n) = O(nlogn)</li>
+<li>最差情况：T(n) = O(nlogn)</li>
+<li>平均情况：T(n) = O(nlogn)</li>
+</ul>
+<p><strong>动图演示：</strong></p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/20.gif?raw=true"><br></div>
+
+
+<h3 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h3><hr>
+<p><strong>算法描述</strong><br>归并排序是建立在归并操作上的一种有效的排序算法。该算法是采用分治法（Divide and Conquer）的一个非常典型的应用。归并排序是一种稳定的排序方法。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为2-路归并。</p>
+<p><strong>算法实现</strong></p>
+<ul>
+<li>把长度为n的输入序列分成两个长度为n/2的子序列；</li>
+<li>对这两个子序列分别采用归并排序；</li>
+<li>将两个排序好的子序列合并成一个最终的排序序列。</li>
+</ul>
+<p><strong>代码：</strong></p>
+<pre><code>- (NSMutableArray *)sortMerge:(NSMutableArray *)targetArray {
+    NSInteger len = targetArray.count;
+    NSInteger middle = len/2;
+    if (len &lt; 2) {
+        return targetArray;
+    }
+    NSMutableArray *leftArray = [NSMutableArray arrayWithArray:[targetArray subarrayWithRange:NSMakeRange(0, middle)]];
+    NSMutableArray *rightArray = [NSMutableArray arrayWithArray:[targetArray subarrayWithRange:NSMakeRange(middle, len-middle)]];
+    NSMutableArray *array = [self merge:[self sortMerge:leftArray] right:[self sortMerge:rightArray]];
+    NSLog(@&quot;%@&quot;,array);
+    return array;
+
+}
+
+- (NSMutableArray *)merge:(NSMutableArray *)leftArray right:(NSMutableArray *)rightArray {
+    NSMutableArray *resultArray = [NSMutableArray array];
+    while (leftArray.count &amp;&amp; rightArray.count) {
+        if ([leftArray[0] integerValue] &lt;= [rightArray[0] integerValue]) {
+            [resultArray addObject:leftArray[0]];
+            [leftArray removeObjectAtIndex:0];
+        }else {
+            [resultArray addObject:rightArray[0]];
+            [rightArray removeObjectAtIndex:0];
+        }
+    }
+    while (leftArray.count) {
+        [resultArray addObject:leftArray[0]];
+        [leftArray removeObjectAtIndex:0];
+    }
+    while (rightArray.count) {
+        [resultArray addObject:rightArray[0]];
+        [rightArray removeObjectAtIndex:0];
+    }
+
+    return resultArray;
+}
+</code></pre><p><strong>时间复杂度：</strong></p>
+<ul>
+<li>最佳情况：T(n) = O(n)</li>
+<li>最差情况：T(n) = O(nlogn)</li>
+<li>平均情况：T(n) = O(nlogn)</li>
+</ul>
+<p><strong>动图演示：</strong></p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/21.gif?raw=true"><br></div>
+
+
+<h3 id="快速排序"><a href="#快速排序" class="headerlink" title="快速排序"></a>快速排序</h3><hr>
+<p><strong>算法描述</strong><br>快速排序的基本思想：通过一趟排序将待排记录分隔成独立的两部分，其中一部分记录的关键字均比另一部分的关键字小，则可分别对这两部分记录继续进行排序，以达到整个序列有序。</p>
+<p><strong>算法实现</strong><br>快速排序使用分治法来把一个串（list）分为两个子串（sub-lists）。具体算法描述如下：</p>
+<ul>
+<li>从数列中挑出一个元素，称为 “基准”（pivot）；</li>
+<li>重新排序数列，所有元素比基准值小的摆放在基准前面，所有元素比基准值大的摆在基准的后面（相同的数可以到任一边）。在这个分区退出之后，该基准就处于数列的中间位置。这个称为分区（partition）操作；</li>
+<li>递归地（recursive）把小于基准值元素的子数列和大于基准值元素的子数列排序。</li>
+</ul>
+<p><strong>代码：</strong></p>
+<pre><code>- (void)sortQuick:(NSMutableArray *)targetArray {
+    [self quick:targetArray left:0 right:targetArray.count-1];
+    NSLog(@&quot;%@&quot;,targetArray);
+}
+
+- (void)quick:(NSMutableArray *)targetArray left:(NSInteger)left right:(NSInteger)right {
+    NSInteger pivot;
+    if (left &lt; right) {
+        pivot = [self partition:targetArray left:left right:right];
+        [self quick:targetArray left:left right:pivot-1];
+        [self quick:targetArray left:pivot+1 right:right];
+    }
+}
+
+- (NSInteger)partition:(NSMutableArray *)targetArray left:(NSInteger)left right:(NSInteger)right {
+    id pivotKey = targetArray[left];
+    id temp;
+    while (left &lt; right) {
+        while (left &lt; right &amp;&amp; [targetArray[right] integerValue] &gt; [pivotKey integerValue]) {
+            right--;
+        }
+        temp = targetArray[left];
+        targetArray[left] = targetArray[right];
+        targetArray[right] = temp;
+        while (left &lt; right &amp;&amp; [targetArray[left] integerValue] &lt;= [pivotKey integerValue]) {
+            left++;
+        }
+        temp = targetArray[left];
+        targetArray[left] = targetArray[right];
+        targetArray[right] = temp;
+    }
+
+    return left;
+}
+</code></pre><p><strong>时间复杂度：</strong></p>
+<ul>
+<li>最佳情况：T(n) = O(nlogn)</li>
+<li>最差情况：T(n) = O(n2)</li>
+<li>平均情况：T(n) = O(nlogn)</li>
+</ul>
+<p><strong>动图演示：</strong></p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/22.gif?raw=true"><br></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
     
     <summary type="html">
+    
+      &lt;h3 id=&quot;十大排序算法比较图&quot;&gt;&lt;a href=&quot;#十大排序算法比较图&quot; class=&quot;headerlink&quot; title=&quot;十大排序算法比较图&quot;&gt;&lt;/a&gt;十大排序算法比较图&lt;/h3&gt;&lt;hr&gt;
+&lt;div align=center&gt;&lt;br&gt;&lt;img src=&quot;https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/15.png?raw=true&quot; /&gt;&lt;br&gt;&lt;/div&gt;
+
+
+
+&lt;h3 id=&quot;冒泡排序&quot;&gt;&lt;a href=&quot;#冒泡排序&quot; class=&quot;headerlink&quot; title=&quot;冒泡排序&quot;&gt;&lt;/a&gt;冒泡排序&lt;/h3&gt;&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;算法描述&lt;/strong&gt;&lt;br&gt;&lt;strong&gt;冒冒泡排序是一种简单的排序算法。它重复地走访过要排序的数列，一次比较两个元素，如果它们的顺序错误就把它们交换过来。走访数列的工作是重复地进行直到没有再需要交换，也就是说该数列已经排序完成。这个算法的名字由来是因为越小的元素会经由交换慢慢“浮”到数列的顶端。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;算法实现&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;比较相邻的元素。如果第一个比第二个大，就交换它们两个；&lt;/li&gt;
+&lt;li&gt;对每一对相邻元素作同样的工作，从开始第一对到结尾的最后一对，这样在最后的元素应该会是最大的数；&lt;/li&gt;
+&lt;li&gt;针对所有的元素重复以上的步骤，除了最后一个；&lt;/li&gt;
+&lt;li&gt;重复步骤1~3，直到排序完成。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;代码：&lt;/strong&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;- (void)sortBubble:(NSMutableArray *)targetArray {
+    BOOL flag = true;  //flag 用来做标记
+    NSInteger num = 0; //标记总比较次数
+    for (NSInteger i = 0; i &amp;lt; targetArray.count&amp;amp;&amp;amp;flag; i++) { //若flag为true  则退出循环
+        flag = false;   //初始是false
+        for (NSInteger j = 0; j &amp;lt; targetArray.count - i-1; j++) {
+            num++;
+            NSLog(@&amp;quot;---%ld&amp;quot;,num);
+            if ([targetArray[j] integerValue] &amp;gt; [targetArray[j+1] integerValue]) {
+                id temp = targetArray[j];
+                targetArray[j] = targetArray[j+1];
+                targetArray[j+1] = temp;
+                flag = true;
+            }
+        }
+    }
+    NSLog(@&amp;quot;%@&amp;quot;,targetArray);
+}
+&lt;/code&gt;&lt;/pre&gt;
     
     </summary>
     
