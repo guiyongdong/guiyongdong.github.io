@@ -139,6 +139,18 @@
             
                 <li class="sidebar-button">
                     
+                        <a  class="sidebar-button-link open-algolia-search"
+                             href="#search"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
                         <a  class="sidebar-button-link "
                              href="#about"
                             
@@ -226,6 +238,10 @@
         
             <a class="tag tag--primary tag--small" href="#RunLoop-list" data-tag="runloop">
                 RunLoop
+            </a>
+        
+            <a class="tag tag--primary tag--small" href="#Runtime-list" data-tag="runtime">
+                Runtime
             </a>
         
             <a class="tag tag--primary tag--small" href="#UIBezierPath-list" data-tag="uibezierpath">
@@ -346,20 +362,20 @@
                         </li>
                     
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2016/08/12/深入ReactiveCocoa/">
-                                深入ReactiveCocoa
-                            </a>
-                            <span class="archive-post-date">
-                                 - 8月 12, 2016
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
                             <a class="archive-post-title" href="/2016/08/11/初识ReactiveCocoa/">
                                 初识ReactiveCocoa
                             </a>
                             <span class="archive-post-date">
                                  - 8月 11, 2016
+                            </span>
+                        </li>
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2016/08/12/深入ReactiveCocoa/">
+                                深入ReactiveCocoa
+                            </a>
+                            <span class="archive-post-date">
+                                 - 8月 12, 2016
                             </span>
                         </li>
                     
@@ -380,6 +396,26 @@
                             </a>
                             <span class="archive-post-date">
                                  - 9月 08, 2016
+                            </span>
+                        </li>
+                    
+                </ul>
+            </div>
+        
+            <div id="Runtime-list" class="archive box" data-tag="runtime">
+                <h4 class="archive-title">
+                    <a class="link-unstyled" href="/tags/Runtime">
+                        Runtime (1)
+                    </a>
+                </h4>
+                <ul class="archive-posts">
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2016/11/21/Objective-C-Runtime-运行时之一：类与对象/">
+                                Objective-C Runtime 运行时之一：类与对象
+                            </a>
+                            <span class="archive-post-date">
+                                 - 11月 21, 2016
                             </span>
                         </li>
                     
@@ -424,20 +460,20 @@
                         </li>
                     
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2016/10/22/iOS照片开发之PhotoKit/">
-                                iOS照片开发之PhotoKit
-                            </a>
-                            <span class="archive-post-date">
-                                 - 10月 22, 2016
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
                             <a class="archive-post-title" href="/2016/10/12/iOS照片开发之UIImagePickerController/">
                                 iOS照片开发之UIImagePickerController
                             </a>
                             <span class="archive-post-date">
                                  - 10月 12, 2016
+                            </span>
+                        </li>
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2016/10/22/iOS照片开发之PhotoKit/">
+                                iOS照片开发之PhotoKit
+                            </a>
+                            <span class="archive-post-date">
+                                 - 10月 22, 2016
                             </span>
                         </li>
                     
@@ -451,15 +487,6 @@
                     </a>
                 </h4>
                 <ul class="archive-posts">
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2016/09/22/iOS动画篇之CoreAnimation动画/">
-                                iOS动画篇之CoreAnimation动画
-                            </a>
-                            <span class="archive-post-date">
-                                 - 9月 22, 2016
-                            </span>
-                        </li>
                     
                         <li class="archive-post">
                             <a class="archive-post-title" href="/2016/09/22/iOS动画之CATransition动画/">
@@ -476,6 +503,15 @@
                             </a>
                             <span class="archive-post-date">
                                  - 9月 21, 2016
+                            </span>
+                        </li>
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                                iOS动画篇之CoreAnimation动画
+                            </a>
+                            <span class="archive-post-date">
+                                 - 9月 22, 2016
                             </span>
                         </li>
                     
@@ -563,19 +599,10 @@
             <div id="随想-list" class="archive box" data-tag="随想">
                 <h4 class="archive-title">
                     <a class="link-unstyled" href="/tags/随想">
-                        随想 (1)
+                        随想 (0)
                     </a>
                 </h4>
                 <ul class="archive-posts">
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2016/11/18/2016-11-18-随想/">
-                                2016-11-18-随想
-                            </a>
-                            <span class="archive-post-date">
-                                 - 11月 18, 2016
-                            </span>
-                        </li>
                     
                 </ul>
             </div>
@@ -858,6 +885,13 @@
 <!--SCRIPTS END-->
 
 
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('DWKE0MOOLY', '141d50cf933ece6dd635747973c4fe00');
+        var algoliaIndex = algoliaClient.initIndex('blog');
+    </script>
 
     </body>
 </html>

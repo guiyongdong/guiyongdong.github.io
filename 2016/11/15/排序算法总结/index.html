@@ -178,6 +178,18 @@
             
                 <li class="sidebar-button">
                     
+                        <a  class="sidebar-button-link open-algolia-search"
+                             href="#search"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
                         <a  class="sidebar-button-link "
                              href="#about"
                             
@@ -600,7 +612,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/18/2016-11-18-随想/"  data-tooltip="2016-11-18-随想">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/18/NSURLSession与NSURLConnection区别/"  data-tooltip="NSURLSession与NSURLConnection区别">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -704,7 +716,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/18/2016-11-18-随想/"  data-tooltip="2016-11-18-随想">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/18/NSURLSession与NSURLConnection区别/"  data-tooltip="NSURLSession与NSURLConnection区别">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -1085,6 +1097,13 @@
     
 
 
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('DWKE0MOOLY', '141d50cf933ece6dd635747973c4fe00');
+        var algoliaIndex = algoliaClient.initIndex('blog');
+    </script>
 
     </body>
 </html>

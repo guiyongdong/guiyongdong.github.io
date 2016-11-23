@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2016-11-19T11:46:25.000Z</updated>
+  <updated>2016-11-22T09:26:06.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,138 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Objective-C Runtime 运行时之一：类与对象</title>
+    <link href="http://www.guiyongdong.com/2016/11/21/Objective-C-Runtime-%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E4%B8%80%EF%BC%9A%E7%B1%BB%E4%B8%8E%E5%AF%B9%E8%B1%A1/"/>
+    <id>http://www.guiyongdong.com/2016/11/21/Objective-C-Runtime-运行时之一：类与对象/</id>
+    <published>2016-11-21T09:22:10.000Z</published>
+    <updated>2016-11-22T09:26:06.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Objective-C语言是一门动态语言，它将很多静态语言在编译和链接时期做的事放到了运行时来处理。这种动态语言的优势在于：我们写代码时更具有灵活性，如我们可以把消息转发给我们想要的对象，或者随意交换一个方法的实现等。</p>
+<p>这种特性意味着Objective-C不仅需要一个编译器，还需要一个运行时系统来执行编译的代码。对于Objective-C来说，这个运行时系统就像一个操作系统一样，让它所有的工作可以正常运行。这个运行时系统即<code>Objc Runtime</code>。<code>Objc Runtime</code>其实就是一个<code>Runtime</code>库，它基本上是用C和汇编写的，这个库使得C语言有了面向对象的能力。</p>
+<a id="more"></a>
+<p><code>Runtime</code>库主要做下面几件事：</p>
+<ul>
+<li>封装：在这个库中，对象可以用C语言中的结构体表示，而方法可以用C函数来实现，另外再加上了一些额外的特性。这些结构体和函数被Runtime函数封装后，我们就可以在程序运行时创建，检查，修改类、对象和它们的方法了。</li>
+<li>找出方法的最终执行代码：当程序执行<code>[object doSomething]</code>时，会向消息接收者(object)发送一条信息(doSomething)，Runtime会根据消息接收者是否能响应该消息而做出不同的反应。这将在后面详细介绍。</li>
+</ul>
+<p>Objective-C Runtime目前有两个版本：<code>Modern Runtime</code>和<code>Legacy Runtime</code>。<code>Modern Runtime</code>覆盖了64位的<code>Mac OS X Apps</code>还有<code>iOS AppS</code>,<code>Legacy Runtime</code>是早期用来给32位<code>Mac OS X Apps</code> 用的，也就是可以不用管就是了。</p>
+<p>在这一系列文章中，我们将介绍Runtime的基本工作原理，以及如何利用它让我们的程序变得更加灵活。CFRuntime的代码是开源的，我们可以在这里<a href="https://opensource.apple.com/tarballs/CF/" target="_blank" rel="external">https://opensource.apple.com/tarballs/CF/</a>下载整个CoreFoundation的源码来看。 在本文中，我们先来介绍一下类和对象，这是面向对象的基础，我们看看在Runtime中，类是如何体现的。</p>
+<h3 id="类与对象基础数据结构"><a href="#类与对象基础数据结构" class="headerlink" title="类与对象基础数据结构"></a>类与对象基础数据结构</h3><h5 id="Class"><a href="#Class" class="headerlink" title="Class"></a>Class</h5><p>Objective-C类是由Class类型来表示的，它实际上是指向objc_class结构体的指针。它的定义如下：</p>
+<pre><code>typedef struct objc_class *Class;
+</code></pre><p>查看<code>objc/runtime.h</code>中<code>objc_class</code>结构体的定义如下：</p>
+<pre><code>struct objc_class {
+    Class isa  OBJC_ISA_AVAILABILITY;
+#if !__OBJC2__
+    Class super_class                       OBJC2_UNAVAILABLE;    // 父类
+    const char *name                          OBJC2_UNAVAILABLE;    // 类名
+    long version                              OBJC2_UNAVAILABLE;    // 类的版本信息，默认为0
+    long info                                OBJC2_UNAVAILABLE;    // 类信息，供运行期使用的一些位标识
+    long instance_size                       OBJC2_UNAVAILABLE;    // 该类的实例变量大小
+    struct objc_ivar_list *ivars             OBJC2_UNAVAILABLE;    // 该类的成员变量链表
+    struct objc_method_list **methodLists     OBJC2_UNAVAILABLE;    // 方法定义的链表
+    struct objc_cache *cache                  OBJC2_UNAVAILABLE;    // 方法缓存
+    struct objc_protocol_list *protocols     OBJC2_UNAVAILABLE;    // 协议链表
+#endif
+} OBJC2_UNAVAILABLE;
+</code></pre><p>在这个定义中，下面几个字段是我们感兴趣的</p>
+<ol>
+<li><strong>isa</strong>: 需要注意的是在Objective-C中，所有的类自身也是一个对象，这个对象的Class里面也有一个isa指针，它指向metaClass(元类),我们会在后面介绍它。</li>
+<li><strong>super_class</strong>：指向该类的父类，如果该类已经是最顶层的跟类(如NSObject或者NSProxy)，则super_class为NULL。</li>
+<li><strong>cache</strong>: 用于缓存最近使用的方法。一个接收者对象接收到一个消息时，它会根据isa指针去查找能够响应这个消息的对象。在实际使用中，这个对象只有一部分方法是常用的，很多方法很少用或者根本用不上。这种情况下，如果每次消息来时，我们都是methodLists中遍历一遍，性能势必很差。这时，cache就派上用场了。在我们每次调用过一个方法后，这个方法就会被缓存到cache列表中，下次调用的时候runtime就会优先去cache中查找，如果cache没有，才到methodLists中查找方法。这样，对于那些经常用到的方法的调用，提高了调用的效率。</li>
+<li><strong>version</strong>：我们可以使用这个字段来提供类的版本信息。这对于对象的序列化非常有用，它可是让我们识别出不同类定义版本中实例变量布局的改变。</li>
+</ol>
+<p>针对cache,我们用下面例子来说明其执行过程：</p>
+<pre><code>NSArray *array = [[NSArray alloc] init];
+```    
+其流程是：
+1. `[NSArray alloc]`先被执行。因为NSArray没有`+alloc`方法，于是去父类NSObject去查找。
+2. 检测NSObject是否响应`+alloc`方法，发现响应，于是检测NSArray类，并根据其所需的内存空间大小开始分配内存空间，然后把`isa`指针指向NSArray类。同时，`+alloc`也被加进cache列表里面。
+3. 接着，执行`-init`方法，如果NSArray响应该方法，则直接将其加入`cache`；如果不响应，则去父类查找。
+4. 在后期的操作中，如果再以`[[NSArray alloc] init]`这种方式来创建数组，则会直接从cache中取出相应的方法，直接调用。
+### objc_object与id
+`objc_object`是表示一个类的实例的结构体，它的定义如下(`objc/objc.h`)：
+```objc
+struct objc_object {
+    Class isa  OBJC_ISA_AVAILABILITY;
+};
+typedef struct objc_object *id;
+</code></pre><p>可以看到，这个结构体只是一个指针，即指向其类的isa指针，这样，当我们向一个Objective-C对象发送消息时，运行时库会根据实例对象的isa指针找到这个实例对象所属的类。runtime库会在类的方法列表及父类的方法列表中去寻找与消息对应的selector指向的方法。找到后即运行这个方法。</p>
+<p>当创建一个特定类的实例对象时，分配的内存包含一个objc_object数据结构，然后是类的实例变量的数据。NSObject类的alloc和allocWithZone:方法使用函数class_createInstance来创建objc_object数据结构。</p>
+<p>另外还有我们常见的id，它是一个objc_object结构类型的指针。它的存在可以让我们实现类似于C++中泛型的一些操作。该类型的对象可以转换为任何一种对象，有点类似于C语言中void*指针类型的作用。</p>
+<h5 id="objc-cache"><a href="#objc-cache" class="headerlink" title="objc_cache"></a>objc_cache</h5><p>上面提到了objc_class结构体中的cache字段，它用于缓存调用过的方法。这个字段是一个指向objc_cache结构体的指针，其定义如下：</p>
+<pre><code>struct objc_cache {
+    unsigned int mask /* total = mask + 1 */                 OBJC2_UNAVAILABLE;
+    unsigned int occupied                                    OBJC2_UNAVAILABLE;
+    Method buckets[1]                                        OBJC2_UNAVAILABLE;
+};
+</code></pre><p>该结构体的字段描述如下：</p>
+<ol>
+<li><strong>mask</strong>：一个整数，指定分配的缓存buket的总数。在方法查找过程中，Objective-C runtime使用这个字段来确定开始线性查找数组的索引位置。指向方法selector的指针与该字段做一个AND位操作(index = (mask &amp; selector))。这可以作为一个简单的hash散列算法。</li>
+<li><strong>occupied</strong>：一个整数，指定实际占用的缓存bucket的总数。</li>
+<li><strong>buckets</strong>：指向Method数据结构指针的数组。这个数组可能包含不超过mask+1个元素。需要注意的是，指针可能为MULL，表示这个缓存buket没有被占用，另外被占用的bucket可能是不连续的。这个数组可能会随着时间而增长。</li>
+</ol>
+<h5 id="元类-Meta-Class"><a href="#元类-Meta-Class" class="headerlink" title="元类(Meta Class)"></a>元类(Meta Class)</h5><p>在上面我们提到，所有的类本身也是一个对象，我们可以向这个对象发送消息(即调用类方法)。如：</p>
+<pre><code>NSArray *array = [NSArray array];
+</code></pre><p>这个例子中，<code>+array</code>消息发送给了NSArray类，而这个NSArray也是一个对象。既然是对象，那么它也是一个objc_object指针，它包含一个指向其类的一个isa指针。那么这些就有一个问题了，这个isa指针指向哪里呢？为了调用<code>+array</code>方法，这个类的isa指针必须指向一个包含这些类方法的一个objc_class结构体。这就引出了meta-class的概念</p>
+<pre><code>meta-class是一个类对象的类。
+</code></pre><p>当我们向一个对象发送消息时，runtime会在这个对象所属的这个类的方法列表中查找方法，而向一个类发送消息时，会在这个类的meta-class的方法列表中查找。</p>
+<p>meta-class之所以重要，是因为它存储着一个类的所有方法。每个类都会有一个单独的meta-class，因为每个类的类方法基本不可能完全相同。</p>
+<p>再深入一下，meta-class也是一个类，也可以向它发送一个消息，那么它的isa又是指向什么呢？为了不让这种结构无限延伸下去，Objective-C的设计者让所有的meta-class的isa指向基类的meta-class，以此作为它们的所属类。即，任何NSObject继承体系下的meta-class都使用NSObject的meta-class作为自己的所属类，而基类的meta-class的isa指针是指向它自己。这样就形成了一个完美的闭环。</p>
+<p>通过上面的描述，再加上对objc_class结构中super_class指针的分析，我们就可以描绘出类及相应meta-class类的一个继承体系了，如下图所示:</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/class-diagram.jpg?raw=true" alt="image"><br></div>
+
+<p>对于NSObject继承体系来说，其实例方法对体系中的所有实例、类和meta-class都是有效的；而类方法对于体系内的所有类和meta-class都是有效的。</p>
+<p>讲了这么多，我们还是来写个例子吧：</p>
+<pre><code>void TestMetaClass(id self, SEL _cmd) {
+    NSLog(@&quot;This objcet is %p&quot;, self);
+    NSLog(@&quot;Class is %@, super class is %@&quot;, [self class], [self superclass]);
+    Class currentClass = [self class];
+    for (int i = 0; i &lt; 4; i++) {
+        NSLog(@&quot;Following the isa pointer %d times gives %p&quot;, i, currentClass);
+        currentClass = objc_getClass((__bridge void *)currentClass);
+    }
+    NSLog(@&quot;NSObject&apos;s class is %p&quot;, [NSObject class]);
+    NSLog(@&quot;NSObject&apos;s meta class is %p&quot;, objc_getClass((__bridge void *)[NSObject class]));
+}
+#pragma mark -
+@implementation Test
+- (void)ex_registerClassPair {
+    Class newClass = objc_allocateClassPair([NSError class], &quot;TestClass&quot;, 0);
+    class_addMethod(newClass, @selector(testMetaClass), (IMP)TestMetaClass, &quot;v@:&quot;);
+    objc_registerClassPair(newClass);
+    id instance = [[newClass alloc] initWithDomain:@&quot;some domain&quot; code:0 userInfo:nil];
+    [instance performSelector:@selector(testMetaClass)];
+}
+@end
+</code></pre><p>这个例子是在运行时创建了一个NSError的子类TestClass，然后为这个子类添加一个方法testMetaClass，这个方法的实现是TestMetaClass函数。</p>
+<p>运行后，打印结果是:</p>
+<pre><code>2014-10-20 22:57:07.352 mountain[1303:41490] This objcet is 0x7a6e22b0
+2014-10-20 22:57:07.353 mountain[1303:41490] Class is TestStringClass, super class is NSError
+2014-10-20 22:57:07.353 mountain[1303:41490] Following the isa pointer 0 times gives 0x7a6e21b0
+2014-10-20 22:57:07.353 mountain[1303:41490] Following the isa pointer 1 times gives 0x0
+2014-10-20 22:57:07.353 mountain[1303:41490] Following the isa pointer 2 times gives 0x0
+2014-10-20 22:57:07.353 mountain[1303:41490] Following the isa pointer 3 times gives 0x0
+2014-10-20 22:57:07.353 mountain[1303:41490] NSObject&apos;s class is 0xe10000
+2014-10-20 22:57:07.354 mountain[1303:41490] NSObject&apos;s meta class is 0x0
+</code></pre><p>我们在for循环中，我们通过objc_getClass来获取对象的isa,并将其打印出来，依此一直回溯到NSObject的meta-class。分析打印结果，可以看到最后指针指向的地址是0x0，即NSObject的meta-class的类地址。</p>
+<p>这里需要注意的是：我们在一个类对象调用class方法是无法获取meta-class,它只是返回一个类而已。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Objective-C语言是一门动态语言，它将很多静态语言在编译和链接时期做的事放到了运行时来处理。这种动态语言的优势在于：我们写代码时更具有灵活性，如我们可以把消息转发给我们想要的对象，或者随意交换一个方法的实现等。&lt;/p&gt;
+&lt;p&gt;这种特性意味着Objective-C不仅需要一个编译器，还需要一个运行时系统来执行编译的代码。对于Objective-C来说，这个运行时系统就像一个操作系统一样，让它所有的工作可以正常运行。这个运行时系统即&lt;code&gt;Objc Runtime&lt;/code&gt;。&lt;code&gt;Objc Runtime&lt;/code&gt;其实就是一个&lt;code&gt;Runtime&lt;/code&gt;库，它基本上是用C和汇编写的，这个库使得C语言有了面向对象的能力。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+    
+    
+      <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
+    
+  </entry>
   
   <entry>
     <title>NSURLSession与NSURLConnection区别</title>
@@ -507,33 +639,6 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend {
     
     
       <category term="NSURLSession" scheme="http://www.guiyongdong.com/tags/NSURLSession/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>2016-11-18-随想</title>
-    <link href="http://www.guiyongdong.com/2016/11/18/2016-11-18-%E9%9A%8F%E6%83%B3/"/>
-    <id>http://www.guiyongdong.com/2016/11/18/2016-11-18-随想/</id>
-    <published>2016-11-18T04:36:10.000Z</published>
-    <updated>2016-11-18T06:06:30.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>今天我生日，可是却不是那么的开心，最主要的还是工作上的事。今天上午还去了中移在线面试，可能是我太自信了，在面试前没有做任何的准备，可想而知，今天被虐了，瞬间打击了自己的自信心。造成这种情况很大一部分还是自己的基础没打牢固，怪谁呢？只能怪自己。</p>
-<p>说一下最近的经历吧。</p>
-<p>本身在大学就是学的计算机编程，还是那句话，当有充足的时间让我来学习的时候，我却在荒废。好了，等到毕业的时候才发现，自己什么都不会，什么都做不成。那时iOS大热，自己就决定投入到这个大热的行业中。来到了酒运达，当时来面试的时候，第一感觉就是公司人很多，这个公司不错。而且公司项目也很多，在这段时候我也很快的充实自己，并且还得到了领导的赏识，工资也提高了，感觉自己都快进入人生的小巅峰了。那个时候感觉自己特牛逼，iOS开发就这样，领导给的任务很快就做完，自我感觉非常良好。其实现在想想，到不如好好的把基础打实。怪自己吧。好景不长，今年7月份公司开始进入危险期，资金不足，裁了好多人，当时还庆幸自己没被裁。可到现在呢？已经将近4个月没有口粮了，哎，惨啊。</p>
-<p>趁现在时间充足，好好的恶补一下基础知识吧！</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;今天我生日，可是却不是那么的开心，最主要的还是工作上的事。今天上午还去了中移在线面试，可能是我太自信了，在面试前没有做任何的准备，可想而知，今天被虐了，瞬间打击了自己的自信心。造成这种情况很大一部分还是自己的基础没打牢固，怪谁呢？只能怪自己。&lt;/p&gt;
-&lt;p&gt;说一下最近的经历
-    
-    </summary>
-    
-      <category term="随想" scheme="http://www.guiyongdong.com/categories/%E9%9A%8F%E6%83%B3/"/>
-    
-    
-      <category term="随想" scheme="http://www.guiyongdong.com/tags/%E9%9A%8F%E6%83%B3/"/>
     
   </entry>
   
