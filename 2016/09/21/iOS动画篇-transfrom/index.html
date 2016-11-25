@@ -41,6 +41,7 @@
     
     <!--STYLES-->
     <link rel="stylesheet" href="/assets/css/style-yrst5vo1nxaxbp2g3v9na2wg1lixlpr3ghbjdvskeixmu79deycecx3rh4bt.min.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
     <!--STYLES END-->
     
     
@@ -298,7 +299,7 @@ completion :   完成后的block
 <ul>
 <li><strong>参数详情:</strong></li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">usingSpringWithDamping   :   0.0 ~ 1.0 阻尼比例，数值越小「弹簧」的振动效果越明显</div><div class="line">initialSpringVelocity    :   初始的速度，数值越大一开始移动越快</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">usingSpringWithDamping   :   0.0 ~ 1.0 阻尼比例，数值越小「弹簧」的振动效果越明显</div><div class="line">initialSpringVelocity    :   初始的速度，数值越大一开始移动越快</div></pre></td></tr></table></figure>
 <h3 id="3-过渡动画"><a href="#3-过渡动画" class="headerlink" title="3.过渡动画"></a>3.过渡动画</h3><p><code>+ (void)transitionWithView:(UIView *)view duration:(NSTimeInterval)duration options:(UIViewAnimationOptions)options animations:(void (^ __nullable)(void))animations completion:(void (^ __nullable)(BOOL finished))completion</code></p>
 <ul>
 <li><strong>参数详情:</strong></li>
@@ -325,7 +326,7 @@ options    :   转场动画的类型
 <ul>
 <li><strong>参数详情:</strong></li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">RelativeStartTime : 关键帧动画开始时间的比例值</div><div class="line">RelativeDuration  : 关键帧动画持续实践的比例值</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">RelativeStartTime : 关键帧动画开始时间的比例值</div><div class="line">RelativeDuration  : 关键帧动画持续实践的比例值</div></pre></td></tr></table></figure>
 <ul>
 <li><strong>用法示例:</strong></li>
 </ul>
@@ -350,7 +351,7 @@ options    :   转场动画的类型
 <ul>
 <li><strong>变换原理</strong></li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">struct CGAffineTransform &#123;</div><div class="line">   CGFloat a;</div><div class="line">   CGFloat b;</div><div class="line">   CGFloat c;</div><div class="line">   CGFloat d;</div><div class="line">   CGFloat tx;</div><div class="line">   CGFloat ty;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">struct CGAffineTransform &#123;</div><div class="line">   CGFloat a;</div><div class="line">   CGFloat b;</div><div class="line">   CGFloat c;</div><div class="line">   CGFloat d;</div><div class="line">   CGFloat tx;</div><div class="line">   CGFloat ty;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 <p>结构体矩阵图为：</p>
 <div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_26.gif?raw=true" alt="矩阵图"><br></div>
 
@@ -942,7 +943,7 @@ CGAffineTransformTranslate(CGAffineTransform t, CGFloat tx, CGFloat ty)
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 21 篇文章
+                找到 22 篇文章
             </p>
         </div>
     </div>
@@ -951,6 +952,7 @@ CGAffineTransformTranslate(CGAffineTransform t, CGFloat tx, CGFloat ty)
 <div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
         <!--SCRIPTS-->
 <script src="/assets/js/script-rt08quwts7iav5x0cfd2ym0gb5qkd1lvrsmwrakxtkhefmaaes4ywkmnjnwf.min.js"></script>
+<script src="/assets/js/prism.js"></script>
 <!--SCRIPTS END-->
 
     
