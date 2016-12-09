@@ -1,0 +1,861 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="贵大头的博客">
+    <title>Objective-C Runtime 运行时之三：方法与消息 - 贵大头的博客</title>
+    <meta name="author" content="贵永冬">
+<link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta name="description" content="前面我们讨论了Runtime中对类和对象的处理，及对成员变量与属性的处理。这一章，我们就要开始讨论Runtime中最有意思的一部分：消息处理机制。我们将详细讨论消息的发送及消息的转发。不过在讨论消息之前，我们先来了解一下与方法相关的一些内容。">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Objective-C Runtime 运行时之三：方法与消息">
+<meta property="og:url" content="http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/index.html">
+<meta property="og:site_name" content="贵大头的博客">
+<meta property="og:description" content="前面我们讨论了Runtime中对类和对象的处理，及对成员变量与属性的处理。这一章，我们就要开始讨论Runtime中最有意思的一部分：消息处理机制。我们将详细讨论消息的发送及消息的转发。不过在讨论消息之前，我们先来了解一下与方法相关的一些内容。">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/runtime1.png?raw=true">
+<meta property="og:updated_time" content="2016-12-09T02:29:03.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Objective-C Runtime 运行时之三：方法与消息">
+<meta name="twitter:description" content="前面我们讨论了Runtime中对类和对象的处理，及对成员变量与属性的处理。这一章，我们就要开始讨论Runtime中最有意思的一部分：消息处理机制。我们将详细讨论消息的发送及消息的转发。不过在讨论消息之前，我们先来了解一下与方法相关的一些内容。">
+<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/runtime1.png?raw=true">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-yrst5vo1nxaxbp2g3v9na2wg1lixlpr3ghbjdvskeixmu79deycecx3rh4bt.min.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">贵大头的博客</a>
+    </div>
+    
+        
+            <a  class="header-right-icon "
+                href="#about">
+        
+        
+            <i class="fa fa-lg fa-header.jpg"></i>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a href="/#about">
+                    <img class="sidebar-profile-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">贵永冬</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>iOS开发者<br>  android业余选手,  十足的海贼迷</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link open-algolia-search"
+                             href="#search"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="https://github.com/guiyongdong" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="mailto:564024928@qq.com" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-envelope-o"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">订阅</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            Objective-C Runtime 运行时之三：方法与消息
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2016-11-25T14:05:08+08:00">
+	
+		    11月 25, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Runtime/">Runtime</a>
+
+
+    
+</div>
+
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>前面我们讨论了Runtime中对类和对象的处理，及对成员变量与属性的处理。这一章，我们就要开始讨论Runtime中最有意思的一部分：消息处理机制。我们将详细讨论消息的发送及消息的转发。不过在讨论消息之前，我们先来了解一下与方法相关的一些内容。</p>
+<a id="more"></a>
+<h3 id="基础数据类型"><a href="#基础数据类型" class="headerlink" title="基础数据类型"></a>基础数据类型</h3><h4 id="SEL"><a href="#SEL" class="headerlink" title="SEL"></a>SEL</h4><p>SEL又叫选择器，是表示一个方法的<code>selector</code>的指针，其定义如下：<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">typedef struct objc_selector *SEL;</div></pre></td></tr></table></figure></p>
+<p><code>objc_selector</code>结构体的详细定义没有在<code>&lt;objc/runtime.h&gt;</code>头文件中找到。方法的<code>selector</code>用于表示运行时方法的名字。Objective-C在编译时，会根据每一个方法的名字、参数序列，生成一个唯一的整型标识(Int类型的标识)，这个标识就是<code>SEL</code>。如下代码所示:<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line">SEL sel1 = <span class="keyword">@selector</span>(method1);</div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"sel : %p"</span>, sel1);</div></pre></td></tr></table></figure></p>
+<p>上面的输出结果为：<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"><span class="number">2014</span><span class="number">-10</span><span class="number">-30</span> <span class="number">18</span>:<span class="number">40</span>:<span class="number">07.518</span> RuntimeTest[<span class="number">52734</span>:<span class="number">466626</span>] sel : <span class="number">0x100002d72</span></div></pre></td></tr></table></figure></p>
+<p>两个类之间，不管它们是父类与子类的关系，还是之间没有这种关系，只要方法名相同，那么方法的SEL就是一样的，每一个方法都对应着一个SEL。所以在Objective-C同一个类(及类的继承体系)中，不能存在2个同名的方法，即使参数类型不同也不行。相同的方法只能对应一个SEL。这也就导致Objective-C在处理相同方法名且参数个数相同但类型不同的方法方面的能力很差。如果某个类中定义以下两个方法：<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)setWidth:(<span class="keyword">int</span>)width;</div><div class="line">- (<span class="keyword">void</span>)setWidth:(<span class="keyword">double</span>)width;</div></pre></td></tr></table></figure></p>
+<p>这样的定义被认为是一种编译错误，所以我们不能像C++,C#那样。而是需要像下面这样来声明：<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line">-(<span class="keyword">void</span>)setWidthIntValue:(<span class="keyword">int</span>)width;</div><div class="line">-(<span class="keyword">void</span>)setWidthDoubleValue:(<span class="keyword">double</span>)width;</div></pre></td></tr></table></figure></p>
+<p>当然，不同的类可以拥有相同的Selector，这个没有问题。不同的类的实例对象执行相同的Selector时，会在各自的方法列表中根据Selector去寻找自己对应的IMP。</p>
+<p>工程中的所有SEL组成一个Set集合，Set的特点就是唯一，因此SEL是唯一的。因此，如果我们想到这个方法集合中查找某个方法时，只需要找到这个方法对应的SEL就行了，SEL实际上就是根据方法名hash化了的一个字符串，而对于字符串的比较仅仅需要比较他们的地址就可以了，可以说速度上无与伦比！但是，一个问题，就是数据增多会增大hash冲突而导致的性能下降(或是没有冲突，因为也可能用的是prefecthash)。但不管使用什么样的方法加速，如果能够将总量减少（多个方法可能对应同一个SEL）。那将是最犀利的方法。那么，我们就不难理解，为什么SEL仅仅是函数名了。</p>
+<p>本质上，SEL只是一个指向方法的指针（准确的说，只是一个根据方法名hash化了的KEY值，能唯一代表一个方法），它的存在只是为了加快方法的查询速度。这个查找过程我们将在下面讨论。</p>
+<p>我们可以在运行时添加新的selector，也可以在运行时获取已存在的selector，我们可以通过下面三种方法来获取SEL：</p>
+<ul>
+<li><code>sel_registerName</code>函数</li>
+<li>Objective-C编译器提供的<code>@selector()</code></li>
+<li><code>NSSelectorFromString()</code>方法</li>
+</ul>
+<h4 id="IMP"><a href="#IMP" class="headerlink" title="IMP"></a>IMP</h4><p>IMP实际上是一个函数指针，指向方法实现的首地址。其定义如下：<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"><span class="keyword">id</span> (*IMP)(<span class="keyword">id</span>, SEL, ...)</div></pre></td></tr></table></figure></p>
+<p>这个函数使用当前CPU架构实现的标准C调用约定。第一个参数是指向self的指针（如果是实例方法，则是类实例的内存地址；如果是类方法，则是指向元类的指针），第二个参数是方法选择器（selector），接下来是方法的实际参数列表。</p>
+<p>前面介绍过的SEL就是为了查找方法的最终实现IMP的。由于每一个方法对应唯一的SEL，因此我们可以通过SEL方便快速准确地获得它所对应的IMP，查找过程将在下面讨论。取得IMP后，我们就获得了执行这个方法代码的入口点，此时，我们就可以像调用普通的C语言函数一样来使用这个函数指针了。</p>
+<p>通过取得IMP，我们可以跳过Runtime的消息传递机制，直接执行IMP指向的函数实现，这样省去了Runtime消息传递过程中所做的一系列查找操作，会比直接向对象发送消息高效一些。</p>
+<h4 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h4><p>介绍完SEL和IMP，我们就可以来讲讲Method了。Method用于表示类定义的方法，定义如下：<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_method *Method;</div><div class="line"><span class="keyword">struct</span> objc_method &#123;</div><div class="line">    SEL method_name                	OBJC2_UNAVAILABLE;	<span class="comment">// 方法名</span></div><div class="line">    <span class="keyword">char</span> *method_types                	OBJC2_UNAVAILABLE;</div><div class="line">    IMP method_imp             			OBJC2_UNAVAILABLE;	<span class="comment">// 方法实现</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们可以看到该结构体中包含一个SEL和IMP，实际上相当于在SEL和IMP之间作了一个映射。有个SEL，我们便可以找到对应的IMP，从而调用方法的实现代码。具体的操作流程我们将在下面讨论。</p>
+<h5 id="objc-method-description"><a href="#objc-method-description" class="headerlink" title="objc_method_description"></a>objc_method_description</h5><p><code>objc_method_description</code>定义了一个Objective-C方法，其定义如下：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">struct</span> objc_method_description &#123; SEL name; <span class="keyword">char</span> *types; &#125;;</div></pre></td></tr></table></figure></p>
+<h3 id="方法相关操作函数"><a href="#方法相关操作函数" class="headerlink" title="方法相关操作函数"></a>方法相关操作函数</h3><p>Runtime提供了一系列的方法来处理与方法相关的操作。包括方法本身及SEL。本节我们介绍一下这些函数。</p>
+<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><p>方法操作相关函数包括以下：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 调用指定方法的实现</span></div><div class="line"><span class="keyword">id</span> method_invoke ( <span class="keyword">id</span> receiver, Method m, ... );</div><div class="line"><span class="comment">// 调用返回一个数据结构的方法的实现</span></div><div class="line"><span class="keyword">void</span> method_invoke_stret ( <span class="keyword">id</span> receiver, Method m, ... );</div><div class="line"><span class="comment">// 获取方法名</span></div><div class="line">SEL method_getName ( Method m );</div><div class="line"><span class="comment">// 返回方法的实现</span></div><div class="line">IMP method_getImplementation ( Method m );</div><div class="line"><span class="comment">// 获取描述方法参数和返回值类型的字符串</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> * method_getTypeEncoding ( Method m );</div><div class="line"><span class="comment">// 获取方法的返回值类型的字符串</span></div><div class="line"><span class="keyword">char</span> * method_copyReturnType ( Method m );</div><div class="line"><span class="comment">// 获取方法的指定位置参数的类型字符串</span></div><div class="line"><span class="keyword">char</span> * method_copyArgumentType ( Method m, <span class="keyword">unsigned</span> <span class="keyword">int</span> index );</div><div class="line"><span class="comment">// 通过引用返回方法的返回值类型字符串</span></div><div class="line"><span class="keyword">void</span> method_getReturnType ( Method m, <span class="keyword">char</span> *dst, size_t dst_len );</div><div class="line"><span class="comment">// 返回方法的参数的个数</span></div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> method_getNumberOfArguments ( Method m );</div><div class="line"><span class="comment">// 通过引用返回方法指定位置参数的类型字符串</span></div><div class="line"><span class="keyword">void</span> method_getArgumentType ( Method m, <span class="keyword">unsigned</span> <span class="keyword">int</span> index, <span class="keyword">char</span> *dst, size_t dst_len );</div><div class="line"><span class="comment">// 返回指定方法的方法描述结构体</span></div><div class="line"><span class="keyword">struct</span> objc_method_description * method_getDescription ( Method m );</div><div class="line"><span class="comment">// 设置方法的实现</span></div><div class="line">IMP method_setImplementation ( Method m, IMP imp );</div><div class="line"><span class="comment">// 交换两个方法的实现</span></div><div class="line"><span class="keyword">void</span> method_exchangeImplementations ( Method m1, Method m2 );</div></pre></td></tr></table></figure></p>
+<ul>
+<li><code>method_invoke</code>函数，返回的是实际实现的返回值。参数<code>receiver</code>不能为空。这个方法的效率会比<code>method_getImplementation</code>和<code>method_getName</code>更快。</li>
+<li><code>method_getName</code>函数，返回的是一个SEL。如果想获取方法名的C字符串，可以使用<code>sel_getName(method_getName(method))</code>。</li>
+<li><code>method_getReturnType</code>函数，类型字符串会被拷贝到dst中。</li>
+<li><code>method_setImplementation</code>函数，注意该函数返回值是方法之前的实现。</li>
+</ul>
+<h4 id="方法选择器"><a href="#方法选择器" class="headerlink" title="方法选择器"></a>方法选择器</h4><p>选择器相关的操作函数包括：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 返回给定选择器指定的方法的名称</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> * sel_getName ( SEL sel );</div><div class="line"><span class="comment">// 在Objective-C Runtime系统中注册一个方法，将方法名映射到一个选择器，并返回这个选择器</span></div><div class="line">SEL sel_registerName ( <span class="keyword">const</span> <span class="keyword">char</span> *str );</div><div class="line"><span class="comment">// 在Objective-C Runtime系统中注册一个方法</span></div><div class="line">SEL sel_getUid ( <span class="keyword">const</span> <span class="keyword">char</span> *str );</div><div class="line"><span class="comment">// 比较两个选择器</span></div><div class="line"><span class="built_in">BOOL</span> sel_isEqual ( SEL lhs, SEL rhs );</div></pre></td></tr></table></figure></p>
+<ul>
+<li><code>sel_registerName</code>函数：在我们将一个方法添加到类定义时，我们必须在<code>Objective Runtime</code>系统中注册一个方法名以获取方法的选择器。</li>
+</ul>
+<h3 id="方法调用流程"><a href="#方法调用流程" class="headerlink" title="方法调用流程"></a>方法调用流程</h3><p>在Objective-C中，消息直到运行时在绑定到方法实现上。编译器会将消息表达式<code>[receiver message]</code>转化为一个消息函数的调用，即<code>objc_msgSend</code>。这个函数将消息接收者和方法名作为其基础参数，如以下所示：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">objc_msgSend(receiver, selector)</div></pre></td></tr></table></figure></p>
+<p>如果消息中还有其他参数，则该方法的形式如下所示：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">objc_msgSend(receiver, selector, arg1, arg2, ...)</div></pre></td></tr></table></figure></p>
+<p>这个函数完成了动态绑定的所有事情：</p>
+<ol>
+<li>首先它找到selector对应的方法实现。因为同一个方法可能在不同的类中有不同的实现，所以需要依赖接收者的类来找到确切的实现。</li>
+<li>它调用方法实现，并将接收者对象及方法的所有参数传给它。</li>
+<li>最后，它将实现返回的值作为它自己的返回值。</li>
+</ol>
+<p>消息的关键在于我们前面章节讨论过的结构体<code>Objc_class</code>，这个结构体有两个字段是我们在消息分发的关注的：</p>
+<ol>
+<li>指向父类的指针</li>
+<li>一个类的方法分发表，即<code>methodLists</code></li>
+</ol>
+<p>当我们创建一个新对象时，先为其分配内存，并初始化其成员变量。其中isa指针也会被初始化，让对象可以访问类及类的继承体系。</p>
+<p>下图演示了这样一个消息的基本框架：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/runtime1.png?raw=true"><br></div>
+
+<p>当消息发送给一个对象时，<code>objc_msgSend</code>通过对象的isa指针获取到类的结构体，然后在方法分发表里面查找方法的selector。如果没有找到selector，则通过<code>objc_msgSend</code>结构体中的指向父类的指针找到其父类，并在父类的分发表里面查找方法的selector。依此，会一直沿用类的继承体系到达NSObject类。一旦定位到selector，函数就获取到了实现的入口点，并传入相应的参数来执行方法的具体实现。如果最后没有定位到selector，则会走消息转发流程，这个我们在后面讨论。</p>
+<p>为了加速消息的处理，运行时系统缓存使用过的selector及对应的方法的地址。这点我们在前面讨论对，不再重复。</p>
+<h4 id="隐藏参数"><a href="#隐藏参数" class="headerlink" title="隐藏参数"></a>隐藏参数</h4><p><code>objc_msgSend</code>有两个隐藏参数：</p>
+<ol>
+<li>消息接收对象</li>
+<li>方法的selector</li>
+</ol>
+<p>这两个参数为方法的实现提供了调用者的信息。之所以说是隐藏的，是因为它们在定义方法的源代码中没有声明。它们是在编译器被插入实现代码的。</p>
+<p>虽然这些参数没有显示声明，但在代码中仍然可以引用它们。我们可以使用self来引用接收者对象，使用<code>_cmd</code>来引用选择器。代码如下：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- strange</div><div class="line">&#123;</div><div class="line">    <span class="keyword">id</span>  target = getTheReceiver();</div><div class="line">    SEL method = getTheMethod();</div><div class="line">    <span class="keyword">if</span> ( target == <span class="keyword">self</span> || method == _cmd )</div><div class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">    <span class="keyword">return</span> [target performSelector:method];</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>当然，这两个参数我们用的比较多的是self,<code>_cmd</code>在实际中用的比较少。</p>
+<h4 id="获取方法地址"><a href="#获取方法地址" class="headerlink" title="获取方法地址"></a>获取方法地址</h4><p>Runtime中方法的动态绑定让我们写代码时更具灵活性。如我们可以把消息转发给我们想要的对象，或者随意交换一个方法的实现等。不过灵活性的提升也带来了性能上的一些损耗。毕竟我们需要去查找方法的实现，而不像函数调用来的那么直接。当然，方法的缓存一定程度上解决了这一问题。</p>
+<p>我们上面提到过，我们想要避开这种动态绑定方法，我们可以获取方法实现的地址，然后想调用函数一样来直接调用它。特别是当我们需要一个循环内频繁地调用一个特定的方法时，通过这种方式可以提高程序的性能。</p>
+<p>NSObject类提供了<code>methodForSelector:</code>方法，让我们可以获取到方法的指针，然后通过这个指针来调用实现代码。我们需要将<code>methodForSelector:</code>返回的指针转换为合适的函数类型，函数参数和返回值都需要匹配上。</p>
+<p>我们通过以下代码来看看<code>methodForSelector:</code>的使用：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">void</span> (*<span class="keyword">setter</span>)(<span class="keyword">id</span>, SEL, <span class="built_in">BOOL</span>);</div><div class="line"><span class="keyword">int</span> i;</div><div class="line"><span class="keyword">setter</span> = (<span class="keyword">void</span> (*)(<span class="keyword">id</span>, SEL, <span class="built_in">BOOL</span>))[target methodForSelector:<span class="keyword">@selector</span>(setFilled:)];</div><div class="line"><span class="keyword">for</span> (i = <span class="number">0</span> ; i &lt; <span class="number">1000</span> ; i++)</div><div class="line">    <span class="keyword">setter</span>(targetList[i], <span class="keyword">@selector</span>(setFilled:), <span class="literal">YES</span>);</div></pre></td></tr></table></figure></p>
+<p>这里需要注意的就是函数指针的前两个参数必须是id和SEL。</p>
+<p>当然这种方式只适合于在类似于for循环这种情况下频繁调用同一方法，以提高性能的情况。另外，<code>methodForSelector:</code>是由Cocoa运行时提供的；它不是Objective-C语言的特性。</p>
+<h3 id="消息转发"><a href="#消息转发" class="headerlink" title="消息转发"></a>消息转发</h3><p>当一个对象能接收到一个消息时，就会走正常的方法调用流程。但如果一个对象无法接收指定的消息时，又会发生什么事呢？默认情况下，如果是以<code>[object message]</code>的方式调用方法，如果<code>object</code>无法响应<code>message</code>消息时，编译器会报错。但如果是以<code>perfrom...</code>的形式来调用，则需要等到运行时才能确定object是否能接收<code>message</code>消息。如果不能，则程序崩溃。</p>
+<p>通常，当我们不能确定一个对象是否能接收某个消息时，会先调用<code>respondsToSelector:</code>来判断一下。如下代码所示：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> ([<span class="keyword">self</span> respondsToSelector:<span class="keyword">@selector</span>(method)]) &#123;</div><div class="line">    [<span class="keyword">self</span> performSelector:<span class="keyword">@selector</span>(method)];</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>不过，我们这边想讨论下不使用<code>respondsToSelector:</code>判断的情况。这才是我们这一节的重点。</p>
+<p>当一个对象无法接收某一消息时，就会启动所谓’<em>消息转发(message forwarding)</em>‘机制，通过这一机制，我们可以告诉对象如何处理未知的消息。默认情况下，对象接收到未知的消息，会导致程序崩溃，通过控制台，我们可以看到以下异常信息：<br><figure class="highlight"><table><tr><td class="code"><pre><div class="line">-[SUTRuntimeMethod method]: unrecognized selector sent to instance 0x100111940</div><div class="line">*** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: '-[SUTRuntimeMethod method]: unrecognized selector sent to instance 0x100111940'</div></pre></td></tr></table></figure></p>
+<p>这段异常信息实际上是由NSObject的<code>doesNotRecognizeSelector</code>方法抛出来的。不过，我们可以采取一些措施，让我们的程序执行特定的逻辑，而避免程序的崩溃。</p>
+<p>消息转发机制基本上分为三个步骤：</p>
+<ol>
+<li>动态方法解析</li>
+<li>备用接收者</li>
+<li>完整转发</li>
+</ol>
+<p>下面我们详细讨论一下这三个步骤。</p>
+<h4 id="动态方法解析"><a href="#动态方法解析" class="headerlink" title="动态方法解析"></a>动态方法解析</h4><p>对象在接收到未知的消息时，首先会调用所属类的类方法<code>+resolveInstanceMethod:</code>(实例方法)或者<code>+resolveClassMethod:</code>(类方法)。在这个方法中，我们有机会为该未知消息新增一个“处理方法”。不过使用该方法的前提是我们已经实现了该“处理方法”，只需要在运行时通过<code>class_addMethod</code>函数动态添加到类里面就可以了。如下代码所示：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">void</span> functionForMethod1(<span class="keyword">id</span> <span class="keyword">self</span>, SEL _cmd) &#123;</div><div class="line">   <span class="built_in">NSLog</span>(<span class="string">@"%@, %p"</span>, <span class="keyword">self</span>, _cmd);</div><div class="line">&#125;</div><div class="line">	</div><div class="line">+ (<span class="built_in">BOOL</span>)resolveInstanceMethod:(SEL)sel &#123;</div><div class="line">    <span class="built_in">NSString</span> *selectorString = <span class="built_in">NSStringFromSelector</span>(sel);</div><div class="line">    <span class="keyword">if</span> ([selectorString isEqualToString:<span class="string">@"method1"</span>]) &#123;</div><div class="line">        class_addMethod(<span class="keyword">self</span>.class, <span class="keyword">@selector</span>(method1), (IMP)functionForMethod1, <span class="string">"@:"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> [<span class="keyword">super</span> resolveInstanceMethod:sel];</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>不过这种方案更多的是为了实现<code>@dynamic</code>属性。</p>
+<h4 id="备用接收者"><a href="#备用接收者" class="headerlink" title="备用接收者"></a>备用接收者</h4><p>如果在上一步无法处理消息，则Runtime会继续调用以下方法：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">id</span>)forwardingTargetForSelector:(SEL)aSelector</div></pre></td></tr></table></figure></p>
+<p>如果一个对象实现了这个方法，并返回一个非nil得结果，则这个对象会作为消息的新接收者，且消息会被分发到这个对象。当然这个对象不能是<code>self</code>吱声，否则就是出现无限循环。当然，如果我们没有指定相应的对象来处理<code>aSelector</code>，则应该调用父类的实现来返回结果。</p>
+<p>使用这个方法通常是在对象内部，可能还有一系列其他对象处理该消息，我们便可以用这些对象来处理消息并返回，这样在对象外部看来，还是由该对象亲自处理了这一消息。如下代码所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">SUTRuntimeMethodHelper</span> : <span class="title">NSObject</span></span></div><div class="line">- (<span class="keyword">void</span>)method2;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">SUTRuntimeMethodHelper</span></span></div><div class="line">- (<span class="keyword">void</span>)method2 &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"%@, %p"</span>, <span class="keyword">self</span>, _cmd);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="meta">#pragma mark -</span></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">SUTRuntimeMethod</span> () </span>&#123;</div><div class="line">    SUTRuntimeMethodHelper *_helper;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">SUTRuntimeMethod</span></span></div><div class="line">+ (<span class="keyword">instancetype</span>)object &#123;</div><div class="line">    <span class="keyword">return</span> [[<span class="keyword">self</span> alloc] init];</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">instancetype</span>)init &#123;</div><div class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span> != <span class="literal">nil</span>) &#123;</div><div class="line">        _helper = [[SUTRuntimeMethodHelper alloc] init];</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)test &#123;</div><div class="line">    [<span class="keyword">self</span> performSelector:<span class="keyword">@selector</span>(method2)];</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">id</span>)forwardingTargetForSelector:(SEL)aSelector &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"forwardingTargetForSelector"</span>);</div><div class="line">    <span class="built_in">NSString</span> *selectorString = <span class="built_in">NSStringFromSelector</span>(aSelector);</div><div class="line">    <span class="comment">// 将消息转发给_helper来处理</span></div><div class="line">    <span class="keyword">if</span> ([selectorString isEqualToString:<span class="string">@"method2"</span>]) &#123;</div><div class="line">        <span class="keyword">return</span> _helper;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> [<span class="keyword">super</span> forwardingTargetForSelector:aSelector];</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>这一步适合于我们只想将消息转发到另一个能处理该消息的对象上。但这一步无法对消息进行处理，如操作消息的参数和返回值。</p>
+<h4 id="完整消息转发"><a href="#完整消息转发" class="headerlink" title="完整消息转发"></a>完整消息转发</h4><p>如果在上一步还不能处理未知消息，则唯一能做的就是启用完整的消息转发机制了。此时会调用以下方法：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)forwardInvocation:(<span class="built_in">NSInvocation</span> *)anInvocation</div></pre></td></tr></table></figure></p>
+<p>运行时系统会在这一步给消息接收者最后一次机会将消息转发给其他对象。对象会创建一个表示消息的NSInvocation对象，把与尚未处理的消息有关的全部细节都封装在<code>anInvocation</code>中，包括<code>selector</code>,目标（<code>target</code>）和参数。我们可以在<code>forwardInvocation</code>方法中选择将消息转发给其他对象。</p>
+<p><code>forwardInvocation</code>方法的实现有两个任务：</p>
+<ol>
+<li>定位可以响应封装在<code>anInvocation</code>中的消息对象。这个对象不需要能处理所有未知消息。</li>
+<li>使用<code>anInvocation</code>作为参数，将消息发送给选中的对象。<code>anInvocation</code>将会保留调用结果，运行时系统会提取这一结果并将其发送到消息的原始发送者。</li>
+</ol>
+<p>不过，在这个方法中我们可以实现一些更复杂的功能，我们可以对消息的内容进行修改，比如追回一个参数等，然后再去出发消息。另外，若发现某个消息不应由本类处理，则应调用父类的同名方法，以便继承体系中的每个类都有机会处理此调用请求。</p>
+<p>还有一个很重要的问题，我们必须重新写以下方法：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="built_in">NSMethodSignature</span> *)methodSignatureForSelector:(SEL)aSelector</div></pre></td></tr></table></figure></p>
+<p>消息转发机制使用从这个方法中获取的信息来创建<code>NSInvocation</code>对象。因此我们必须重写这个方法，为给定的selector提供一个合适的签名方法。</p>
+<p>完整的示例如下所示：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="built_in">NSMethodSignature</span> *)methodSignatureForSelector:(SEL)aSelector &#123;</div><div class="line">    <span class="built_in">NSMethodSignature</span> *signature = [<span class="keyword">super</span> methodSignatureForSelector:aSelector];</div><div class="line">    <span class="keyword">if</span> (!signature) &#123;</div><div class="line">        <span class="keyword">if</span> ([SUTRuntimeMethodHelper instancesRespondToSelector:aSelector]) &#123;</div><div class="line">            signature = [SUTRuntimeMethodHelper instanceMethodSignatureForSelector:aSelector];</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> signature;</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)forwardInvocation:(<span class="built_in">NSInvocation</span> *)anInvocation &#123;</div><div class="line">    <span class="keyword">if</span> ([SUTRuntimeMethodHelper instancesRespondToSelector:anInvocation.selector]) &#123;</div><div class="line">        [anInvocation invokeWithTarget:_helper];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>NSObject的<code>forwardInvocation:</code>方法实现只是简单调用了<code>doesNotRecognizeSelector:</code>方法，它不会转发任何消息。这样，如果不在以上所述的三个步骤中处理未知消息，则会引发一个异常。</p>
+<p>从某种意义上来讲，<code>forwardInvocation:</code>就像一个未知消息的分发中心，将这些未知的消息转发给其他对象。或者也可以像一个运输站一样将所有未知消息都发送给同一个接收对象。这取决于具体的实现。</p>
+<h4 id="消息转发与多重继承"><a href="#消息转发与多重继承" class="headerlink" title="消息转发与多重继承"></a>消息转发与多重继承</h4><p>回过头来看第二和第三步，通过这两个方法我们可以允许一个对象与其它对象建立关系，以处理某些未知消息，而表面上看仍然是该对象在处理消息。通过这种关系，我们可以模拟“多重继承”的某些特性，让对象可以“继承”其它对象的特性来处理一些事情。不过，这两者间有一个重要的区别：多重继承将不同的功能集成到一个对象中，它会让对象变得过大，涉及的东西过多；而消息转发将功能分解到独立的小的对象中，并通过某种方式将这些对象连接起来，并做相应的消息转发。</p>
+<p>不过消息转发虽然类似于继承，但NSObject的一些方法还是能区分两者。如<code>respondsToSelector:</code>和<code>isKindOfClass:</code>只能用于继承体系，而不能用于转发链。便如果我们想让这种消息转发看起来像是继承，则可以重写这些方法，如以下代码所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="built_in">BOOL</span>)respondsToSelector:(SEL)aSelector</div><div class="line">&#123;</div><div class="line">	<span class="keyword">if</span> ( [<span class="keyword">super</span> respondsToSelector:aSelector])</div><div class="line">		<span class="keyword">return</span> <span class="literal">YES</span>;</div><div class="line">	<span class="keyword">else</span> &#123;</div><div class="line">		<span class="comment">/* Here, test whether the aSelector message can     *</span></div><div class="line">		 * be forwarded to another object and whether that  *</div><div class="line">		 * object can respond to it. Return YES if it can.  */</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> <span class="literal">NO</span>; 	</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>在此，我们已经了解了Runtime中消息发送和转发的基本机制。这也是Runtime的强大之处，通过它，我们可以为程序增加很多动态的行为，虽然我们在实际开发中很少直接使用这些机制(如直接调用objc_msgSend)，但了解它们有助于我们更多地去了解底层的实现。其实在实际的编码过程中，我们也可以灵活地使用这些机制，去实现一些特殊的功能，如hook操作等。</p>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Runtime/">Runtime</a>
+
+            </div>
+        
+        <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/24/Objective-C-Runtime运行时之二-成员变量与属性/" data-tooltip="Objective-C Runtime运行时之二：成员变量与属性">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/&amp;title=Objective-C Runtime 运行时之三：方法与消息">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+        
+            
+                <div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=“Objective-C-Runtime-运行时之三：方法与消息" data-title="Objective-C Runtime 运行时之三：方法与消息" data-url="http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"guiyongdong"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2016 贵永冬. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/24/Objective-C-Runtime运行时之二-成员变量与属性/" data-tooltip="Objective-C Runtime运行时之二：成员变量与属性">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/&amp;title=Objective-C Runtime 运行时之三：方法与消息">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <ul class="share-options">
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/">
+                <i class="fa fa-weibo"></i><span>微博</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/">
+                <i class="fa fa-qq"></i><span>QQ</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i><span>微信</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+
+
+
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">贵永冬</h4>
+        
+            <div id="about-card-bio"><p>iOS开发者<br>  android业余选手,  十足的海贼迷</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>河南酒运达电子商务有限公司</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker"></i>
+                <br/>
+                河南 郑州
+            </div>
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    autofocus="autofocus"/>
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/11/初识ReactiveCocoa/">
+                            <h3 class="media-heading">初识ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月11日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/12/深入ReactiveCocoa/">
+                            <h3 class="media-heading">深入ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月12日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                            <h3 class="media-heading">ReactiveCocoa和RXSwift速查表</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/关于RAC的一些资料/">
+                            <h3 class="media-heading">关于RAC的一些资料</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+                            <h3 class="media-heading">RunLoop总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/13/聊一聊GCD的那些事/">
+                            <h3 class="media-heading">聊一聊GCD的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月13日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/">
+                            <h3 class="media-heading">聊一聊NSOperation的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/">
+                            <h3 class="media-heading">iOS动画篇之UIView动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                            <h3 class="media-heading">iOS动画篇之CoreAnimation动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
+                            <h3 class="media-heading">iOS动画之CATransition动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 23 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-rt08quwts7iav5x0cfd2ym0gb5qkd1lvrsmwrakxtkhefmaaes4ywkmnjnwf.min.js"></script>
+<script src="/assets/js/prism.js"></script>
+<!--SCRIPTS END-->
+
+    
+        <script type="text/javascript">
+            var duoshuoQuery = {short_name:'guiyongdong'};
+            (function() {
+                var ds = document.createElement('script');
+                ds.type = 'text/javascript';ds.async = true;
+                ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+                ds.charset = 'UTF-8';
+                (document.getElementsByTagName('head')[0]
+                || document.getElementsByTagName('body')[0]).appendChild(ds);
+            })();
+        </script>
+    
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('DWKE0MOOLY', '141d50cf933ece6dd635747973c4fe00');
+        var algoliaIndex = algoliaClient.initIndex('blog');
+    </script>
+
+    </body>
+</html>

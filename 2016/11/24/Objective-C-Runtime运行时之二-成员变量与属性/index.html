@@ -24,7 +24,7 @@
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="在前面一篇文章中，我们介绍了Runtime中与类和对象相关的内容，从这章开始，我们将讨论类实现细节相关的内容，主要包括类中成员变量，属性，方法，协议与分类的实现。
 本章的主要内容将聚集在Runtime对成员变量与属性的处理。在讨论之前，我们先介绍一个重要的概念：类型编码。">
-<meta property="og:updated_time" content="2016-11-25T02:09:59.000Z">
+<meta property="og:updated_time" content="2016-11-25T05:27:40.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objective-C Runtime运行时之二：成员变量与属性">
 <meta name="twitter:description" content="在前面一篇文章中，我们介绍了Runtime中与类和对象相关的内容，从这章开始，我们将讨论类实现细节相关的内容，主要包括类中成员变量，属性，方法，协议与分类的实现。
@@ -261,11 +261,11 @@
 <p>我们可能希望通过使用(甚至是滥用)全局变量来解决这个问题。但这些都不是Ivar，因为他们不会连接到一个单独的实例。因此，这种方法很少使用。</p>
 <p>Objective-C针对这一问题，提供了一个解决方案：即关联对象(Associated Object)。</p>
 <p>我们可以把关联对象想象成一个Objective-C对象(如字典),这个对象通过给定的key连接到类的一个实例上。不过由于使用的是C接口，所以key是一个void指针(const void*)。我们还需要制定一个内存管理策略，以告诉Runtime如何管理这个对象的内存。这个内存管理的策略可以由以下值指定：</p>
-<pre><code>OBJC_ASSOCIATION_ASSIGN
-OBJC_ASSOCIATION_RETAIN_NONATOMIC
-OBJC_ASSOCIATION_COPY_NONATOMIC
-OBJC_ASSOCIATION_RETAIN
-OBJC_ASSOCIATION_COPY
+<pre><code>OBJC_ASSOCIATION_ASSIGN                //assign
+OBJC_ASSOCIATION_RETAIN_NONATOMIC    //retain  nonatomic
+OBJC_ASSOCIATION_COPY_NONATOMIC        //copy nonatomic
+OBJC_ASSOCIATION_RETAIN                    // retain
+OBJC_ASSOCIATION_COPY                    //copy
 </code></pre><p>当宿主对象被释放时，会根据指定的内存管理策略来处理关联对象。如果指定的策略是assign，则宿主释放时，关联对象不会被释放；而如果指定的是retain或者是copy，则宿主释放时，关联对象会被释放。我们甚至可以选择是否是自动retain/copy。当我们需要在多个线程中处理访问对象的多线程代码时，这就非常有用了。</p>
 <p>我们将一个对象连接到其它对象所需要做的就是下面两行代码：<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">char</span> myKey;</div><div class="line">objc_setAssociatedObject(<span class="keyword">self</span>, &amp;myKey, anObject, OBJC_ASSOCIATION_RETAIN);</div></pre></td></tr></table></figure></p>
 <p>在这种情况下，self对象将获取一个新的关联的对象anObject，且内存管理策略是自动retain关联对象，当self对象释放时，会自动release关联对象。另外，如果我们使用同一个key来关联另外一个对象时，也会自动释放之前关联的对象，这种情况下，先前的关联对象会被妥善地处理掉，并且新的对象会使用它的内存。</p>
@@ -273,11 +273,9 @@ OBJC_ASSOCIATION_COPY
 <p>我们可以使用<code>objc_removeAssociatedObjects</code>函数来移除一个关联对象，或者使用<code>objc_setAssociatedObject</code>函数将key指定的关联对象设置为nil。</p>
 <p>我们下面来用实例演示一下关联对象的使用方法。</p>
 <p>假定我们想要动态地将一个Tap手势操作连接到任何UIView中，并且根据需要指定点击后的实际操作。这时候我们就可以将一个手势对象及操作的block对象关联到我们的UIView对象中。这项任务分两部分。首先，如果需要，我们要创建一个手势识别对象并将它及block做为关联对象。如下代码所示：</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)setTapActionWithBlock:(<span class="keyword">void</span> (^)(<span class="keyword">void</span>))block</div><div class="line">&#123;</div><div class="line">	<span class="built_in">UITapGestureRecognizer</span> *gesture = objc_getAssociatedObject(<span class="keyword">self</span>, &amp;kDTActionHandlerTapGestureKey);</div><div class="line"> </div><div class="line">	<span class="keyword">if</span> (!gesture)</div><div class="line">	&#123;</div><div class="line">		gesture = [[<span class="built_in">UITapGestureRecognizer</span> alloc] initWithTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(__handleActionForTapGesture:)];</div><div class="line">		[<span class="keyword">self</span> addGestureRecognizer:gesture];</div><div class="line">		objc_setAssociatedObject(<span class="keyword">self</span>, &amp;kDTActionHandlerTapGestureKey, gesture, OBJC_ASSOCIATION_RETAIN);</div><div class="line">	&#125;</div><div class="line">	objc_setAssociatedObject(<span class="keyword">self</span>, &amp;kDTActionHandlerTapBlockKey, block, OBJC_ASSOCIATION_COPY);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这段代码检测了手势识别的关联对象。如果没有，则创建并建立关联关系。同时，将传入的块对象连接到指定的key上。注意block对象的关联内存管理策略。</p>
-<p>手势识别对象需要一个target和action，所以接下来我们定义处理方法：</p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)__handleActionForTapGesture:(<span class="built_in">UITapGestureRecognizer</span> *)gesture</div><div class="line">&#123;</div><div class="line">	<span class="keyword">if</span> (gesture.state == <span class="built_in">UIGestureRecognizerStateRecognized</span>)</div><div class="line">	&#123;</div><div class="line">		<span class="keyword">void</span>(^action)(<span class="keyword">void</span>) = objc_getAssociatedObject(<span class="keyword">self</span>, &amp;kDTActionHandlerTapBlockKey);</div><div class="line">		<span class="keyword">if</span> (action)</div><div class="line">		&#123;</div><div class="line">			action();</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我们需要检测手势识别对象的状态，因为我们只需要在点击手势识别出来时才执行操作。</p>
+<p>首先创建一个UIView的分类<br><em>UIView+GG.h</em><br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">&lt;UIKit/UIKit.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">UIView</span> (<span class="title">GG</span>)</span></div><div class="line">- (<span class="keyword">void</span>)setTapActionWithBlock:(<span class="keyword">void</span> (^)(<span class="keyword">void</span>))block;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure></p>
+<p><em>UIView+GG.m</em><br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">"UIView+GG.h"</span></span></div><div class="line"><span class="meta">#import <span class="meta-string">&lt;objc/runtime.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">void</span> *kDTActionHandlerTapGestureKey;</div><div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">void</span> * ;</div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">UIView</span> (<span class="title">GG</span>)</span></div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)setTapActionWithBlock:(<span class="keyword">void</span> (^)(<span class="keyword">void</span>))block &#123;</div><div class="line">    <span class="comment">//获取关联对象（手势）</span></div><div class="line">    <span class="built_in">UITapGestureRecognizer</span> *gesture = objc_getAssociatedObject(<span class="keyword">self</span>, &amp;kDTActionHandlerTapGestureKey);</div><div class="line">    <span class="comment">//如果关联对象(手势)为空，创建UIView的关联对象 UITapGestureRecognizer对象</span></div><div class="line">    <span class="keyword">if</span> (!gesture)</div><div class="line">    &#123;</div><div class="line">        gesture = [[<span class="built_in">UITapGestureRecognizer</span> alloc] initWithTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(__handleActionForTapGesture:)];</div><div class="line">        [<span class="keyword">self</span> addGestureRecognizer:gesture];</div><div class="line">        <span class="comment">//创建完UITapGestureRecognizer对象，并设置为当前UIView的关联对象。</span></div><div class="line">        objc_setAssociatedObject(<span class="keyword">self</span>, &amp;kDTActionHandlerTapGestureKey, gesture, OBJC_ASSOCIATION_RETAIN);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//设置block为UIView的关联对象。</span></div><div class="line">    objc_setAssociatedObject(<span class="keyword">self</span>, &amp;kDTActionHandlerTapBlockKey, block, OBJC_ASSOCIATION_COPY);</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)__handleActionForTapGesture:(<span class="built_in">UITapGestureRecognizer</span> *)gesture</div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (gesture.state == <span class="built_in">UIGestureRecognizerStateRecognized</span>)</div><div class="line">    &#123;</div><div class="line">        <span class="comment">//获取关联对象(block)</span></div><div class="line">        <span class="keyword">void</span>(^action)(<span class="keyword">void</span>) = objc_getAssociatedObject(<span class="keyword">self</span>, &amp;kDTActionHandlerTapBlockKey);</div><div class="line">        <span class="keyword">if</span> (action)</div><div class="line">        &#123;</div><div class="line">            action();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure></p>
+<p>这段代码，我们分别定义了两个key，作为我们关联对象的key。在<code>- (void)setTapActionWithBlock:(void (^)(void))block</code>方法中，我们检测了手势识别的关联对象。如果没有，则创建并建立关联关系。同时，将传入的块对象连接到指定的key上。注意block对象的关联内存管理策略。<br>手势识别对象需要一个<code>target</code>和<code>action</code>，所以接下来我们定义了处理方法：<code>- (void)__handleActionForTapGesture:(UITapGestureRecognizer *)gesture</code>。我们需要检测手势识别对象的状态，因为我们只需要在点击手势识别出来时才执行操作。</p>
 <p>从上面的例子我们可以看到，关联对象使用起来并不复杂。它让我们可以动态地增强类现有的功能。我们可以在编码中灵活地运用这一特性。</p>
 <h4 id="成员变量、属性的操作方法"><a href="#成员变量、属性的操作方法" class="headerlink" title="成员变量、属性的操作方法"></a>成员变量、属性的操作方法</h4><h5 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h5><p>成员变量操作包含以下函数：<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 获取成员变量名</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> * ivar_getName ( Ivar v );</div><div class="line"><span class="comment">// 获取成员变量类型编码</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> * ivar_getTypeEncoding ( Ivar v );</div><div class="line"><span class="comment">// 获取成员变量的偏移量</span></div><div class="line">ptrdiff_t ivar_getOffset ( Ivar v );</div></pre></td></tr></table></figure></p>
 <ul>
@@ -314,7 +312,7 @@ OBJC_ASSOCIATION_COPY
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/"  data-tooltip="Objective-C Runtime 运行时之三：方法与消息">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -418,7 +416,7 @@ OBJC_ASSOCIATION_COPY
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/"  data-tooltip="Objective-C Runtime 运行时之三：方法与消息">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -773,7 +771,7 @@ OBJC_ASSOCIATION_COPY
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 22 篇文章
+                找到 23 篇文章
             </p>
         </div>
     </div>
