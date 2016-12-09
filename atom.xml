@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2016-12-09T02:29:03.000Z</updated>
+  <updated>2016-12-09T06:05:26.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,55 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Objective-C Runtime 运行时之四：Method Swizzling</title>
+    <link href="http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E5%9B%9B%EF%BC%9AMethod-Swizzling/"/>
+    <id>http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/</id>
+    <published>2016-12-09T05:02:51.000Z</published>
+    <updated>2016-12-09T06:05:26.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>理解<code>Method Swizzling</code>是学习Runtime机制的一个很好的机会。<code>Method Swizzling</code>是改变一个<code>selector</code>的实际实现的技术。通过这一技术，我们可以在运行时通过修改类的分发表中<code>selector</code>对应的函数，来修改方法的实现。</p>
+<a id="more"></a>
+<p>例如，我们想跟踪在程序中每一个ViewController展示给用户的次数：当然，我们可以在每个ViewController的viewDidAppear中添加跟踪代码，但是这太过麻烦，需要在每个ViewController中写重复的代码。创建一个子类可能是一种实现方式，但需要同时创建UIViewController，UITableController，UINavigationController及其他UIKit中ViewController的子类，这样会产生许多重复的代码。</p>
+<p>这种情况下，我们就可以使用<code>Method Swizzling</code>，如下代码所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">&lt;objc/runtime.h&gt;</span></span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">UIViewController</span> (<span class="title">Tracking</span>)</span></div><div class="line">+ (<span class="keyword">void</span>)load &#123;</div><div class="line">    <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</div><div class="line">    <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</div><div class="line">        Class <span class="keyword">class</span> = [<span class="keyword">self</span> <span class="keyword">class</span>];         </div><div class="line">        <span class="comment">// When swizzling a class method, use the following:</span></div><div class="line">        <span class="comment">// Class class = object_getClass((id)self);</span></div><div class="line">        SEL originalSelector = <span class="keyword">@selector</span>(viewWillAppear:);</div><div class="line">        SEL swizzledSelector = <span class="keyword">@selector</span>(xxx_viewWillAppear:);</div><div class="line">        Method originalMethod = class_getInstanceMethod(<span class="keyword">class</span>, originalSelector);</div><div class="line">        Method swizzledMethod = class_getInstanceMethod(<span class="keyword">class</span>, swizzledSelector);</div><div class="line">        <span class="built_in">BOOL</span> didAddMethod = class_addMethod(<span class="keyword">class</span>,</div><div class="line">                originalSelector,</div><div class="line">                method_getImplementation(swizzledMethod),</div><div class="line">                method_getTypeEncoding(swizzledMethod));</div><div class="line">        <span class="keyword">if</span> (didAddMethod) &#123;</div><div class="line">            class_replaceMethod(<span class="keyword">class</span>,</div><div class="line">                swizzledSelector,</div><div class="line">                method_getImplementation(originalMethod),</div><div class="line">                method_getTypeEncoding(originalMethod));</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            method_exchangeImplementations(originalMethod, swizzledMethod);</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div><div class="line"><span class="meta">#pragma mark - Method Swizzling</span></div><div class="line">- (<span class="keyword">void</span>)xxx_viewWillAppear:(<span class="built_in">BOOL</span>)animated &#123;</div><div class="line">    [<span class="keyword">self</span> xxx_viewWillAppear:animated];</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"viewWillAppear: %@"</span>, <span class="keyword">self</span>);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>在这里，我们通过<code>Method Swizzling</code>修改了UIViewController的<code>@selector(viewWillAppear:)</code>对应的函数指针，使其实现指向了我们自定义的<code>xxx_viewWillAppear</code>的实现。这样，当UIViewController及其子类的对象调用<code>viewWillAppear</code>时，都会打印一条日志信息。</p>
+<p>上面的例子很好地展示了使用<code>Method Swizlling</code>来一个类中注入一些我们新的操作。当然，还有许多场景可以使用<code>Mehtod Swizlling</code>，在此不多举例。在此我们说说使用<code>method Swizlling</code>需要注意的一些问题。</p>
+<h3 id="Swizzling应该总是在-load中执行"><a href="#Swizzling应该总是在-load中执行" class="headerlink" title="Swizzling应该总是在+load中执行"></a>Swizzling应该总是在+load中执行</h3><p>在Objective-C中，运行时会自动调用每个类的两个方法。<code>+load</code><em>会在类初始加载时调用</em>，<code>+initialize</code><em>会在第一次调用类的类方法或实例方法之前被调用</em>。这两个方法是可选的，且只有在实现了它们时才会被调用。由于method swizzling会影响到类的全局状态，因此要尽量避免在并发处理中出现竞争的情况。+load能保证在类的初始化过程中被加载，并保证这种改变应用级别的行为的一致性。相比之下，+initialize在其执行时不提供这种保证–事实上，如果在应用中没为给这个类发送消息，则它可能永远不会被调用。</p>
+<h3 id="Swizzling应该总是在dispatch-once中执行"><a href="#Swizzling应该总是在dispatch-once中执行" class="headerlink" title="Swizzling应该总是在dispatch_once中执行"></a>Swizzling应该总是在dispatch_once中执行</h3><p>与上面相同，因为<code>swizzling</code>会改变全局状态，所以我们需要在运行时采取一些预防措施。原子性就是这样一种措施，它确保代码只被执行一次，不管有多少个线程。GCD的<code>dispatch_once</code>可以确保这种行为，我们应该将其作为<code>method swizzling</code>的最佳实践。</p>
+<h3 id="选择器、方法与实现"><a href="#选择器、方法与实现" class="headerlink" title="选择器、方法与实现"></a>选择器、方法与实现</h3><p>在Objective-C中，选择器(<code>selector</code>)、方法(<code>method</code>)和实现(<code>implementation</code>)是运行时中一个特殊点，虽然在一般情况下，这些术语更多的是用在消息发送的过程描述中。</p>
+<p>以下是<code>Objective-C Runtime Reference</code>中的对这几个术语一些描述：</p>
+<ul>
+<li><code>Selector(typedef struct objc_selector *SEL)</code>：用于在运行时中表示一个方法的名称。一个方法选择器是一个C字符串，它是在Objective-C运行时被注册的。选择器由编译器生成，并且在类被加载时由运行时自动做映射操作。</li>
+<li><code>Method(typedef struct objc_method *Method)</code>：在类定义中表示方法的类型</li>
+<li><code>Implementation(typedef id (*IMP)(id, SEL, ...))</code>：这是一个指针类型，指向方法实现函数的开始位置。这个函数使用为当前CPU架构实现的标准C调用规范。每一个参数是指向对象自身的指针(self)，第二个参数是方法选择器。然后是方法的实际参数。</li>
+</ul>
+<p>理解这几个术语之间的关系最好的方式是：一个类维护一个运行时可接收的消息分发表；分发表中的每个入口是一个方法(Method)，其中key是一个特定名称，即选择器(SEL)，其对应一个实现(IMP)，即指向底层C函数的指针。</p>
+<p>为了swizzle一个方法，我们可以在分发表中将一个方法的现有的选择器映射到不同的实现，而将该选择器对应的原始实现关联到一个新的选择器中。</p>
+<h3 id="调用-cmd"><a href="#调用-cmd" class="headerlink" title="调用_cmd"></a>调用_cmd</h3><p>我们回过头来看看前面新的方法的实现代码：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)xxx_viewWillAppear:(<span class="built_in">BOOL</span>)animated &#123;</div><div class="line">    [<span class="keyword">self</span> xxx_viewWillAppear:animated];</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"viewWillAppear: %@"</span>, <span class="built_in">NSStringFromClass</span>([<span class="keyword">self</span> <span class="keyword">class</span>]));</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>咋看上去是会导致无限循环的。但令人惊奇的是，并没有出现这种情况。在swizzling的过程中，方法中的<code>[self xxx_viewWillAppear:animated]</code>已经被重新指定到UIViewController类的<code>-viewWillAppear:</code>中。在这种情况下，不会产生无限循环。不过如果我们调用的是<code>[self viewWillAppear:animated]</code>，则会产生无限循环，因为这个方法的实现在运行时已经被重新指定为<code>xxx_viewWillAppear:</code>了。</p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>Swizzling通常被称作是一种黑魔法，容易产生不可预知的行为和无法预见的后果。虽然它不是最安全的，但如果遵从以下几点预防措施的话，还是比较安全的：</p>
+<ol>
+<li>总是调用方法的原始实现(除非有更好的理由不这么做)：API提供了一个输入与输出约定，但其内部实现是一个黑盒。Swizzle一个方法而不调用原始实现可能会打破私有状态底层操作，从而影响到程序的其它部分。</li>
+<li>避免冲突：给自定义的分类方法加前缀，从而使其与所依赖的代码库不会存在命名冲突。</li>
+<li>明白是怎么回事：简单地拷贝粘贴swizzle代码而不理解它是如何工作的，不仅危险，而且会浪费学习Objective-C运行时的机会。阅读<code>Objective-C Runtime Reference</code>和查看<code>&lt;objc/runtime.h&gt;</code>头文件以了解事件是如何发生的。</li>
+<li>小心操作：无论我们对Foundation, UIKit或其它内建框架执行Swizzle操作抱有多大信心，需要知道在下一版本中许多事可能会不一样。</li>
+</ol>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;理解&lt;code&gt;Method Swizzling&lt;/code&gt;是学习Runtime机制的一个很好的机会。&lt;code&gt;Method Swizzling&lt;/code&gt;是改变一个&lt;code&gt;selector&lt;/code&gt;的实际实现的技术。通过这一技术，我们可以在运行时通过修改类的分发表中&lt;code&gt;selector&lt;/code&gt;对应的函数，来修改方法的实现。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+    
+    
+      <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
+    
+  </entry>
   
   <entry>
     <title>Objective-C Runtime 运行时之三：方法与消息</title>
@@ -5092,125 +5141,6 @@ CF_IMPLICIT_BRIDGING_DISABLED
     
     
       <category term="RunLoop" scheme="http://www.guiyongdong.com/tags/RunLoop/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>关于RAC的一些资料</title>
-    <link href="http://www.guiyongdong.com/2016/09/06/%E5%85%B3%E4%BA%8ERAC%E7%9A%84%E4%B8%80%E4%BA%9B%E8%B5%84%E6%96%99/"/>
-    <id>http://www.guiyongdong.com/2016/09/06/关于RAC的一些资料/</id>
-    <published>2016-09-06T06:47:26.000Z</published>
-    <updated>2016-09-06T07:19:42.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p>
-<a id="more"></a>
-<h5 id="何为函数式编程"><a href="#何为函数式编程" class="headerlink" title="何为函数式编程"></a>何为函数式编程</h5><ul>
-<li><a href="http://valiantcat.com/2016/06/03/%E4%BB%8E%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E5%88%B0%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" target="_blank" rel="external">从函数调用到函数式编程</a></li>
-</ul>
-<h5 id="RP入门"><a href="#RP入门" class="headerlink" title="RP入门"></a>RP入门</h5><ul>
-<li><a href="https://github.com/benjycui/introrx-chinese-edition" target="_blank" rel="external">RP入门</a></li>
-</ul>
-<h5 id="RAC思想"><a href="#RAC思想" class="headerlink" title="RAC思想"></a>RAC思想</h5><ul>
-<li><p><a href="http://www.jianshu.com/p/25922584bc43" target="_blank" rel="external">iOS Reactive Cocoa使用浅析</a></p>
-</li>
-<li><p><a href="http://blog.devtang.com/2016/01/03/reactive-cocoa-discussion/index.html" target="_blank" rel="external">ReactiveCocoa 讨论会</a></p>
-</li>
-</ul>
-<h5 id="RAC基础篇"><a href="#RAC基础篇" class="headerlink" title="RAC基础篇"></a>RAC基础篇</h5><ul>
-<li><p><a href="http://www.guiyongdong.com/2016/08/11/%E5%88%9D%E8%AF%86ReactiveCocoa/">初识ReactiveCocoa</a></p>
-</li>
-<li><p><a href="http://www.guiyongdong.com/2016/08/12/%E6%B7%B1%E5%85%A5ReactiveCocoa/">深入ReactiveCocoa</a></p>
-</li>
-</ul>
-<h5 id="非常不错的RAC入门教程"><a href="#非常不错的RAC入门教程" class="headerlink" title="非常不错的RAC入门教程"></a>非常不错的RAC入门教程</h5><ul>
-<li><p><a href="http://benbeng.leanote.com/post/ReactiveCocoaTutorial-part1" target="_blank" rel="external">ReactiveCocoa入门教程——第一部分对应的中文版</a></p>
-</li>
-<li><p><a href="http://blog.sunnyxx.com/2014/03/06/rac_1_macros/" target="_blank" rel="external">Reactive Cocoa Tutorial [1] = 神奇的Macros</a></p>
-</li>
-<li><p><a href="http://blog.sunnyxx.com/2014/03/06/rac_2_racstream/" target="_blank" rel="external">Reactive Cocoa Tutorial [2] = 百变RACStream</a></p>
-</li>
-<li><p><a href="http://blog.sunnyxx.com/2014/03/06/rac_3_racsignal/" target="_blank" rel="external">Reactive Cocoa Tutorial [3] = RACSignal的巧克力工厂</a></p>
-</li>
-<li><p><a href="http://blog.sunnyxx.com/2014/04/19/rac_4_filters/" target="_blank" rel="external">Reactive Cocoa Tutorial [4] = 只取所需的Filters</a></p>
-</li>
-<li><p><a href="http://leichunfeng.github.io/blog/2015/12/25/reactivecocoa-v2-dot-5-yuan-ma-jie-xi-zhi-jia-gou-zong-lan" target="_blank" rel="external">ReactiveCocoa v2.5 源码解析之架构总览</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/d262f2c55fbe" target="_blank" rel="external">RAC核心元素与信号流</a></p>
-</li>
-</ul>
-<h5 id="来自美团的对冷热信号的分析"><a href="#来自美团的对冷热信号的分析" class="headerlink" title="来自美团的对冷热信号的分析"></a>来自美团的对冷热信号的分析</h5><ul>
-<li><p><a href="http://tech.meituan.com/RACSignalSubscription.html" target="_blank" rel="external">RACSignal的Subscription深入分析 - 美团点评技术团队</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/talk-about-reactivecocoas-cold-signal-and-hot-signal-part-1.html" target="_blank" rel="external">细说ReactiveCocoa的冷信号与热信号（一）</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/talk-about-reactivecocoas-cold-signal-and-hot-signal-part-2.html" target="_blank" rel="external">细说ReactiveCocoa的冷信号与热信号（二）：为什么要区分冷热信号</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/talk-about-reactivecocoas-cold-signal-and-hot-signal-part-3.html" target="_blank" rel="external">细说ReactiveCocoa的冷信号与热信号（三）：怎么处理冷信号与热信号</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/potential-memory-leak-in-reactivecocoa.html" target="_blank" rel="external">ReactiveCocoa中潜在的内存泄漏及解决方案</a></p>
-</li>
-<li><p><a href="http://tech.meituan.com/RACSignalSubscription.html" target="_blank" rel="external">RACSignal的Subscription深入分析</a></p>
-</li>
-</ul>
-<h5 id="RAC源码解析"><a href="#RAC源码解析" class="headerlink" title="RAC源码解析"></a>RAC源码解析</h5><ul>
-<li><p><a href="http://www.jianshu.com/p/d262f2c55fbe" target="_blank" rel="external">RAC核心元素与信号流</a></p>
-</li>
-<li><p><a href="http://ios.jobbole.com/85019/" target="_blank" rel="external">剖析@weakify 和 @strongify</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/baeebca1f6f4" target="_blank" rel="external">ReactiveCocoa源码阅读之前序</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/d5e4dc7e592e" target="_blank" rel="external">ReactiveCocoa源码阅读之RACSignal(一)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/bcdea71ba824" target="_blank" rel="external">ReactiveCocoa源码阅读之RACSignal(二)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/7c1ddba2b3a4" target="_blank" rel="external">ReactiveCocoa源码阅读之bind函数</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/f939bf6afc93" target="_blank" rel="external">ReactiveCocoa源码阅读之攻略flatten</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/f3b00e90035d" target="_blank" rel="external">ReactiveCocoa源码阅读之switchToLatest/combineLatestWith</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/a151e5cb0aae" target="_blank" rel="external">ReactiveCocoa源码阅读之RACScheduler</a></p>
-</li>
-</ul>
-<h5 id="MVVM-With-ReactiveCocoa"><a href="#MVVM-With-ReactiveCocoa" class="headerlink" title="MVVM With ReactiveCocoa"></a>MVVM With ReactiveCocoa</h5><ul>
-<li><p><a href="http://www.jianshu.com/p/b2fe0920e3aa" target="_blank" rel="external">MVVM与ReactiveCocoa的运用(Part1)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/b51344f4f3a3" target="_blank" rel="external">MVVM与ReactiveCocoa的运用(Part2)</a></p>
-</li>
-<li><p><a href="https://www.raywenderlich.com/74106/mvvm-tutorial-with-reactivecocoa-part-1" target="_blank" rel="external">MVVM Tutorial with ReactiveCocoa: Part 1/2</a></p>
-</li>
-<li><p><a href="https://www.raywenderlich.com/74131/mvvm-tutorial-with-reactivecocoa-part-2" target="_blank" rel="external">MVVM Tutorial with ReactiveCocoa: Part 2/2</a></p>
-</li>
-<li><p><a href="http://leichunfeng.github.io/blog/2016/02/27/mvvm-with-reactivecocoa" target="_blank" rel="external">MVVM With ReactiveCocoa</a></p>
-</li>
-</ul>
-<h5 id="RAC其它"><a href="#RAC其它" class="headerlink" title="RAC其它"></a>RAC其它</h5><ul>
-<li><p><a href="http://www.jianshu.com/p/fccba7be1ca1" target="_blank" rel="external">ReactiveCocoa 4 文档翻译目录</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/0ea216239efb" target="_blank" rel="external">ReactiveCocoa 4 图解之一——事件（Event）</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/ba5247d713a9" target="_blank" rel="external">ReactiveCocoa 4 图解之二——监听器（Observer）</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/7a4a1d005aee" target="_blank" rel="external">ReactiveCocoa 4 图解之三——存根（Disposable)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/f0c945e5b2fe" target="_blank" rel="external">ReactiveCocoa 4 图解之五——信号（Signal)</a></p>
-</li>
-<li><p><a href="http://www.jianshu.com/p/617063a81136" target="_blank" rel="external">ReactiveCocoa 4 图解之六——信号发生器（SignalProducer）</a></p>
-</li>
-</ul>
-<!-- more -->
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;看了这么多RAC资料，在这里我整理了一下，以备学习。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="ReactiveCocoa" scheme="http://www.guiyongdong.com/categories/ReactiveCocoa/"/>
-    
-    
-      <category term="ReactiveCocoa" scheme="http://www.guiyongdong.com/tags/ReactiveCocoa/"/>
     
   </entry>
   

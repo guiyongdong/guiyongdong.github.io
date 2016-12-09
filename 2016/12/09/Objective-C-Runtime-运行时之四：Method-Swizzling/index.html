@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>查找算法之线性索引查找法 - 贵大头的博客</title>
+    <title>Objective-C Runtime 运行时之四：Method Swizzling - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -16,24 +16,16 @@
     
         <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
     
-    <meta name="description" content="数据结构的最终目的是提高数据的处理速度，索引是为了加快查找速度而设计的一种数据结构，索引就是把一个关键字与它对应的记录相关联的过程，一个索引由若干个索引项构成，每个索引项至少包含关键字和其对应的记录在存储器中的位置等信息。索引技术是组织大型数据库以及磁盘文件的一种重要技术。
-索引按照结构可以分为线性索引、树形索引和多级索引。这里只介绍线性索引技术。所谓线性索引就是将索引项集合组织为线性结构，也称为">
+    <meta name="description" content="理解Method Swizzling是学习Runtime机制的一个很好的机会。Method Swizzling是改变一个selector的实际实现的技术。通过这一技术，我们可以在运行时通过修改类的分发表中selector对应的函数，来修改方法的实现。">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="查找算法之线性索引查找法">
-<meta property="og:url" content="http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/index.html">
+<meta property="og:title" content="Objective-C Runtime 运行时之四：Method Swizzling">
+<meta property="og:url" content="http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="数据结构的最终目的是提高数据的处理速度，索引是为了加快查找速度而设计的一种数据结构，索引就是把一个关键字与它对应的记录相关联的过程，一个索引由若干个索引项构成，每个索引项至少包含关键字和其对应的记录在存储器中的位置等信息。索引技术是组织大型数据库以及磁盘文件的一种重要技术。
-索引按照结构可以分为线性索引、树形索引和多级索引。这里只介绍线性索引技术。所谓线性索引就是将索引项集合组织为线性结构，也称为">
-<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/11.png?raw=true">
-<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/12.png?raw=true">
-<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/13.png?raw=true">
-<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/14.png?raw=true">
-<meta property="og:updated_time" content="2016-11-15T03:42:28.000Z">
+<meta property="og:description" content="理解Method Swizzling是学习Runtime机制的一个很好的机会。Method Swizzling是改变一个selector的实际实现的技术。通过这一技术，我们可以在运行时通过修改类的分发表中selector对应的函数，来修改方法的实现。">
+<meta property="og:updated_time" content="2016-12-09T06:05:26.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="查找算法之线性索引查找法">
-<meta name="twitter:description" content="数据结构的最终目的是提高数据的处理速度，索引是为了加快查找速度而设计的一种数据结构，索引就是把一个关键字与它对应的记录相关联的过程，一个索引由若干个索引项构成，每个索引项至少包含关键字和其对应的记录在存储器中的位置等信息。索引技术是组织大型数据库以及磁盘文件的一种重要技术。
-索引按照结构可以分为线性索引、树形索引和多级索引。这里只介绍线性索引技术。所谓线性索引就是将索引项集合组织为线性结构，也称为">
-<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/11.png?raw=true">
+<meta name="twitter:title" content="Objective-C Runtime 运行时之四：Method Swizzling">
+<meta name="twitter:description" content="理解Method Swizzling是学习Runtime机制的一个很好的机会。Method Swizzling是改变一个selector的实际实现的技术。通过这一技术，我们可以在运行时通过修改类的分发表中selector对应的函数，来修改方法的实现。">
     
     
         
@@ -225,19 +217,19 @@
         <div class="post-header main-content-wrap text-left">
     
         <h1 class="post-title" itemprop="headline">
-            查找算法之线性索引查找法
+            Objective-C Runtime 运行时之四：Method Swizzling
         </h1>
     
     <div class="post-meta">
-    <time itemprop="datePublished" datetime="2016-11-14T15:28:07+08:00">
+    <time itemprop="datePublished" datetime="2016-12-09T13:02:51+08:00">
 	
-		    11月 14, 2016
+		    12月 09, 2016
     	
     </time>
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/categories/算法/">算法</a>
+    <a class="category-link" href="/categories/Runtime/">Runtime</a>
 
 
     
@@ -247,61 +239,33 @@
     
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
-            <p>数据结构的最终目的是提高数据的处理速度，索引是为了加快查找速度而设计的一种数据结构，<strong>索引就是把一个关键字与它对应的记录相关联的过程，</strong>一个索引由若干个索引项构成，每个索引项至少包含关键字和其对应的记录在存储器中的位置等信息。索引技术是组织大型数据库以及磁盘文件的一种重要技术。</p>
-<p>索引按照结构可以分为线性索引、树形索引和多级索引。这里只介绍线性索引技术。<strong>所谓线性索引就是将索引项集合组织为线性结构，也称为索引表。</strong>这里介绍三种线性索引：<strong>稠密索引、分块索引、倒排索引。</strong></p>
+            <p>理解<code>Method Swizzling</code>是学习Runtime机制的一个很好的机会。<code>Method Swizzling</code>是改变一个<code>selector</code>的实际实现的技术。通过这一技术，我们可以在运行时通过修改类的分发表中<code>selector</code>对应的函数，来修改方法的实现。</p>
 <a id="more"></a>
-<h3 id="稠密索引"><a href="#稠密索引" class="headerlink" title="稠密索引"></a>稠密索引</h3><hr>
-<p><strong>稠密索引是指在线性索引中，将数据集中的每一个记录对应一个索引项。</strong></p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/11.png?raw=true"><br></div>
-
-<p><strong>对于稠密索引这个索引表来说，索引项一定是按照关键码有序的排列</strong></p>
-<p>索引项也有序也就意味着，我们要查找关键字时，可以用到折半，插值，斐波那契等有序查找算法，大大提高了效率。比如上图，我要查找关键字是18的记录，如果直接从右侧的数据表中查找，那只能顺序查找，需要查找6次才可以查到结果。而如果是从左侧的索引表中查找，只需两侧折半查找就可以得到18对应的指针，最终查找到结果。</p>
-<p>这显然是稠密索引优点，到时如果数据集非常大，比如上亿，那也就意味着索引也得同样的数据集长度规模，对于内存有限的计算机来说 ，可能就需要反复去访问磁盘，查找性能反而大大下降了。</p>
-<h3 id="分块索引"><a href="#分块索引" class="headerlink" title="分块索引"></a>分块索引</h3><hr>
-<p>稠密索引因为索引项与数据集的记录个数相同，所以空间代价很大，为了减少索引项的个数，我们可以对数据集进行分块，使其分块有序，然后再对每一块建立索引项，从而减少索引项的个数。</p>
-<p><strong>分块有序，是把数据集的记录分成了若干块，并且这些快需要满足两个条件：</strong></p>
+<p>例如，我们想跟踪在程序中每一个ViewController展示给用户的次数：当然，我们可以在每个ViewController的viewDidAppear中添加跟踪代码，但是这太过麻烦，需要在每个ViewController中写重复的代码。创建一个子类可能是一种实现方式，但需要同时创建UIViewController，UITableController，UINavigationController及其他UIKit中ViewController的子类，这样会产生许多重复的代码。</p>
+<p>这种情况下，我们就可以使用<code>Method Swizzling</code>，如下代码所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">&lt;objc/runtime.h&gt;</span></span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">UIViewController</span> (<span class="title">Tracking</span>)</span></div><div class="line">+ (<span class="keyword">void</span>)load &#123;</div><div class="line">    <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</div><div class="line">    <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</div><div class="line">        Class <span class="keyword">class</span> = [<span class="keyword">self</span> <span class="keyword">class</span>];         </div><div class="line">        <span class="comment">// When swizzling a class method, use the following:</span></div><div class="line">        <span class="comment">// Class class = object_getClass((id)self);</span></div><div class="line">        SEL originalSelector = <span class="keyword">@selector</span>(viewWillAppear:);</div><div class="line">        SEL swizzledSelector = <span class="keyword">@selector</span>(xxx_viewWillAppear:);</div><div class="line">        Method originalMethod = class_getInstanceMethod(<span class="keyword">class</span>, originalSelector);</div><div class="line">        Method swizzledMethod = class_getInstanceMethod(<span class="keyword">class</span>, swizzledSelector);</div><div class="line">        <span class="built_in">BOOL</span> didAddMethod = class_addMethod(<span class="keyword">class</span>,</div><div class="line">                originalSelector,</div><div class="line">                method_getImplementation(swizzledMethod),</div><div class="line">                method_getTypeEncoding(swizzledMethod));</div><div class="line">        <span class="keyword">if</span> (didAddMethod) &#123;</div><div class="line">            class_replaceMethod(<span class="keyword">class</span>,</div><div class="line">                swizzledSelector,</div><div class="line">                method_getImplementation(originalMethod),</div><div class="line">                method_getTypeEncoding(originalMethod));</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            method_exchangeImplementations(originalMethod, swizzledMethod);</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div><div class="line"><span class="meta">#pragma mark - Method Swizzling</span></div><div class="line">- (<span class="keyword">void</span>)xxx_viewWillAppear:(<span class="built_in">BOOL</span>)animated &#123;</div><div class="line">    [<span class="keyword">self</span> xxx_viewWillAppear:animated];</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"viewWillAppear: %@"</span>, <span class="keyword">self</span>);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>在这里，我们通过<code>Method Swizzling</code>修改了UIViewController的<code>@selector(viewWillAppear:)</code>对应的函数指针，使其实现指向了我们自定义的<code>xxx_viewWillAppear</code>的实现。这样，当UIViewController及其子类的对象调用<code>viewWillAppear</code>时，都会打印一条日志信息。</p>
+<p>上面的例子很好地展示了使用<code>Method Swizlling</code>来一个类中注入一些我们新的操作。当然，还有许多场景可以使用<code>Mehtod Swizlling</code>，在此不多举例。在此我们说说使用<code>method Swizlling</code>需要注意的一些问题。</p>
+<h3 id="Swizzling应该总是在-load中执行"><a href="#Swizzling应该总是在-load中执行" class="headerlink" title="Swizzling应该总是在+load中执行"></a>Swizzling应该总是在+load中执行</h3><p>在Objective-C中，运行时会自动调用每个类的两个方法。<code>+load</code><em>会在类初始加载时调用</em>，<code>+initialize</code><em>会在第一次调用类的类方法或实例方法之前被调用</em>。这两个方法是可选的，且只有在实现了它们时才会被调用。由于method swizzling会影响到类的全局状态，因此要尽量避免在并发处理中出现竞争的情况。+load能保证在类的初始化过程中被加载，并保证这种改变应用级别的行为的一致性。相比之下，+initialize在其执行时不提供这种保证–事实上，如果在应用中没为给这个类发送消息，则它可能永远不会被调用。</p>
+<h3 id="Swizzling应该总是在dispatch-once中执行"><a href="#Swizzling应该总是在dispatch-once中执行" class="headerlink" title="Swizzling应该总是在dispatch_once中执行"></a>Swizzling应该总是在dispatch_once中执行</h3><p>与上面相同，因为<code>swizzling</code>会改变全局状态，所以我们需要在运行时采取一些预防措施。原子性就是这样一种措施，它确保代码只被执行一次，不管有多少个线程。GCD的<code>dispatch_once</code>可以确保这种行为，我们应该将其作为<code>method swizzling</code>的最佳实践。</p>
+<h3 id="选择器、方法与实现"><a href="#选择器、方法与实现" class="headerlink" title="选择器、方法与实现"></a>选择器、方法与实现</h3><p>在Objective-C中，选择器(<code>selector</code>)、方法(<code>method</code>)和实现(<code>implementation</code>)是运行时中一个特殊点，虽然在一般情况下，这些术语更多的是用在消息发送的过程描述中。</p>
+<p>以下是<code>Objective-C Runtime Reference</code>中的对这几个术语一些描述：</p>
 <ul>
-<li><strong>块内无序，</strong>即每一块内的记录不要求有序，当然，如果块内记录有序更理想，不过块内有序需要大量时间和空间的代价，通常要求快内无序。</li>
-<li><strong>块间有序,</strong>例如，要求第二块所有记录的关键字均要大于第一块中所有记录的关键字，第三块的所有记录的关键字均要大于第二块的所有记录关键字……因为只有块间有序，才有可能在查找时带来效率。</li>
+<li><code>Selector(typedef struct objc_selector *SEL)</code>：用于在运行时中表示一个方法的名称。一个方法选择器是一个C字符串，它是在Objective-C运行时被注册的。选择器由编译器生成，并且在类被加载时由运行时自动做映射操作。</li>
+<li><code>Method(typedef struct objc_method *Method)</code>：在类定义中表示方法的类型</li>
+<li><code>Implementation(typedef id (*IMP)(id, SEL, ...))</code>：这是一个指针类型，指向方法实现函数的开始位置。这个函数使用为当前CPU架构实现的标准C调用规范。每一个参数是指向对象自身的指针(self)，第二个参数是方法选择器。然后是方法的实际参数。</li>
 </ul>
-<p><strong>对于分块有序的数据集，将每块对应一个索引项，这种索引方法叫做分块索引</strong></p>
-<p>如图所示，定义的分块索引的索引项结构分三个数据项：</p>
-<ul>
-<li>最大关键码，它存储每一块中的最大关键字，这样的好处就是可以使得在它之后的下一块中的最小关键字也能比这一块的最大关键字要大;</li>
-<li>存储了块中的记录个数，以便于循环时使用;</li>
-<li>用于指向块首数据元素的指针，便于开始对这一块中记录进行遍历。</li>
-</ul>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/12.png?raw=true"><br></div>
-
-<p>在分块索引表中查找，就是分两步进行：</p>
+<p>理解这几个术语之间的关系最好的方式是：一个类维护一个运行时可接收的消息分发表；分发表中的每个入口是一个方法(Method)，其中key是一个特定名称，即选择器(SEL)，其对应一个实现(IMP)，即指向底层C函数的指针。</p>
+<p>为了swizzle一个方法，我们可以在分发表中将一个方法的现有的选择器映射到不同的实现，而将该选择器对应的原始实现关联到一个新的选择器中。</p>
+<h3 id="调用-cmd"><a href="#调用-cmd" class="headerlink" title="调用_cmd"></a>调用_cmd</h3><p>我们回过头来看看前面新的方法的实现代码：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)xxx_viewWillAppear:(<span class="built_in">BOOL</span>)animated &#123;</div><div class="line">    [<span class="keyword">self</span> xxx_viewWillAppear:animated];</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"viewWillAppear: %@"</span>, <span class="built_in">NSStringFromClass</span>([<span class="keyword">self</span> <span class="keyword">class</span>]));</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>咋看上去是会导致无限循环的。但令人惊奇的是，并没有出现这种情况。在swizzling的过程中，方法中的<code>[self xxx_viewWillAppear:animated]</code>已经被重新指定到UIViewController类的<code>-viewWillAppear:</code>中。在这种情况下，不会产生无限循环。不过如果我们调用的是<code>[self viewWillAppear:animated]</code>，则会产生无限循环，因为这个方法的实现在运行时已经被重新指定为<code>xxx_viewWillAppear:</code>了。</p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>Swizzling通常被称作是一种黑魔法，容易产生不可预知的行为和无法预见的后果。虽然它不是最安全的，但如果遵从以下几点预防措施的话，还是比较安全的：</p>
 <ol>
-<li>在分块索引表中查找关键字所在的块。由于分块索引表是快间有序的，因此很容易利用折半，插值等算法得到结果。</li>
-<li>根据块首指针找到相应的块，并在块中顺序查找关键码。因为块中可以是无序的，因此只能顺序查找。</li>
+<li>总是调用方法的原始实现(除非有更好的理由不这么做)：API提供了一个输入与输出约定，但其内部实现是一个黑盒。Swizzle一个方法而不调用原始实现可能会打破私有状态底层操作，从而影响到程序的其它部分。</li>
+<li>避免冲突：给自定义的分类方法加前缀，从而使其与所依赖的代码库不会存在命名冲突。</li>
+<li>明白是怎么回事：简单地拷贝粘贴swizzle代码而不理解它是如何工作的，不仅危险，而且会浪费学习Objective-C运行时的机会。阅读<code>Objective-C Runtime Reference</code>和查看<code>&lt;objc/runtime.h&gt;</code>头文件以了解事件是如何发生的。</li>
+<li>小心操作：无论我们对Foundation, UIKit或其它内建框架执行Swizzle操作抱有多大信心，需要知道在下一版本中许多事可能会不一样。</li>
 </ol>
-<p>分块索引的时间复杂度：<br>设n个记录的数据集被平分成m块，每块中有t条记录，显然n=m×t,或者说m=n/t。再假设L<sub>b</sub>为查找索引表的平均查找长度，因最好与最差的等概率原则，所以L<sub>b</sub>的平均长度为(m+1)/2。L<sub>w</sub>为块中查找记录的平均查找长度，同理可知它的平均查找长度为(t+1)/2。这样分块索引查找的平均查找长度为:</p>
-<div align="center"><br>ASL<sub>w</sub>=L<sub>b</sub>+L<sub>w</sub>=(m+1)/2+(t+1)/2=(1/2)*((n/t)+t)+1<br></div>
-
-<p>注意上面这个式子的推导是为了让整个分块索引查找长度依赖n和t两个变量。从这里我们得到，平均长度不仅仅取决于数据集的总记录数n，还和每一个块的记录数t有关，最佳的情况就是分的块数m和块中的记录数t相同，此时意味着n=m×t=t<sup>2</sup>,即ASL<sub>w</sub>=(1/2)*((n/t)+t)+1=&radic;n+1</p>
-<p>可见，分块索引的效率比之顺序查找的O(n)是高了不少。不过显然它与折半查找的O(logn)相比还是有不小的差距，因此在确定所在块的过程中，由于块间有序，所以可以应用折半，插值等手段来提高效率。</p>
-<p>总的来说，分块索引在兼顾了对细分块不需要有序的情况下，大大增加了整体查找的速度，所以普遍被用于数据表查找等技术的应用中。</p>
-<h3 id="倒排索引"><a href="#倒排索引" class="headerlink" title="倒排索引"></a>倒排索引</h3><hr>
-<p>在我们使用百度或者谷歌搜索的时候，当我们输入某个信息，搜索引擎都会在短时间内给我们一些结果，如图，它是用到什么算法技术实现的高效查找呢？</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/13.png?raw=true"><br></div>
-
-<p>这里简单介绍，也算是最基础的搜索技术——倒排索引。<br>当然，搜索引擎所使用到的算法绝对比这复杂的多。<br>例如我们看如下两句话：</p>
-<ol>
-<li>Books and friends should be few but good</li>
-<li>A good book is a good friend</li>
-</ol>
-<p>如图所示，我们将单词做了排序，也就是表格显示了每个不同的单词分别出现在哪篇文章中。</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/14.png?raw=true"><br></div>
-
-<p>有了这张表，我们在查每个单词时都能很快的查找到这个单词在哪篇文章。<br>在这里这张单词表就是索引表，索引项的通用结构是：</p>
-<ul>
-<li>次关键码，例如上表中的“英文单词”</li>
-<li>记录号表，例如上表中的“文章编号”</li>
-</ul>
-<p>其中记录号表存储具有相同次关键字的所有记录的记录号（可以是指向记录的指针或者是该记录的主关键字）。这样的索引方法就是倒排索引。</p>
 
             
         </div>
@@ -311,7 +275,7 @@
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">标签</span><br/>
                 
-    <a class="tag tag--primary tag--small t-link" href="/tags/查找/">查找</a>
+    <a class="tag tag--primary tag--small t-link" href="/tags/Runtime/">Runtime</a>
 
             </div>
         
@@ -320,7 +284,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/15/排序算法总结/"  data-tooltip="排序算法总结">
+                    <a class="post-action-btn btn btn--disabled">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -328,7 +292,7 @@
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/10/查找算法之有序表查找/" data-tooltip="查找算法之有序表查找">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/" data-tooltip="Objective-C Runtime 运行时之三：方法与消息">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -343,12 +307,12 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/&amp;title=查找算法之线性索引查找法">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/&amp;title=Objective-C Runtime 运行时之四：Method Swizzling">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -366,7 +330,7 @@
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -387,7 +351,7 @@
             
                 <div class="duoshuo">
 	<!-- 多说评论框 start -->
-	<div class="ds-thread" data-thread-key=“查找算法之线性索引查找法" data-title="查找算法之线性索引查找法" data-url="http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/"></div>
+	<div class="ds-thread" data-thread-key=“Objective-C-Runtime-运行时之四：Method-Swizzling" data-title="Objective-C Runtime 运行时之四：Method Swizzling" data-url="http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/"></div>
 	<!-- 多说评论框 end -->
 	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 	<script type="text/javascript">
@@ -424,7 +388,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/15/排序算法总结/"  data-tooltip="排序算法总结">
+                    <a class="post-action-btn btn btn--disabled">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -432,7 +396,7 @@
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/10/查找算法之有序表查找/" data-tooltip="查找算法之有序表查找">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/" data-tooltip="Objective-C Runtime 运行时之三：方法与消息">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -447,12 +411,12 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/&amp;title=查找算法之线性索引查找法">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/&amp;title=Objective-C Runtime 运行时之四：Method Swizzling">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -470,7 +434,7 @@
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -491,12 +455,12 @@
                 <div id="share-options-bar" class="share-options-bar" data-behavior="4">
     <ul class="share-options">
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/">
                 <i class="fa fa-weibo"></i><span>微博</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/">
                 <i class="fa fa-qq"></i><span>QQ</span>
             </a>
         </li>
@@ -511,7 +475,7 @@
 
 
 
-<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/11/14/查找算法之线性索引查找法/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
