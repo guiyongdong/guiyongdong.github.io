@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2016-12-09T06:05:26.000Z</updated>
+  <updated>2017-02-05T11:34:45.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,249 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>SDWebImage源码分析</title>
+    <link href="http://www.guiyongdong.com/2017/01/15/SDWebImage%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    <id>http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/</id>
+    <published>2017-01-15T07:14:25.000Z</published>
+    <updated>2017-02-05T11:34:45.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>SDWebImage是一个开源的第三方库，它提供了UIImageView的一个分类，以支持从远程服务器下载并缓存图片的功能。它具有以下功能：</p>
+<ol>
+<li>提供UIImageView的一个分类，以支持网络图片的加载与缓存管理</li>
+<li>一个异步的图片加载器</li>
+<li>一个异步的内存+磁盘图片缓存</li>
+<li>支持GIF图片</li>
+<li>支持WebP图片</li>
+<li>后台图片解压缩处理</li>
+<li>确保同一个URL不会被反复加载</li>
+<li>确保下载及缓存时，主线程不被堵塞</li>
+</ol>
+<p>从github上对SDWebImage使用情况可以看出，SDWebImage在图片下载及缓存的处理还是被认可的。在本文中，我们主要从源码的角度来分析一下SDWebImage的实现机制。讨论的内容将主要集中在图片的下载及缓存，而不包含对GIF图片及WebP图片的支持操作。不过在3.8.2版本以后，SDWebImage将会使用NSURLSession代替原来的NSURLConnection，主要是更新的是下载功能部分。具体变化可以看:<a href="https://github.com/rs/SDWebImage/blob/master/Docs/SDWebImage-4.0-Migration-guide.md" target="_blank" rel="external">点这里</a>。目前截止到当前时间，最新的版本为4.0.0-beta2,这篇文章是在4.0.0-beta2基础上进行剖析。</p>
+<a id="more"></a>
+<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>在下载的过程中，程序会根据设置的不同的下载选项，执行不同的操作。下载选项由枚举<code>SDWebImageDownloaderOptions</code>定义，具体如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="built_in">NS_OPTIONS</span>(<span class="built_in">NSUInteger</span>, SDWebImageDownloaderOptions) &#123;</div><div class="line">    SDWebImageDownloaderLowPriority = <span class="number">1</span> &lt;&lt; <span class="number">0</span>,</div><div class="line">    SDWebImageDownloaderProgressiveDownload = <span class="number">1</span> &lt;&lt; <span class="number">1</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 默认情况下请求不使用NSURLCache，如果设置该选项，则以默认的缓存策略来使用NSURLCache</span></div><div class="line">    SDWebImageDownloaderUseNSURLCache = <span class="number">1</span> &lt;&lt; <span class="number">2</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 如果从NSURLCache缓存中读取图片，则使用nil作为参数来调用完成block</span></div><div class="line">    SDWebImageDownloaderIgnoreCachedResponse = <span class="number">1</span> &lt;&lt; <span class="number">3</span>,</div><div class="line">    </div><div class="line">	<span class="comment">// 在iOS 4+系统上，允许程序进入后台后继续下载图片。该操作通过向系统申请额外的时间来完成后台下载。如果后台任务终止，则操作会被取消</span></div><div class="line">    SDWebImageDownloaderContinueInBackground = <span class="number">1</span> &lt;&lt; <span class="number">4</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 通过设置NSMutableURLRequest.HTTPShouldHandleCookies = YES来处理存储在NSHTTPCookieStore中的cookie</span></div><div class="line">    SDWebImageDownloaderHandleCookies = <span class="number">1</span> &lt;&lt; <span class="number">5</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 允许不受信任的SSL证书。主要用于测试目的。</span></div><div class="line">    SDWebImageDownloaderAllowInvalidSSLCertificates = <span class="number">1</span> &lt;&lt; <span class="number">6</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 将图片下载放到高优先级队列中</span></div><div class="line">    SDWebImageDownloaderHighPriority = <span class="number">1</span> &lt;&lt; <span class="number">7</span>,</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>可以看出，这些选项主要涉及到下载的优先级、缓存、后台任务执行、cookie处理以及认证几个方面.</p>
+<h4 id="下载顺序"><a href="#下载顺序" class="headerlink" title="下载顺序"></a>下载顺序</h4><p>SDWebImage的下载操作是按一定顺序来处理的，它定义了两种下载顺序，如下所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="built_in">NS_ENUM</span>(<span class="built_in">NSInteger</span>, SDWebImageDownloaderExecutionOrder) &#123;</div><div class="line">    </div><div class="line">    <span class="comment">// 以队列的方式，按照先进先出的顺序下载。这是默认的下载顺序</span></div><div class="line">    SDWebImageDownloaderFIFOExecutionOrder,</div><div class="line">    </div><div class="line">    <span class="comment">// 以栈的方式，按照后进先出的顺序下载。</span></div><div class="line">    SDWebImageDownloaderLIFOExecutionOrder</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<h4 id="下载管理器"><a href="#下载管理器" class="headerlink" title="下载管理器"></a>下载管理器</h4><p>SDWebImageDownloader下载管理器是一个单例5类，它主要负责图片的下载操作的管理。图片的下载是放在一个NSOperationQueue操作队列中来完成的，其声明如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">@property</span> (<span class="keyword">strong</span>, <span class="keyword">nonatomic</span>) <span class="built_in">NSOperationQueue</span> *downloadQueue;</div></pre></td></tr></table></figure>
+<p>默认情况下，队列最大并发数是6.如果需要的话，我们可以通过SDWebImageDownloader类的<code>maxConcurrentDownloads</code>属性来修改。</p>
+<p>所有下载操作的网络响应序列化处理是放在一个自定义的并行调度队列中来处理的，其声明及定义如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">@property</span> (SDDispatchQueueSetterSementics, <span class="keyword">nonatomic</span>) <span class="built_in">dispatch_queue_t</span> barrierQueue;</div><div class="line">- (<span class="keyword">id</span>)init &#123;</div><div class="line">    <span class="keyword">if</span> ((<span class="keyword">self</span> = [<span class="keyword">super</span> init])) &#123;</div><div class="line">        ...</div><div class="line">        _barrierQueue = dispatch_queue_create(<span class="string">"com.hackemist.SDWebImageDownloaderBarrierQueue"</span>, DISPATCH_QUEUE_CONCURRENT);</div><div class="line">		...</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>每一个图片的下载都会对应一些回调操作，如下载进度回调，下载完成回调等，这些回调操作是以block形式来呈现，为此在<code>SDWebImageDownloader.h</code>中定义了几个block，如下所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 下载进度</span></div><div class="line"><span class="keyword">typedef</span> <span class="keyword">void</span>(^SDWebImageDownloaderProgressBlock)(<span class="built_in">NSInteger</span> receivedSize, <span class="built_in">NSInteger</span> expectedSize);</div><div class="line"><span class="comment">// 下载完成</span></div><div class="line"><span class="keyword">typedef</span> <span class="keyword">void</span>(^SDWebImageDownloaderCompletedBlock)(<span class="built_in">UIImage</span> *image, <span class="built_in">NSData</span> *data, <span class="built_in">NSError</span> *error, <span class="built_in">BOOL</span> finished);</div><div class="line"><span class="comment">// Header过滤</span></div><div class="line"><span class="keyword">typedef</span> <span class="built_in">NSDictionary</span> *(^SDWebImageDownloaderHeadersFilterBlock)(<span class="built_in">NSURL</span> *url, <span class="built_in">NSDictionary</span> *headers);</div></pre></td></tr></table></figure>
+<p>图片下载的这些回调信息存储在SDWebImageDownloader类的<code>URLOperations</code>属性中，该属性是一个字典，key是图片的URL地址，value则是一个<code>SDWebImageDownloaderOperation</code>对象，包含每个图片的多组回调信息。由于我们允许多个图片同时下载，因此可能会有多个线程同时操作<code>URLOperations</code>属性。为了保证<code>URLOperations</code>操作（添加、删除）的线程安全性，SDWebImageDownloader将这些操作作为一个个任务放到barrierQueue队列中，并设置屏障来确保同一时间只有一个线程操作<code>URLOperations</code>属性，我们以添加操作为例，如下代码所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">nullable</span> SDWebImageDownloadToken *)addProgressCallback:(SDWebImageDownloaderProgressBlock)progressBlock</div><div class="line">                                           completedBlock:(SDWebImageDownloaderCompletedBlock)completedBlock</div><div class="line">                                                   forURL:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> *)url</div><div class="line">                                           createCallback:(SDWebImageDownloaderOperation *(^)())createCallback &#123;</div><div class="line">    </div><div class="line">	...</div><div class="line">	</div><div class="line">    <span class="comment">// 1. 以dispatch_barrier_sync操作来保证同一时间只有一个线程能对URLOperations进行操作</span></div><div class="line">    dispatch_barrier_sync(<span class="keyword">self</span>.barrierQueue, ^&#123;</div><div class="line">        SDWebImageDownloaderOperation *operation = <span class="keyword">self</span>.URLOperations[url];</div><div class="line">        <span class="keyword">if</span> (!operation) &#123;</div><div class="line">        	<span class="comment">//2. 处理第一次URL的下载</span></div><div class="line">            operation = createCallback();</div><div class="line">            <span class="keyword">self</span>.URLOperations[url] = operation;</div><div class="line"></div><div class="line">            __<span class="keyword">weak</span> SDWebImageDownloaderOperation *woperation = operation;</div><div class="line">            operation.completionBlock = ^&#123;</div><div class="line">              SDWebImageDownloaderOperation *soperation = woperation;</div><div class="line">              <span class="keyword">if</span> (!soperation) <span class="keyword">return</span>;</div><div class="line">              <span class="keyword">if</span> (<span class="keyword">self</span>.URLOperations[url] == soperation) &#123;</div><div class="line">                  [<span class="keyword">self</span>.URLOperations removeObjectForKey:url];</div><div class="line">              &#125;;</div><div class="line">            &#125;;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 3. 处理同一URL的同步下载请求的单个下载</span></div><div class="line">        <span class="keyword">id</span> downloadOperationCancelToken = [operation addHandlersForProgress:progressBlock completed:completedBlock];</div><div class="line"></div><div class="line">        token = [SDWebImageDownloadToken new];</div><div class="line">        token.url = url;</div><div class="line">        token.downloadOperationCancelToken = downloadOperationCancelToken;</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> token;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>整个下载管理器对于下载请求的管理都是放在<code>downloadImageWithURL:options:progress:completed:</code>方法里面来处理的，该方法调用了上面所提到的<code>addProgressCallback:andCompletedBlock:forURL:createCallback:</code>方法来将请求的信息存入管理器中，同时在创建回调的block中创建新的操作，配置之后将其放入<code>downloadQueue</code>操作队列中，最后方法返回新创建的操作。其具体实现如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">nullable</span> SDWebImageDownloadToken *)downloadImageWithURL:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> *)url</div><div class="line">                                                   options:(SDWebImageDownloaderOptions)options</div><div class="line">                                                  progress:(<span class="keyword">nullable</span> SDWebImageDownloaderProgressBlock)progressBlock</div><div class="line">                                                 completed:(<span class="keyword">nullable</span> SDWebImageDownloaderCompletedBlock)completedBlock &#123;</div><div class="line">    __<span class="keyword">weak</span> SDWebImageDownloader *wself = <span class="keyword">self</span>;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> addProgressCallback:progressBlock completedBlock:completedBlock forURL:url createCallback:^SDWebImageDownloaderOperation *&#123;</div><div class="line">        __<span class="keyword">strong</span> __<span class="keyword">typeof</span> (wself) sself = wself;</div><div class="line">        <span class="comment">//超时时间</span></div><div class="line">        <span class="built_in">NSTimeInterval</span> timeoutInterval = sself.downloadTimeout;</div><div class="line">        <span class="keyword">if</span> (timeoutInterval == <span class="number">0.0</span>) &#123;</div><div class="line">            timeoutInterval = <span class="number">15.0</span>;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="comment">// 1. 创建请求对象，并根据options参数设置其属性</span></div><div class="line">        <span class="comment">// 为了避免潜在的重复缓存(NSURLCache + SDImageCache)，如果没有明确告知需要缓存，则禁用图片请求的缓存操作</span></div><div class="line">        <span class="built_in">NSMutableURLRequest</span> *request = [[<span class="built_in">NSMutableURLRequest</span> alloc] initWithURL:url cachePolicy:(options &amp; SDWebImageDownloaderUseNSURLCache ? <span class="built_in">NSURLRequestUseProtocolCachePolicy</span> : <span class="built_in">NSURLRequestReloadIgnoringLocalCacheData</span>) timeoutInterval:timeoutInterval];</div><div class="line">        request.HTTPShouldHandleCookies = (options &amp; SDWebImageDownloaderHandleCookies);</div><div class="line">        request.HTTPShouldUsePipelining = <span class="literal">YES</span>;</div><div class="line">        <span class="keyword">if</span> (sself.headersFilter) &#123;</div><div class="line">            request.allHTTPHeaderFields = sself.headersFilter(url, [sself.HTTPHeaders <span class="keyword">copy</span>]);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">else</span> &#123;</div><div class="line">            request.allHTTPHeaderFields = sself.HTTPHeaders;</div><div class="line">        &#125;</div><div class="line">        SDWebImageDownloaderOperation *operation = [[sself.operationClass alloc] initWithRequest:request inSession:sself.session options:options];</div><div class="line">        operation.shouldDecompressImages = sself.shouldDecompressImages;</div><div class="line">        </div><div class="line">        <span class="keyword">if</span> (sself.urlCredential) &#123;</div><div class="line">            operation.credential = sself.urlCredential;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (sself.username &amp;&amp; sself.password) &#123;</div><div class="line">            operation.credential = [<span class="built_in">NSURLCredential</span> credentialWithUser:sself.username password:sself.password persistence:<span class="built_in">NSURLCredentialPersistenceForSession</span>];</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="keyword">if</span> (options &amp; SDWebImageDownloaderHighPriority) &#123;</div><div class="line">            operation.queuePriority = <span class="built_in">NSOperationQueuePriorityHigh</span>;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (options &amp; SDWebImageDownloaderLowPriority) &#123;</div><div class="line">            operation.queuePriority = <span class="built_in">NSOperationQueuePriorityLow</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 2. 将操作加入到操作队列downloadQueue中</span></div><div class="line">        <span class="comment">// 如果是LIFO顺序，则将新的操作作为原队列中最后一个操作的依赖，然后将新操作设置为最后一个操作</span></div><div class="line">        [sself.downloadQueue addOperation:operation];</div><div class="line">        <span class="keyword">if</span> (sself.executionOrder == SDWebImageDownloaderLIFOExecutionOrder) &#123;</div><div class="line">            <span class="comment">// Emulate LIFO execution order by systematically adding new operations as last operation's dependency</span></div><div class="line">            [sself.lastAddedOperation addDependency:operation];</div><div class="line">            sself.lastAddedOperation = operation;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">return</span> operation;</div><div class="line">    &#125;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>另外，每个下载操作的超时时间可以通过downloadTimeout属性来设置，默认值为15秒。</p>
+<h4 id="下载操作"><a href="#下载操作" class="headerlink" title="下载操作"></a>下载操作</h4><p>每个图片的下载操作都是一个Operation操作。。我们在上面分析过这个操作的创建及加入操作队列的过程。现在我们来看看单个操作的具体实现。</p>
+<p>SDWebImage定义了一个协议，即SDWebImageOperation作为图片下载操作的基础协议。它只声明了一个cancel方法，用于取消操作。协议的具体声明如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">SDWebImageOperation</span> &lt;<span class="title">NSObject</span>&gt;</span></div><div class="line">- (<span class="keyword">void</span>)cancel;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>SDWebImage还定义了一个下载协议，即SDWebImageDownloaderOperationInterface，它允许用户自定义下载操作，当然，SDWebImage也提供了自己的下载类，即<code>SDWebImageDownloaderOperation</code>，它继承自NSOperation，并采用了<code>SDWebImageOperation</code>和<code>SDWebImageDownloaderOperationInterface</code>协议。并且实现他们的代理方法。</p>
+<p>对于图片的下载，SDWebImageDownloaderOperation完全依赖于URL加载系统中的NSURLSession类。我们先来分析一下SDWebImageDownloaderOperation类中对于图片实际数据的下载处理，即NSURLSessionDataDelegate和NSURLSessionDataDelegate各个代理方法的实现。(ps 有关NSURLSession类的具体介绍<a href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/">请戳这里</a>)</p>
+<p>我们前面说过SDWebImageDownloaderOperation类是继承自NSOperation类。它没有简单的实现main方法，而是采用更加灵活的start方法，以便自己管理下载的状态。</p>
+<p>在start方法中，创建了我们下载所使用的NSURLSession对象，开启了图片的下载，同时抛出一个下载开始的通知。当然，如果我们期望下载在后台处理，则只需要配置我们的下载选项，使其包含SDWebImageDownloaderContinueInBackground选项。start方法的具体实现如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)start &#123;</div><div class="line">    <span class="keyword">@synchronized</span> (<span class="keyword">self</span>) &#123;</div><div class="line">    	<span class="comment">// 管理下载状态，如果已取消，则重置当前下载并设置完成状态为YES</span></div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.isCancelled) &#123;</div><div class="line">            <span class="keyword">self</span>.finished = <span class="literal">YES</span>;</div><div class="line">            [<span class="keyword">self</span> reset];</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">		...</div><div class="line"></div><div class="line">        <span class="built_in">NSURLSession</span> *session = <span class="keyword">self</span>.unownedSession;</div><div class="line">        <span class="keyword">if</span> (!<span class="keyword">self</span>.unownedSession) &#123;</div><div class="line">        		<span class="comment">//如果session为空，创建session</span></div><div class="line">            <span class="built_in">NSURLSessionConfiguration</span> *sessionConfig = [<span class="built_in">NSURLSessionConfiguration</span> defaultSessionConfiguration];</div><div class="line">            sessionConfig.timeoutIntervalForRequest = <span class="number">15</span>;</div><div class="line">            </div><div class="line">            <span class="keyword">self</span>.ownedSession = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:sessionConfig</div><div class="line">                                                              delegate:<span class="keyword">self</span></div><div class="line">                                                         delegateQueue:<span class="literal">nil</span>];</div><div class="line">            session = <span class="keyword">self</span>.ownedSession;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//创建下载任务</span></div><div class="line">        <span class="keyword">self</span>.dataTask = [session dataTaskWithRequest:<span class="keyword">self</span>.request];</div><div class="line">        <span class="keyword">self</span>.executing = <span class="literal">YES</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//开启下载任务</span></div><div class="line">    [<span class="keyword">self</span>.dataTask resume];</div><div class="line">	</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.dataTask) &#123;</div><div class="line">        <span class="keyword">for</span> (SDWebImageDownloaderProgressBlock progressBlock <span class="keyword">in</span> [<span class="keyword">self</span> callbacksForKey:kProgressCallbackKey]) &#123;</div><div class="line">            progressBlock(<span class="number">0</span>, <span class="built_in">NSURLResponseUnknownLength</span>, <span class="keyword">self</span>.request.URL);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 2. 在主线程抛出下载开始通知</span></div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">            [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:SDWebImageDownloadStartNotification object:<span class="keyword">self</span>];</div><div class="line">        &#125;);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        [<span class="keyword">self</span> callCompletionBlocksWithError:[<span class="built_in">NSError</span> errorWithDomain:<span class="built_in">NSURLErrorDomain</span> code:<span class="number">0</span> userInfo:@&#123;<span class="built_in">NSLocalizedDescriptionKey</span> : <span class="string">@"Connection can't be initialized"</span>&#125;]];</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们先看看NSURLSessionDataDelegate代理的具体实现：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</div><div class="line">          dataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask</div><div class="line">didReceiveResponse:(<span class="built_in">NSURLResponse</span> *)response</div><div class="line"> completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionResponseDisposition</span> disposition))completionHandler &#123;</div><div class="line">    <span class="comment">//接收到服务器响应</span></div><div class="line">    <span class="keyword">if</span> (![response respondsToSelector:<span class="keyword">@selector</span>(statusCode)] || (((<span class="built_in">NSHTTPURLResponse</span> *)response).statusCode &lt; <span class="number">400</span> &amp;&amp; ((<span class="built_in">NSHTTPURLResponse</span> *)response).statusCode != <span class="number">304</span>)) &#123;</div><div class="line">    	<span class="comment">//如果服务器状态码正常，并且不是304，(因为304表示远程图片并没有改变，当前缓存的图片就可以使用)拿到图片的大小。并进度回调</span></div><div class="line">        <span class="built_in">NSInteger</span> expected = response.expectedContentLength &gt; <span class="number">0</span> ? (<span class="built_in">NSInteger</span>)response.expectedContentLength : <span class="number">0</span>;</div><div class="line">        <span class="keyword">self</span>.expectedSize = expected;</div><div class="line">        <span class="keyword">for</span> (SDWebImageDownloaderProgressBlock progressBlock <span class="keyword">in</span> [<span class="keyword">self</span> callbacksForKey:kProgressCallbackKey]) &#123;</div><div class="line">            progressBlock(<span class="number">0</span>, expected, <span class="keyword">self</span>.request.URL);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//根据返回数据大小创建一个数据Data容器</span></div><div class="line">        <span class="keyword">self</span>.imageData = [[<span class="built_in">NSMutableData</span> alloc] initWithCapacity:expected];</div><div class="line">        <span class="keyword">self</span>.response = response;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">        		<span class="comment">//发送接收到服务器响应通知</span></div><div class="line">            [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:SDWebImageDownloadReceiveResponseNotification object:<span class="keyword">self</span>];</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> &#123;</div><div class="line">    	<span class="comment">//状态码错误</span></div><div class="line">        <span class="built_in">NSUInteger</span> code = ((<span class="built_in">NSHTTPURLResponse</span> *)response).statusCode;</div><div class="line">        </div><div class="line">        <span class="comment">//判断是不是304</span></div><div class="line">        <span class="keyword">if</span> (code == <span class="number">304</span>) &#123;</div><div class="line">            [<span class="keyword">self</span> cancelInternal];</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            [<span class="keyword">self</span>.dataTask cancel];</div><div class="line">        &#125;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">        		<span class="comment">//发出停止下载通知</span></div><div class="line">            [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:SDWebImageDownloadStopNotification object:<span class="keyword">self</span>];</div><div class="line">        &#125;);</div><div class="line">        <span class="comment">//错误回调</span></div><div class="line">        [<span class="keyword">self</span> callCompletionBlocksWithError:[<span class="built_in">NSError</span> errorWithDomain:<span class="built_in">NSURLErrorDomain</span> code:((<span class="built_in">NSHTTPURLResponse</span> *)response).statusCode userInfo:<span class="literal">nil</span>]];</div><div class="line">			<span class="comment">//重置</span></div><div class="line">        [<span class="keyword">self</span> done];</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> (completionHandler) &#123;</div><div class="line">        completionHandler(<span class="built_in">NSURLSessionResponseAllow</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session dataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask didReceiveData:(<span class="built_in">NSData</span> *)data &#123;</div><div class="line">    <span class="comment">//1. 接收服务器返回数据 往容器中追加数据</span></div><div class="line">    [<span class="keyword">self</span>.imageData appendData:data];</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> ((<span class="keyword">self</span>.options &amp; SDWebImageDownloaderProgressiveDownload) &amp;&amp; <span class="keyword">self</span>.expectedSize &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="comment">//2. 获取已下载数据总大小</span></div><div class="line">        <span class="keyword">const</span> <span class="built_in">NSInteger</span> totalSize = <span class="keyword">self</span>.imageData.length;</div><div class="line"></div><div class="line">        <span class="comment">// 3. 更新数据源，我们需要传入所有数据，而不仅仅是新数据</span></div><div class="line">        <span class="built_in">CGImageSourceRef</span> imageSource = <span class="built_in">CGImageSourceCreateWithData</span>((__bridge <span class="built_in">CFDataRef</span>)<span class="keyword">self</span>.imageData, <span class="literal">NULL</span>);</div><div class="line">        <span class="comment">// 4. 首次获取到数据时，从这些数据中获取图片的长、宽、方向属性值</span></div><div class="line">        <span class="keyword">if</span> (width + height == <span class="number">0</span>) &#123;</div><div class="line">            <span class="built_in">CFDictionaryRef</span> properties = <span class="built_in">CGImageSourceCopyPropertiesAtIndex</span>(imageSource, <span class="number">0</span>, <span class="literal">NULL</span>);</div><div class="line">            <span class="keyword">if</span> (properties) &#123;</div><div class="line">                <span class="built_in">NSInteger</span> orientationValue = <span class="number">-1</span>;</div><div class="line">                <span class="built_in">CFTypeRef</span> val = <span class="built_in">CFDictionaryGetValue</span>(properties, kCGImagePropertyPixelHeight);</div><div class="line">                <span class="keyword">if</span> (val) <span class="built_in">CFNumberGetValue</span>(val, kCFNumberLongType, &amp;height);</div><div class="line">                val = <span class="built_in">CFDictionaryGetValue</span>(properties, kCGImagePropertyPixelWidth);</div><div class="line">                <span class="keyword">if</span> (val) <span class="built_in">CFNumberGetValue</span>(val, kCFNumberLongType, &amp;width);</div><div class="line">                val = <span class="built_in">CFDictionaryGetValue</span>(properties, kCGImagePropertyOrientation);</div><div class="line">                <span class="keyword">if</span> (val) <span class="built_in">CFNumberGetValue</span>(val, kCFNumberNSIntegerType, &amp;orientationValue);</div><div class="line">                <span class="built_in">CFRelease</span>(properties);</div><div class="line"></div><div class="line">                <span class="comment">// 5. 当绘制到Core Graphics时，我们会丢失方向信息，这意味着有时候由initWithCGIImage创建的图片</span></div><div class="line">                <span class="comment">//    的方向会不对，所以在这边我们先保存这个信息并在后面使用。</span></div><div class="line"><span class="meta">#if SD_UIKIT || SD_WATCH</span></div><div class="line">                orientation = [[<span class="keyword">self</span> <span class="keyword">class</span>] orientationFromPropertyValue:(orientationValue == <span class="number">-1</span> ? <span class="number">1</span> : orientationValue)];</div><div class="line"><span class="meta">#endif</span></div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 6. 图片还未下载完成</span></div><div class="line">        <span class="keyword">if</span> (width + height &gt; <span class="number">0</span> &amp;&amp; totalSize &lt; <span class="keyword">self</span>.expectedSize) &#123;</div><div class="line">            <span class="comment">// 7. 使用现有的数据创建图片对象，如果数据中存有多张图片，则取第一张</span></div><div class="line">            <span class="built_in">CGImageRef</span> partialImageRef = <span class="built_in">CGImageSourceCreateImageAtIndex</span>(imageSource, <span class="number">0</span>, <span class="literal">NULL</span>);</div><div class="line"></div><div class="line"><span class="meta">#if SD_UIKIT || SD_WATCH</span></div><div class="line">            <span class="comment">// 8. 适用于iOS变形图像的解决方案。我的理解是由于iOS只支持RGB颜色空间，所以在此对下载下来的图片做个颜色空间转换处理。</span></div><div class="line">            <span class="keyword">if</span> (partialImageRef) &#123;</div><div class="line">                <span class="keyword">const</span> size_t partialHeight = <span class="built_in">CGImageGetHeight</span>(partialImageRef);</div><div class="line">                <span class="built_in">CGColorSpaceRef</span> colorSpace = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</div><div class="line">                <span class="built_in">CGContextRef</span> bmContext = <span class="built_in">CGBitmapContextCreate</span>(<span class="literal">NULL</span>, width, height, <span class="number">8</span>, width * <span class="number">4</span>, colorSpace, kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedFirst);</div><div class="line">                <span class="built_in">CGColorSpaceRelease</span>(colorSpace);</div><div class="line">                <span class="keyword">if</span> (bmContext) &#123;</div><div class="line">                    <span class="built_in">CGContextDrawImage</span>(bmContext, (<span class="built_in">CGRect</span>)&#123;.origin.x = <span class="number">0.0</span>f, .origin.y = <span class="number">0.0</span>f, .size.width = width, .size.height = partialHeight&#125;, partialImageRef);</div><div class="line">                    <span class="built_in">CGImageRelease</span>(partialImageRef);</div><div class="line">                    partialImageRef = <span class="built_in">CGBitmapContextCreateImage</span>(bmContext);</div><div class="line">                    <span class="built_in">CGContextRelease</span>(bmContext);</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">else</span> &#123;</div><div class="line">                    <span class="built_in">CGImageRelease</span>(partialImageRef);</div><div class="line">                    partialImageRef = <span class="literal">nil</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"><span class="meta">#endif</span></div><div class="line">            <span class="comment">// 9. 对图片进行缩放、解码操作</span></div><div class="line">            <span class="keyword">if</span> (partialImageRef) &#123;</div><div class="line"><span class="meta">#if SD_UIKIT || SD_WATCH</span></div><div class="line">                <span class="built_in">UIImage</span> *image = [<span class="built_in">UIImage</span> imageWithCGImage:partialImageRef scale:<span class="number">1</span> orientation:orientation];</div><div class="line"><span class="meta">#elif SD_MAC</span></div><div class="line">                <span class="built_in">UIImage</span> *image = [[<span class="built_in">UIImage</span> alloc] initWithCGImage:partialImageRef size:<span class="built_in">NSZeroSize</span>];</div><div class="line"><span class="meta">#endif</span></div><div class="line">                <span class="built_in">NSString</span> *key = [[SDWebImageManager sharedManager] cacheKeyForURL:<span class="keyword">self</span>.request.URL];</div><div class="line">                <span class="built_in">UIImage</span> *scaledImage = [<span class="keyword">self</span> scaledImageForKey:key image:image];</div><div class="line">                <span class="keyword">if</span> (<span class="keyword">self</span>.shouldDecompressImages) &#123;</div><div class="line">                    image = [<span class="built_in">UIImage</span> decodedImageWithImage:scaledImage];</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">else</span> &#123;</div><div class="line">                    image = scaledImage;</div><div class="line">                &#125;</div><div class="line">                <span class="built_in">CGImageRelease</span>(partialImageRef);</div><div class="line">                </div><div class="line">                [<span class="keyword">self</span> callCompletionBlocksWithImage:image imageData:<span class="literal">nil</span> error:<span class="literal">nil</span> finished:<span class="literal">NO</span>];</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="built_in">CFRelease</span>(imageSource);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (SDWebImageDownloaderProgressBlock progressBlock <span class="keyword">in</span> [<span class="keyword">self</span> callbacksForKey:kProgressCallbackKey]) &#123;</div><div class="line">        progressBlock(<span class="keyword">self</span>.imageData.length, <span class="keyword">self</span>.expectedSize, <span class="keyword">self</span>.request.URL);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>当然，在下载完成或下载失败后，会调用NSURLSessionTaskDelegate的<code>- (void)URLSession: task: didCompleteWithError:</code>代理方法，并清除连接，并抛出下载停止的通知。如果下载成功，则会处理完整的图片数据，对其进行适当的缩放与解压缩操作，以提供给完成回调使用。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>下载的核心其实就是利用NSURLSession对象来加载数据。每个图片的下载都由一个Operation操作来完成，并将这些操作放到一个操作队列中。这样可以实现图片的并发下载。</p>
+<h3 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h3><p>为了减少网络流量的消耗，我们都希望下载下来的图片缓存到本地，下次再去获取同一张图片时，可以直接从本地获取，而不再从远程服务器获取。这样做的一个好处是提升了用户体验，用户第二次查看同一幅图片时，能快速从本地获取图片直接呈现给用户。</p>
+<p>SDWebImage提供了对图片缓存的支持，而该功能是由SDImageCache类完成的。该类负责处理内存缓存及一个可选的磁盘缓存。其中磁盘缓存的写操作是异步的，这样就不会对UI操作造成影响。</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>另外说明，在4.0以后新添加一个缓存配置类<code>SDImageCacheConfig</code> ,主要是一些缓存策略的配置。其头文件定义如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">是否在缓存的时候解压缩，默认是YES 可以提高性能 但是会耗内存。 当使用SDWebImage 因为内存而崩溃 可以将其设置为NO</div><div class="line"> */</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">assign</span>, <span class="keyword">nonatomic</span>) <span class="built_in">BOOL</span> shouldDecompressImages;</div><div class="line"><span class="comment">/**</span></div><div class="line"> * 是否禁用 iCloud 备份 默认YES</div><div class="line"> */</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">assign</span>, <span class="keyword">nonatomic</span>) <span class="built_in">BOOL</span> shouldDisableiCloud;</div><div class="line"><span class="comment">/**</span></div><div class="line"> * 内存缓存  默认YES</div><div class="line"> */</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">assign</span>, <span class="keyword">nonatomic</span>) <span class="built_in">BOOL</span> shouldCacheImagesInMemory;</div><div class="line"><span class="comment">/**</span></div><div class="line"> * 最大磁盘缓存时间 默认一周 单位秒</div><div class="line"> */</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">assign</span>, <span class="keyword">nonatomic</span>) <span class="built_in">NSInteger</span> maxCacheAge;</div><div class="line"><span class="comment">/**</span></div><div class="line"> * 最大缓存容量 0 表示无限缓存  单位字节</div><div class="line"> */</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">assign</span>, <span class="keyword">nonatomic</span>) <span class="built_in">NSUInteger</span> maxCacheSize;</div></pre></td></tr></table></figure>
+<h4 id="内存缓存及磁盘缓存"><a href="#内存缓存及磁盘缓存" class="headerlink" title="内存缓存及磁盘缓存"></a>内存缓存及磁盘缓存</h4><p>内存缓存的处理使用NSCache对象来实现的。NSCache是一个类似与集合的容器。它存储key-value对，这一点类似于NSDictionary类。我们通常使用缓存来临时存储短时间使用但创建昂贵的对象。重用这些对象可以优化性能，因为它们的值不需要重新计算。另外一方面，这些对象对于程序员来说不是紧要的，在内存紧张时会被丢弃。</p>
+<p>磁盘缓存的处理则是使用NSFileManager对象来实现的。图片存储的位置是位于Caches文件夹中的default文件夹下。另外，SDImageCache还定义了一个串行队列，来异步存储图片。</p>
+<p>内存缓存与磁盘缓存相关变量的声明及定义如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">SDImageCache</span> ()</span></div><div class="line"></div><div class="line"><span class="meta">#pragma mark - Properties</span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">strong</span>, <span class="keyword">nonatomic</span>, <span class="keyword">nonnull</span>) <span class="built_in">NSCache</span> *memCache;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">strong</span>, <span class="keyword">nonatomic</span>, <span class="keyword">nonnull</span>) <span class="built_in">NSString</span> *diskCachePath;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">strong</span>, <span class="keyword">nonatomic</span>, <span class="keyword">nullable</span>) <span class="built_in">NSMutableArray</span>&lt;<span class="built_in">NSString</span> *&gt; *customPaths;</div><div class="line"><span class="keyword">@property</span> (SDDispatchQueueSetterSementics, <span class="keyword">nonatomic</span>, <span class="keyword">nullable</span>) <span class="built_in">dispatch_queue_t</span> ioQueue;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">SDImageCache</span> </span>&#123;</div><div class="line">    <span class="built_in">NSFileManager</span> *_fileManager;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">nonnull</span> <span class="keyword">instancetype</span>)initWithNamespace:(<span class="keyword">nonnull</span> <span class="built_in">NSString</span> *)ns</div><div class="line">                       diskCacheDirectory:(<span class="keyword">nonnull</span> <span class="built_in">NSString</span> *)directory &#123;</div><div class="line">    <span class="keyword">if</span> ((<span class="keyword">self</span> = [<span class="keyword">super</span> init])) &#123;</div><div class="line">        <span class="built_in">NSString</span> *fullNamespace = [<span class="string">@"com.hackemist.SDWebImageCache."</span> stringByAppendingString:ns];</div><div class="line">        </div><div class="line">        <span class="comment">// 队列</span></div><div class="line">        _ioQueue = dispatch_queue_create(<span class="string">"com.hackemist.SDWebImageCache"</span>, DISPATCH_QUEUE_SERIAL);</div><div class="line">        <span class="comment">//缓存配置</span></div><div class="line">        _config = [[SDImageCacheConfig alloc] init];</div><div class="line">        </div><div class="line">        <span class="comment">// 内存缓存</span></div><div class="line">        _memCache = [[AutoPurgeCache alloc] init];</div><div class="line">        _memCache.name = fullNamespace;</div><div class="line"></div><div class="line">        <span class="comment">// 初始化磁盘缓存路径</span></div><div class="line">        <span class="keyword">if</span> (directory != <span class="literal">nil</span>) &#123;</div><div class="line">            _diskCachePath = [directory stringByAppendingPathComponent:fullNamespace];</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="built_in">NSString</span> *path = [<span class="keyword">self</span> makeDiskCachePath:ns];</div><div class="line">            _diskCachePath = path;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="built_in">dispatch_sync</span>(_ioQueue, ^&#123;</div><div class="line">            _fileManager = [<span class="built_in">NSFileManager</span> new];</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>SDImageCache提供了大量方法来缓存、获取、移除、及清空图片。而对于每一个图片，为了方便地在内存或磁盘中对它进行这些操作，我们需要一个key值来索引它。在内存中，我们将其作为NSCache的key值，而在磁盘中，我们用作这个key作为图片的文件名。对于一个远程服务器下载的图片，其url实作为这个key的最佳选择了。我们在后面会看到这个key值得重要性。</p>
+<h4 id="存储图片"><a href="#存储图片" class="headerlink" title="存储图片"></a>存储图片</h4><p>我们先来看看图片的缓存操作，该操作会在内存中放置一份缓存，而如果确定需要缓存到磁盘，则将磁盘缓存操作作为一个task放到串行队列中处理。在iOS中，会先检测图片是PNG还是JPEG，并将其转换为相应的图片数据，最后将数据写入到磁盘中(文件名是对key值做MD5摘要后的串)。缓存操作的基础方法是：<code>-storeImage:imageData:forKey:toDisk:completion:</code>,它的具体实现如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)storeImage:(<span class="keyword">nullable</span> <span class="built_in">UIImage</span> *)image</div><div class="line">         imageData:(<span class="keyword">nullable</span> <span class="built_in">NSData</span> *)imageData</div><div class="line">            forKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key</div><div class="line">            toDisk:(<span class="built_in">BOOL</span>)toDisk</div><div class="line">        completion:(<span class="keyword">nullable</span> SDWebImageNoParamsBlock)completionBlock &#123;</div><div class="line">    <span class="keyword">if</span> (!image || !key) &#123;</div><div class="line">        <span class="keyword">if</span> (completionBlock) &#123;</div><div class="line">            completionBlock();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 内存缓存 将其存入NSCache中，同时传入图片的消耗值</span></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.config.shouldCacheImagesInMemory) &#123;</div><div class="line">        <span class="built_in">NSUInteger</span> cost = SDCacheCostForImage(image);</div><div class="line">        [<span class="keyword">self</span>.memCache setObject:image forKey:key cost:cost];</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 如果确定需要磁盘缓存，则将缓存操作作为一个任务放入ioQueue中</span></div><div class="line">    <span class="keyword">if</span> (toDisk) &#123;</div><div class="line">        <span class="built_in">dispatch_async</span>(<span class="keyword">self</span>.ioQueue, ^&#123;</div><div class="line">            <span class="built_in">NSData</span> *data = imageData;</div><div class="line">            </div><div class="line">            <span class="keyword">if</span> (!data &amp;&amp; image) &#123;</div><div class="line">            		<span class="comment">//如果imageData为nil 需要确定图片是PNG还是JPEG。PNG图片容易检测，因为有一个唯一签名。PNG图像的前8个字节总是包含以下值：137 80 78 71 13 10 26 10	</span></div><div class="line">            		<span class="comment">//判断 图片是何种类型 使用 sd_imageFormatForImageData 来判断</span></div><div class="line">            		<span class="comment">// SDImageFormat 是一个枚举  其定义如下：</span></div><div class="line"><span class="comment">//                typedef NS_ENUM(NSInteger, SDImageFormat) &#123;</span></div><div class="line"><span class="comment">//                    SDImageFormatUndefined = -1,</span></div><div class="line"><span class="comment">//                    SDImageFormatJPEG = 0,</span></div><div class="line"><span class="comment">//                    SDImageFormatPNG,</span></div><div class="line"><span class="comment">//                    SDImageFormatGIF,</span></div><div class="line"><span class="comment">//                    SDImageFormatTIFF,</span></div><div class="line"><span class="comment">//                    SDImageFormatWebP</span></div><div class="line"><span class="comment">//                &#125;;</span></div><div class="line">                SDImageFormat imageFormatFromData = [<span class="built_in">NSData</span> sd_imageFormatForImageData:data];</div><div class="line">                <span class="comment">//根据图片类型 转成data</span></div><div class="line">                data = [image sd_imageDataAsFormat:imageFormatFromData];</div><div class="line">            &#125;</div><div class="line">            <span class="comment">// 4. 创建缓存文件并存储图片</span></div><div class="line">            [<span class="keyword">self</span> storeImageDataToDisk:data forKey:key];</div><div class="line">            <span class="keyword">if</span> (completionBlock) &#123;</div><div class="line">                <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">                    completionBlock();</div><div class="line">                &#125;);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">if</span> (completionBlock) &#123;</div><div class="line">            completionBlock();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="查询图片"><a href="#查询图片" class="headerlink" title="查询图片"></a>查询图片</h4><p>如果我们想在内存或磁盘中查询是否有key指定的图片，则可以分别使用以下方法：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//快速查询图片是否已经磁盘缓存 不返回图片 只做快速查询 异步操作</span></div><div class="line">- (<span class="keyword">void</span>)diskImageExistsWithKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key completion:(<span class="keyword">nullable</span> SDWebImageCheckCacheCompletionBlock)completionBlock;</div><div class="line"><span class="comment">//异步查询图片 不管是内存缓存还是磁盘缓存</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSOperation</span> *)queryCacheOperationForKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key done:(<span class="keyword">nullable</span> SDCacheQueryCompletedBlock)doneBlock;</div><div class="line"><span class="comment">//从内存中查询图片</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="built_in">UIImage</span> *)imageFromMemoryCacheForKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key;</div><div class="line"><span class="comment">//从磁盘中查询图片</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="built_in">UIImage</span> *)imageFromDiskCacheForKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key;</div><div class="line"><span class="comment">//同步查询图片，不管是内存缓存还是磁盘缓存</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="built_in">UIImage</span> *)imageFromCacheForKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key;</div></pre></td></tr></table></figure>
+<p>其实<code>- (nullable UIImage *)imageFromCacheForKey:(nullable NSString *)key</code>内部实现是调用了<code>- (nullable UIImage *)imageFromMemoryCacheForKey:(nullable NSString *)key</code>和<code>- (nullable UIImage *)imageFromDiskCacheForKey:(nullable NSString *)key</code>方法，如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">nullable</span> <span class="built_in">UIImage</span> *)imageFromCacheForKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key &#123;</div><div class="line">    <span class="comment">// 从缓存中查找图片</span></div><div class="line">    <span class="built_in">UIImage</span> *image = [<span class="keyword">self</span> imageFromMemoryCacheForKey:key];</div><div class="line">    <span class="keyword">if</span> (image) &#123;</div><div class="line">        <span class="keyword">return</span> image;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 从磁盘中查找图片</span></div><div class="line">    image = [<span class="keyword">self</span> imageFromDiskCacheForKey:key];</div><div class="line">    <span class="keyword">return</span> image;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们再来看看异步查询图片的具体实现：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSOperation</span> *)queryCacheOperationForKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key done:(<span class="keyword">nullable</span> SDCacheQueryCompletedBlock)doneBlock &#123;</div><div class="line">    ...</div><div class="line"></div><div class="line">    <span class="comment">// 1. 首先查看内存缓存，如果查找到，则直接回调doneBlock并返回</span></div><div class="line">    <span class="built_in">UIImage</span> *image = [<span class="keyword">self</span> imageFromMemoryCacheForKey:key];</div><div class="line">    <span class="keyword">if</span> (image) &#123;</div><div class="line">        <span class="built_in">NSData</span> *diskData = <span class="literal">nil</span>;</div><div class="line">        <span class="comment">//进行了是否是GIF的判断</span></div><div class="line">        <span class="keyword">if</span> ([image isGIF]) &#123;</div><div class="line">            diskData = [<span class="keyword">self</span> diskImageDataBySearchingAllPathsForKey:key];</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (doneBlock) &#123;</div><div class="line">            doneBlock(image, diskData, SDImageCacheTypeMemory);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 2. 如果内存中没有，则在磁盘中查找。如果找到，则将其放到内存缓存，并调用doneBlock回调</span></div><div class="line">    <span class="built_in">NSOperation</span> *operation = [<span class="built_in">NSOperation</span> new];</div><div class="line">    <span class="built_in">dispatch_async</span>(<span class="keyword">self</span>.ioQueue, ^&#123;</div><div class="line">        <span class="keyword">if</span> (operation.isCancelled) &#123;</div><div class="line">            <span class="comment">// do not call the completion if cancelled</span></div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">@autoreleasepool</span> &#123;</div><div class="line">            <span class="built_in">NSData</span> *diskData = [<span class="keyword">self</span> diskImageDataBySearchingAllPathsForKey:key];</div><div class="line">            <span class="built_in">UIImage</span> *diskImage = [<span class="keyword">self</span> diskImageForKey:key];</div><div class="line">            <span class="keyword">if</span> (diskImage &amp;&amp; <span class="keyword">self</span>.config.shouldCacheImagesInMemory) &#123;</div><div class="line">                <span class="comment">//进行内存缓存</span></div><div class="line">                <span class="built_in">NSUInteger</span> cost = SDCacheCostForImage(diskImage);</div><div class="line">                [<span class="keyword">self</span>.memCache setObject:diskImage forKey:key cost:cost];</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="keyword">if</span> (doneBlock) &#123;</div><div class="line">                <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">                    doneBlock(diskImage, diskData, SDImageCacheTypeDisk);</div><div class="line">                &#125;);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> operation;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="移除图片"><a href="#移除图片" class="headerlink" title="移除图片"></a>移除图片</h4><p>图片的移除操作则可以使用以下方法：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//从内存和磁盘中移除图片</span></div><div class="line">- (<span class="keyword">void</span>)removeImageForKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key withCompletion:(<span class="keyword">nullable</span> SDWebImageNoParamsBlock)completion;</div><div class="line"><span class="comment">//从内存 或 可选磁盘中移除图片</span></div><div class="line">- (<span class="keyword">void</span>)removeImageForKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key fromDisk:(<span class="built_in">BOOL</span>)fromDisk withCompletion:(<span class="keyword">nullable</span> SDWebImageNoParamsBlock)completion;</div></pre></td></tr></table></figure>
+<p>我们可以选择同时移除内存及磁盘上的图片,或者只移除内存中的图片。</p>
+<h4 id="清理图片"><a href="#清理图片" class="headerlink" title="清理图片"></a>清理图片</h4><p>磁盘缓存图片的操作可以分为完全清空和部分清理。完全清空操作是直接把缓存的文件夹移除，部分清理是清理掉过时的旧图片，清空操作有以下方法：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//清除内存缓存</span></div><div class="line">- (<span class="keyword">void</span>)clearMemory;</div><div class="line"></div><div class="line"><span class="comment">//完全清空磁盘缓存</span></div><div class="line">- (<span class="keyword">void</span>)clearDiskOnCompletion:(<span class="keyword">nullable</span> SDWebImageNoParamsBlock)completion;</div><div class="line"></div><div class="line"><span class="comment">//清空旧图片</span></div><div class="line">- (<span class="keyword">void</span>)deleteOldFilesWithCompletionBlock:(<span class="keyword">nullable</span> SDWebImageNoParamsBlock)completionBlock;</div></pre></td></tr></table></figure>
+<p>而部分清理则是根据我们设定的一些参数来移除一些文件，这里主要有两个指标：文件的缓存有效期及最大缓存空间大小。文件的缓存有效期可以通过<code>SDImageCacheConfig</code>类的<code>maxCacheAge</code>属性来设置，默认是1周的时间。如果文件的缓存时间超过这个时间值，则将其移除。而最大缓存空间大小是通过<code>maxCacheSize</code>属性来设置的，如果所有缓存文件的总大小超过这一大小，则会按照文件最后修改时间的逆序，以每次一半的递归来移除那些过早的文件，直到缓存的实际大小小于我们设置的最大使用空间。清理的操作在<code>-deleteOldFilesWithCompletionBlock:</code>方法中，其实现如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)deleteOldFilesWithCompletionBlock:(<span class="keyword">nullable</span> SDWebImageNoParamsBlock)completionBlock &#123;</div><div class="line">    <span class="built_in">dispatch_async</span>(<span class="keyword">self</span>.ioQueue, ^&#123;</div><div class="line">        <span class="built_in">NSURL</span> *diskCacheURL = [<span class="built_in">NSURL</span> fileURLWithPath:<span class="keyword">self</span>.diskCachePath isDirectory:<span class="literal">YES</span>];</div><div class="line">        <span class="built_in">NSArray</span>&lt;<span class="built_in">NSString</span> *&gt; *resourceKeys = @[<span class="built_in">NSURLIsDirectoryKey</span>, <span class="built_in">NSURLContentModificationDateKey</span>, <span class="built_in">NSURLTotalFileAllocatedSizeKey</span>];</div><div class="line"></div><div class="line">        <span class="comment">// 1. 该枚举器预先获取缓存文件的有用的属性</span></div><div class="line">        <span class="built_in">NSDirectoryEnumerator</span> *fileEnumerator = [_fileManager enumeratorAtURL:diskCacheURL</div><div class="line">                                                   includingPropertiesForKeys:resourceKeys</div><div class="line">                                                                      options:<span class="built_in">NSDirectoryEnumerationSkipsHiddenFiles</span></div><div class="line">                                                                 errorHandler:<span class="literal">NULL</span>];</div><div class="line"></div><div class="line">        <span class="built_in">NSDate</span> *expirationDate = [<span class="built_in">NSDate</span> dateWithTimeIntervalSinceNow:-<span class="keyword">self</span>.config.maxCacheAge];</div><div class="line">        <span class="built_in">NSMutableDictionary</span>&lt;<span class="built_in">NSURL</span> *, <span class="built_in">NSDictionary</span>&lt;<span class="built_in">NSString</span> *, <span class="keyword">id</span>&gt; *&gt; *cacheFiles = [<span class="built_in">NSMutableDictionary</span> dictionary];</div><div class="line">        <span class="built_in">NSUInteger</span> currentCacheSize = <span class="number">0</span>;</div><div class="line"></div><div class="line">        <span class="comment">// 2. 枚举缓存文件夹中所有文件，该迭代有两个目的：移除比过期日期更老的文件；存储文件属性以备后面执行基于缓存大小的清理操作</span></div><div class="line">        <span class="built_in">NSMutableArray</span>&lt;<span class="built_in">NSURL</span> *&gt; *urlsToDelete = [[<span class="built_in">NSMutableArray</span> alloc] init];</div><div class="line">        <span class="keyword">for</span> (<span class="built_in">NSURL</span> *fileURL <span class="keyword">in</span> fileEnumerator) &#123;</div><div class="line">            <span class="built_in">NSError</span> *error;</div><div class="line">            <span class="built_in">NSDictionary</span>&lt;<span class="built_in">NSString</span> *, <span class="keyword">id</span>&gt; *resourceValues = [fileURL resourceValuesForKeys:resourceKeys error:&amp;error];</div><div class="line"></div><div class="line">            <span class="comment">// 3. 跳过文件夹</span></div><div class="line">            <span class="keyword">if</span> (error || !resourceValues || [resourceValues[<span class="built_in">NSURLIsDirectoryKey</span>] boolValue]) &#123;</div><div class="line">                <span class="keyword">continue</span>;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">// 4. 移除早于有效期的老文件</span></div><div class="line">            <span class="built_in">NSDate</span> *modificationDate = resourceValues[<span class="built_in">NSURLContentModificationDateKey</span>];</div><div class="line">            <span class="keyword">if</span> ([[modificationDate laterDate:expirationDate] isEqualToDate:expirationDate]) &#123;</div><div class="line">                [urlsToDelete addObject:fileURL];</div><div class="line">                <span class="keyword">continue</span>;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">// 5. 存储文件的引用并计算所有文件的总大小，以备后用</span></div><div class="line">            <span class="built_in">NSNumber</span> *totalAllocatedSize = resourceValues[<span class="built_in">NSURLTotalFileAllocatedSizeKey</span>];</div><div class="line">            currentCacheSize += totalAllocatedSize.unsignedIntegerValue;</div><div class="line">            cacheFiles[fileURL] = resourceValues;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="keyword">for</span> (<span class="built_in">NSURL</span> *fileURL <span class="keyword">in</span> urlsToDelete) &#123;</div><div class="line">            [_fileManager removeItemAtURL:fileURL error:<span class="literal">nil</span>];</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">//6.如果磁盘缓存的大小大于我们配置的最大大小，则执行基于文件大小的清理，我们首先删除最老的文件</span></div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.config.maxCacheSize &gt; <span class="number">0</span> &amp;&amp; currentCacheSize &gt; <span class="keyword">self</span>.config.maxCacheSize) &#123;</div><div class="line">            <span class="comment">// 7. 以设置的最大缓存大小的一半作为清理目标</span></div><div class="line">            <span class="keyword">const</span> <span class="built_in">NSUInteger</span> desiredCacheSize = <span class="keyword">self</span>.config.maxCacheSize / <span class="number">2</span>;</div><div class="line"></div><div class="line">            <span class="comment">// 8. 按照最后修改时间来排序剩下的缓存文件</span></div><div class="line">            <span class="built_in">NSArray</span>&lt;<span class="built_in">NSURL</span> *&gt; *sortedFiles = [cacheFiles keysSortedByValueWithOptions:<span class="built_in">NSSortConcurrent</span></div><div class="line">                                                                     usingComparator:^<span class="built_in">NSComparisonResult</span>(<span class="keyword">id</span> obj1, <span class="keyword">id</span> obj2) &#123;</div><div class="line">                                                                         <span class="keyword">return</span> [obj1[<span class="built_in">NSURLContentModificationDateKey</span>] compare:obj2[<span class="built_in">NSURLContentModificationDateKey</span>]];</div><div class="line">                                                                     &#125;];</div><div class="line"></div><div class="line">            <span class="comment">// 9. 删除文件，直到缓存总大小降到我们期望的大小</span></div><div class="line">            <span class="keyword">for</span> (<span class="built_in">NSURL</span> *fileURL <span class="keyword">in</span> sortedFiles) &#123;</div><div class="line">                <span class="keyword">if</span> ([_fileManager removeItemAtURL:fileURL error:<span class="literal">nil</span>]) &#123;</div><div class="line">                    <span class="built_in">NSDictionary</span>&lt;<span class="built_in">NSString</span> *, <span class="keyword">id</span>&gt; *resourceValues = cacheFiles[fileURL];</div><div class="line">                    <span class="built_in">NSNumber</span> *totalAllocatedSize = resourceValues[<span class="built_in">NSURLTotalFileAllocatedSizeKey</span>];</div><div class="line">                    currentCacheSize -= totalAllocatedSize.unsignedIntegerValue;</div><div class="line"></div><div class="line">                    <span class="keyword">if</span> (currentCacheSize &lt; desiredCacheSize) &#123;</div><div class="line">                        <span class="keyword">break</span>;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (completionBlock) &#123;</div><div class="line">            <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">                completionBlock();</div><div class="line">            &#125;);</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h4><p>以上分析了图片缓存操作，当然，除了上面讲的几个操作，SDWebImage类还提供了一些辅助方法。如获取缓存大小、缓存中图片的数量、判断缓存中是否存在某个key指定的图片。另外，SDWebImage类提供了一个单例方法的实现，所以我们可以将其当做单例对象来处理。</p>
+<h3 id="SDWebImageManager"><a href="#SDWebImageManager" class="headerlink" title="SDWebImageManager"></a>SDWebImageManager</h3><p>在实际的运用中，我们并不直接使用SDWebImageDownloader类及SDImageCache类来执行图片的下载及缓存。为了方便用户的使用，SDWebImage提供了SDWebImageManager对象来管理图片的下载与缓存。而我们经常用到的诸如<code>UIImageView+WebCache</code>等控件的分类都是基于SDWebImageManager对象的，该对象将一个下载器和一个图片缓存绑定在一起，并对外提供两个只读属性来获取它们，如下代码所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">SDWebImageManager</span> : <span class="title">NSObject</span></span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">weak</span>, <span class="keyword">nonatomic</span>) <span class="keyword">id</span> &lt;SDWebImageManagerDelegate&gt; delegate;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">strong</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) SDImageCache *imageCache;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">strong</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) SDWebImageDownloader *imageDownloader;</div><div class="line">...</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>从上面的代码中我们还可以看到一个delegate属性，它是一个<code>id &lt;SDWebImageManagerDelegate&gt;</code>对象。<code>SDWebImageManagerDelegate</code>声明了两个可选实现的方法，如下所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 控制当图片在缓存中没有找到时，应该下载哪个图片</span></div><div class="line">- (<span class="built_in">BOOL</span>)imageManager:(SDWebImageManager *)imageManager shouldDownloadImageForURL:(<span class="built_in">NSURL</span> *)imageURL;</div><div class="line"><span class="comment">// 允许在图片已经被下载完成且被缓存到磁盘或内存前立即转换</span></div><div class="line">- (<span class="built_in">UIImage</span> *)imageManager:(SDWebImageManager *)imageManager transformDownloadedImage:(<span class="built_in">UIImage</span> *)image withURL:(<span class="built_in">NSURL</span> *)imageURL;</div></pre></td></tr></table></figure>
+<p>这两个代理方法会在SDWebImageManager的<code>-downloadImageWithURL:options:progress:completed:</code>方法中调用，而这个方法是SDWebImageManager类的核心所在。我们来看看它具体的实现：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">id</span> &lt;SDWebImageOperation&gt;)loadImageWithURL:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> *)url</div><div class="line">                                     options:(SDWebImageOptions)options</div><div class="line">                                    progress:(<span class="keyword">nullable</span> SDWebImageDownloaderProgressBlock)progressBlock</div><div class="line">                                   completed:(<span class="keyword">nullable</span> SDInternalCompletionBlock)completedBlock &#123;</div><div class="line">    ...</div><div class="line">    <span class="comment">// 前面省略n行。主要作了如下处理：</span></div><div class="line">    <span class="comment">// 1. 判断url的合法性</span></div><div class="line">    <span class="comment">// 2. 创建SDWebImageCombinedOperation对象</span></div><div class="line">    <span class="comment">// 3. 查看url是否是之前下载失败过的</span></div><div class="line">    <span class="comment">// 4. 如果url为nil，或者在不可重试的情况下是一个下载失败过的url，则直接返回操作对象并调用完成回调</span></div><div class="line"></div><div class="line">    operation.cacheOperation = [<span class="keyword">self</span>.imageCache queryCacheOperationForKey:key done:^(<span class="built_in">UIImage</span> *cachedImage, <span class="built_in">NSData</span> *cachedData, SDImageCacheType cacheType) &#123;</div><div class="line">        <span class="keyword">if</span> (operation.isCancelled) &#123;</div><div class="line">            [<span class="keyword">self</span> safelyRemoveOperationFromRunning:operation];</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//先去缓存中查找图片，如果图片不存在  或者 当前图片的下载模式是 SDWebImageRefreshCached 开始下载</span></div><div class="line">        <span class="keyword">if</span> ((!cachedImage || options &amp; SDWebImageRefreshCached) &amp;&amp; (![<span class="keyword">self</span>.delegate respondsToSelector:<span class="keyword">@selector</span>(imageManager:shouldDownloadImageForURL:)] || [<span class="keyword">self</span>.delegate imageManager:<span class="keyword">self</span> shouldDownloadImageForURL:url])) &#123;</div><div class="line">            ...</div><div class="line">            </div><div class="line">            <span class="comment">//下载</span></div><div class="line">            SDWebImageDownloadToken *subOperationToken = [<span class="keyword">self</span>.imageDownloader downloadImageWithURL:url options:downloaderOptions progress:progressBlock completed:^(<span class="built_in">UIImage</span> *downloadedImage, <span class="built_in">NSData</span> *downloadedData, <span class="built_in">NSError</span> *error, <span class="built_in">BOOL</span> finished) &#123;</div><div class="line">                __<span class="keyword">strong</span> __<span class="keyword">typeof</span>(weakOperation) strongOperation = weakOperation;</div><div class="line">                <span class="keyword">if</span> (!strongOperation || strongOperation.isCancelled) &#123;</div><div class="line">                    <span class="comment">// 操作被取消，则不做任务事情</span></div><div class="line">                    </div><div class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (error) &#123;</div><div class="line">                    <span class="comment">// 如果出错，则调用完成回调，并将url放入下载失败url数组中	</span></div><div class="line">                    ...</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">else</span> &#123;</div><div class="line">                    ...</div><div class="line">                    </div><div class="line">                    <span class="built_in">BOOL</span> cacheOnDisk = !(options &amp; SDWebImageCacheMemoryOnly);</div><div class="line"></div><div class="line">                    <span class="keyword">if</span> (options &amp; SDWebImageRefreshCached &amp;&amp; cachedImage &amp;&amp; !downloadedImage) &#123;</div><div class="line">                        <span class="comment">// Image refresh hit the NSURLCache cache, do not call the completion block</span></div><div class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (downloadedImage &amp;&amp; (!downloadedImage.images || (options &amp; SDWebImageTransformAnimatedImage)) &amp;&amp; [<span class="keyword">self</span>.delegate respondsToSelector:<span class="keyword">@selector</span>(imageManager:transformDownloadedImage:withURL:)]) &#123;</div><div class="line">                        <span class="comment">// 在全局队列中并行处理图片的缓存</span></div><div class="line">                        <span class="comment">// 首先对图片做个转换操作，该操作是代理对象实现的</span></div><div class="line">                        <span class="comment">// 然后对图片做缓存处理</span></div><div class="line">                        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, <span class="number">0</span>), ^&#123;</div><div class="line">                            <span class="built_in">UIImage</span> *transformedImage = [<span class="keyword">self</span>.delegate imageManager:<span class="keyword">self</span> transformDownloadedImage:downloadedImage withURL:url];</div><div class="line"></div><div class="line">                            <span class="keyword">if</span> (transformedImage &amp;&amp; finished) &#123;</div><div class="line">                                <span class="built_in">BOOL</span> imageWasTransformed = ![transformedImage isEqual:downloadedImage];</div><div class="line">                                <span class="comment">// pass nil if the image was transformed, so we can recalculate the data from the image</span></div><div class="line">                                [<span class="keyword">self</span>.imageCache storeImage:transformedImage imageData:(imageWasTransformed ? <span class="literal">nil</span> : downloadedData) forKey:key toDisk:cacheOnDisk completion:<span class="literal">nil</span>];</div><div class="line">                            &#125;</div><div class="line">                            </div><div class="line">                            ...</div><div class="line">                        &#125;);</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        <span class="keyword">if</span> (downloadedImage &amp;&amp; finished) &#123;</div><div class="line">                            [<span class="keyword">self</span>.imageCache storeImage:downloadedImage imageData:downloadedData forKey:key toDisk:cacheOnDisk completion:<span class="literal">nil</span>];</div><div class="line">                        &#125;</div><div class="line">                        ...</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="comment">// 下载完成并缓存后，将操作从队列中移除</span></div><div class="line">                <span class="keyword">if</span> (finished) &#123;</div><div class="line">                    [<span class="keyword">self</span> safelyRemoveOperationFromRunning:strongOperation];</div><div class="line">                &#125;</div><div class="line">            &#125;];</div><div class="line">            operation.cancelBlock = ^&#123;</div><div class="line">                [<span class="keyword">self</span>.imageDownloader cancel:subOperationToken];</div><div class="line">                __<span class="keyword">strong</span> __<span class="keyword">typeof</span>(weakOperation) strongOperation = weakOperation;</div><div class="line">                [<span class="keyword">self</span> safelyRemoveOperationFromRunning:strongOperation];</div><div class="line">            &#125;;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cachedImage) &#123;</div><div class="line">            ...</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            ...</div><div class="line">        &#125;</div><div class="line">    &#125;];</div><div class="line"></div><div class="line">    <span class="keyword">return</span> operation;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对于这个方法，我们没有做过多的解释。其主要就是下载图片并根据操作选项缓存图片。上面这个下载方法的操作选项参数是由枚举<code>SDWebImageOptions</code>来定义的，这个操作中的一些选项是与<code>SDWebImageDownloaderOptions</code>中的选项对应的，我们来看看这个<code>SDWebImageOptions</code>选项都有哪些：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="built_in">NS_OPTIONS</span>(<span class="built_in">NSUInteger</span>, SDWebImageOptions) &#123;</div><div class="line">    </div><div class="line">    <span class="comment">// 默认情况下，当URL下载失败时，URL会被列入黑名单，导致库不会再去重试，该标记用于禁用黑名单</span></div><div class="line">    SDWebImageRetryFailed = <span class="number">1</span> &lt;&lt; <span class="number">0</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 默认情况下，图片下载开始于UI交互，该标记禁用这一特性，这样下载延迟到UIScrollView减速时</span></div><div class="line">    SDWebImageLowPriority = <span class="number">1</span> &lt;&lt; <span class="number">1</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 该标记禁用磁盘缓存</span></div><div class="line">    SDWebImageCacheMemoryOnly = <span class="number">1</span> &lt;&lt; <span class="number">2</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 该标记启用渐进式下载，图片在下载过程中是渐渐显示的，如同浏览器一下。</span></div><div class="line">    <span class="comment">// 默认情况下，图像在下载完成后一次性显示</span></div><div class="line">    SDWebImageProgressiveDownload = <span class="number">1</span> &lt;&lt; <span class="number">3</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 即使图片缓存了，也期望HTTP响应cache control，并在需要的情况下从远程刷新图片。</span></div><div class="line">    <span class="comment">// 磁盘缓存将被NSURLCache处理而不是SDWebImage，因为SDWebImage会导致轻微的性能下载。</span></div><div class="line">    <span class="comment">// 该标记帮助处理在相同请求URL后面改变的图片。如果缓存图片被刷新，则完成block会使用缓存图片调用一次</span></div><div class="line">    <span class="comment">// 然后再用最终图片调用一次</span></div><div class="line">    SDWebImageRefreshCached = <span class="number">1</span> &lt;&lt; <span class="number">4</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 在iOS 4+系统中，当程序进入后台后继续下载图片。这将要求系统给予额外的时间让请求完成</span></div><div class="line">    <span class="comment">// 如果后台任务超时，则操作被取消</span></div><div class="line">    SDWebImageContinueInBackground = <span class="number">1</span> &lt;&lt; <span class="number">5</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 通过设置NSMutableURLRequest.HTTPShouldHandleCookies = YES;来处理存储在NSHTTPCookieStore中的cookie</span></div><div class="line">    SDWebImageHandleCookies = <span class="number">1</span> &lt;&lt; <span class="number">6</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 允许不受信任的SSL认证</span></div><div class="line">    SDWebImageAllowInvalidSSLCertificates = <span class="number">1</span> &lt;&lt; <span class="number">7</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 默认情况下，图片下载按入队的顺序来执行。该标记将其移到队列的前面，</span></div><div class="line">    <span class="comment">// 以便图片能立即下载而不是等到当前队列被加载</span></div><div class="line">    SDWebImageHighPriority = <span class="number">1</span> &lt;&lt; <span class="number">8</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 默认情况下，占位图片在加载图片的同时被加载。该标记延迟占位图片的加载直到图片已以被加载完成</span></div><div class="line">    SDWebImageDelayPlaceholder = <span class="number">1</span> &lt;&lt; <span class="number">9</span>,</div><div class="line">    </div><div class="line">    <span class="comment">// 通常我们不调用动画图片的transformDownloadedImage代理方法，因为大多数转换代码可以管理它。</span></div><div class="line">    <span class="comment">// 使用这个票房则不任何情况下都进行转换。</span></div><div class="line">    SDWebImageTransformAnimatedImage = <span class="number">1</span> &lt;&lt; <span class="number">10</span>,</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>大家再看<code>-downloadImageWithURL:options:progress:completed:</code>，可以看到两个<code>SDWebImageOptions</code>与<code>SDWebImageDownloaderOptions</code>中的选项是如何对应起来的，在此不多做解释。</p>
+<h3 id="视图扩展"><a href="#视图扩展" class="headerlink" title="视图扩展"></a>视图扩展</h3><p>我们在使用SDWebImage的时候，使用最多的是<code>UIImageView+WebCache</code>中的针对<code>UIImageView</code>的扩展方法，这些扩展方法将<code>UIImageView</code>与<code>WebCache</code>集成在一起，来让<code>UIImageView</code>对象拥有异步下载和缓存远程图片的能力。在4.0.0版本以后，给UIView新增了好多方法，其中最之前<code>UIImageView+WebCache</code>最核心的方法<code>-sd_setImageWithURL:placeholderImage:options:progress:completed:</code>，现在使用的是<code>UIView+WebCache</code>中新增的方法<code>sd_internalSetImageWithURL:placeholderImage:options:operationKey:setImageBlock:progress:completed:</code>,其使用<code>SDWebImageManager</code>单例对象下载并缓存图片，完成后将图片赋值给<code>UIImageView</code>对象的image属性，以使图片显示出来，其具体实现如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)sd_internalSetImageWithURL:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> *)url</div><div class="line">                  placeholderImage:(<span class="keyword">nullable</span> <span class="built_in">UIImage</span> *)placeholder</div><div class="line">                           options:(SDWebImageOptions)options</div><div class="line">                      operationKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)operationKey</div><div class="line">                     setImageBlock:(<span class="keyword">nullable</span> SDSetImageBlock)setImageBlock</div><div class="line">                          progress:(<span class="keyword">nullable</span> SDWebImageDownloaderProgressBlock)progressBlock</div><div class="line">                         completed:(<span class="keyword">nullable</span> SDExternalCompletionBlock)completedBlock &#123;</div><div class="line">    </div><div class="line">	...</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> (url) &#123;</div><div class="line">        <span class="comment">// check if activityView is enabled or not</span></div><div class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span> sd_showActivityIndicatorView]) &#123;</div><div class="line">            [<span class="keyword">self</span> sd_addActivityIndicator];</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        __<span class="keyword">weak</span> __<span class="keyword">typeof</span>(<span class="keyword">self</span>)wself = <span class="keyword">self</span>;</div><div class="line">        <span class="comment">// 使用SDWebImageManager单例对象来下载图片</span></div><div class="line">        <span class="keyword">id</span> &lt;SDWebImageOperation&gt; operation = [SDWebImageManager.sharedManager loadImageWithURL:url options:options progress:progressBlock completed:^(<span class="built_in">UIImage</span> *image, <span class="built_in">NSData</span> *data, <span class="built_in">NSError</span> *error, SDImageCacheType cacheType, <span class="built_in">BOOL</span> finished, <span class="built_in">NSURL</span> *imageURL) &#123;</div><div class="line">            __<span class="keyword">strong</span> __<span class="keyword">typeof</span> (wself) sself = wself;</div><div class="line">            [sself sd_removeActivityIndicator];</div><div class="line">            <span class="keyword">if</span> (!sself) &#123;</div><div class="line">                <span class="keyword">return</span>;</div><div class="line">            &#125;</div><div class="line">            dispatch_main_async_safe(^&#123;</div><div class="line">                <span class="keyword">if</span> (!sself) &#123;</div><div class="line">                    <span class="keyword">return</span>;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> (image &amp;&amp; (options &amp; SDWebImageAvoidAutoSetImage) &amp;&amp; completedBlock) &#123;</div><div class="line">                    completedBlock(image, error, cacheType, url);</div><div class="line">                    <span class="keyword">return</span>;</div><div class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (image) &#123;</div><div class="line">                    <span class="comment">// 图片下载完后显示图片</span></div><div class="line">                    [sself sd_setImage:image imageData:data basedOnClassOrViaCustomSetImageBlock:setImageBlock];</div><div class="line">                    [sself sd_setNeedsLayout];</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    <span class="keyword">if</span> ((options &amp; SDWebImageDelayPlaceholder)) &#123;</div><div class="line">                        [sself sd_setImage:placeholder imageData:<span class="literal">nil</span> basedOnClassOrViaCustomSetImageBlock:setImageBlock];</div><div class="line">                        [sself sd_setNeedsLayout];</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> (completedBlock &amp;&amp; finished) &#123;</div><div class="line">                    completedBlock(image, error, cacheType, url);</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">        &#125;];</div><div class="line">        [<span class="keyword">self</span> sd_setImageLoadOperation:operation forKey:validOperationKey];</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">       ...</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>除了扩展<code>UIImageView</code>之外，SDWebImage还扩展了<code>UIView</code>、<code>UIButton</code>、<code>MKAnnotationView</code>等视图类，大家可以参考源码。</p>
+<p>当然，如果不想使用这些扩展，则可以直接使用SDWebImageManager来下载图片，这也是很OK的。</p>
+<h3 id="技术点"><a href="#技术点" class="headerlink" title="技术点"></a>技术点</h3><p>SDWebImage的主要任务就是图片的下载和缓存。为了支持这些操作，它主要使用了以下知识点：</p>
+<ul>
+<li><code>dispatch_barrier_sync</code>函数：该方法用于对操作设置等待，确保在执行完任务后才会执行后续操作。该方法常用于确保类的线程安全性操作。</li>
+<li><code>NSMutableURLRequest</code>：用于创建一个网络请求对象，我们可以根据需要来配置请求报头等信息。</li>
+<li><code>NSOperation</code>及<code>NSOperationQueue</code>：操作队列是Objective-C中一种高级的并发处理方法，现在它是基于GCD来实现的。相对于GCD来说，操作队列的优点是可以取消在任务处理队列中的任务，另外在管理操作间的依赖关系方面也容易一些。对SDWebImage中我们就看到了如何使用依赖将下载顺序设置成后进先出的顺序。(有兴趣的同学可以看看我这篇博客-&gt;<a href="http://www.guiyongdong.com/2016/09/18/%E8%81%8A%E4%B8%80%E8%81%8ANSOperation%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/">聊一聊NSOperation的那些事</a>)</li>
+<li>NSURLSession：用于网络请求及响应处理。在iOS7.0后，苹果推出了一套新的网络请求接口，即NSURLSession类。(有兴趣的同学可以看看我这篇博客-&gt;<a href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/">NSURLSession与NSURLConnection区别</a>)</li>
+<li>开启一个后台任务。</li>
+<li><code>NSCache</code>类：一个类似于集合的容器。它存储key-value对，这一点类似于NSDictionary类。我们通常用使用缓存来临时存储短时间使用但创建昂贵的对象。重用这些对象可以优化性能，因为它们的值不需要重新计算。另外一方面，这些对象对于程序来说不是紧要的，在内存紧张时会被丢弃。</li>
+<li>清理缓存图片的策略：特别是最大缓存空间大小的设置。如果所有缓存文件的总大小超过这一大小，则会按照文件最后修改时间的逆序，以每次一半的递归来移除那些过早的文件，直到缓存的实际大小小于我们设置的最大使用空间。</li>
+<li>对图片的解压缩操作：这一操作可以查看<code>SDWebImageDecoder.m</code>中<code>+decodedImageWithImage</code>方法的实现。</li>
+<li>对GIF图片的处理</li>
+<li>对WebP图片的处理</li>
+<li>对cell的重用机制的解决，利用runtime的关联对象，会为imageView对象关联一个下载列表，当tableView滑动时，imageView重设数据源（url）时，会cancel掉下载列表中所有的任务，然后开启一个新的下载任务。这样子就保证了只有当前可见的cell对象的imageView对象关联的下载任务能够回调，不会发生image错乱。</li>
+</ul>
+<p>感兴趣的同学可以深入研究一下这些知识点。当然，这只是其中一部分，更多的知识还有待大家去发掘。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;SDWebImage是一个开源的第三方库，它提供了UIImageView的一个分类，以支持从远程服务器下载并缓存图片的功能。它具有以下功能：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;提供UIImageView的一个分类，以支持网络图片的加载与缓存管理&lt;/li&gt;
+&lt;li&gt;一个异步的图片加载器&lt;/li&gt;
+&lt;li&gt;一个异步的内存+磁盘图片缓存&lt;/li&gt;
+&lt;li&gt;支持GIF图片&lt;/li&gt;
+&lt;li&gt;支持WebP图片&lt;/li&gt;
+&lt;li&gt;后台图片解压缩处理&lt;/li&gt;
+&lt;li&gt;确保同一个URL不会被反复加载&lt;/li&gt;
+&lt;li&gt;确保下载及缓存时，主线程不被堵塞&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;从github上对SDWebImage使用情况可以看出，SDWebImage在图片下载及缓存的处理还是被认可的。在本文中，我们主要从源码的角度来分析一下SDWebImage的实现机制。讨论的内容将主要集中在图片的下载及缓存，而不包含对GIF图片及WebP图片的支持操作。不过在3.8.2版本以后，SDWebImage将会使用NSURLSession代替原来的NSURLConnection，主要是更新的是下载功能部分。具体变化可以看:&lt;a href=&quot;https://github.com/rs/SDWebImage/blob/master/Docs/SDWebImage-4.0-Migration-guide.md&quot;&gt;点这里&lt;/a&gt;。目前截止到当前时间，最新的版本为4.0.0-beta2,这篇文章是在4.0.0-beta2基础上进行剖析。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="源码分析" scheme="http://www.guiyongdong.com/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="源码分析" scheme="http://www.guiyongdong.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Objective-C Runtime 运行时之六：拾遗</title>
+    <link href="http://www.guiyongdong.com/2017/01/03/Objective-C-Runtime-%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E5%85%AD%EF%BC%9A%E6%8B%BE%E9%81%97/"/>
+    <id>http://www.guiyongdong.com/2017/01/03/Objective-C-Runtime-运行时之六：拾遗/</id>
+    <published>2017-01-03T07:08:47.000Z</published>
+    <updated>2017-01-03T09:46:33.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>前面几篇基本介绍了runtime中的大部分功能，包括对类与对象、成员变量与属性、方法与消息、分类与协议的处理。runtime大部分的功能都是围绕这几点来实现的。</p>
+<p>本章的内容并不算重点，主要针对前文中对Objective-C Runtime Reference内容遗漏的地方做些补充。当然这并不能包含所有的内容。runtime还有许多内容。</p>
+<a id="more"></a>
+<h4 id="super"><a href="#super" class="headerlink" title="super"></a>super</h4><p>在Objective-C中，如果我们需要在类的方法中调用父类的方法时，通常都会用到<code>super</code>，如下所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyViewController</span>: <span class="title">UIViewController</span></span></div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span>	<span class="title">MyViewController</span></span></div><div class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</div><div class="line">	[<span class="keyword">super</span> viewDidLoad];</div><div class="line">	<span class="comment">// do something</span></div><div class="line">	...</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>如何使用super我们都知道。现在的问题是，它是如何工作的呢？</p>
+<p>首先我们需要知道的是super与self不同。self是类的一个隐藏参数，每个方法的实现的第一个参数即为self。而super并不是隐藏参数，它实际上只是一个”编译器标示符”，它负责告诉编译器，当调用viewDidLoad方法时，去调用父类的方法，而不是本类中的方法。而它实际上与self指向的是相同的消息接收者。为了理解这一点，我们先来看看super的定义</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">struct</span> objc_super &#123; <span class="keyword">id</span> receiver; Class superClass; &#125;;</div></pre></td></tr></table></figure>
+<p>这个结构体有两个成员：</p>
+<ul>
+<li>receiver：即消息的实际接收者</li>
+<li>superClass：指针当前类的父类</li>
+</ul>
+<p>当我们使用super来接收消息时，编译器会生成一个objc_super结构体。就上面的例子而言，这个结构体的receiver就是MyViewController对象，与self相同；superClass指向MyViewController的父类UIViewController。</p>
+<p>接下来，发送消息时，不是调用objc_msgSend函数，而是调用objc_msgSendSuper函数，其声明如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">id</span> objc_msgSendSuper ( <span class="keyword">struct</span> objc_super *<span class="keyword">super</span>, SEL op, ... );</div></pre></td></tr></table></figure>
+<p>该函数第一个参数即为前面生成的objc_super结构体，第二个参数是方法的selector。该函数实际的操作是：从objc_super结构体指向的superClass的方法列表开始查找viewDidLoad的selector，找到后以objc-&gt;receiver去调用这个selector，而此时的操作流程就是如下方式了</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">objc_msgSend(objc_super-&gt;receiver, <span class="keyword">@selector</span>(viewDidLoad))</div></pre></td></tr></table></figure>
+<p>由于objc_super-&gt;receiver就是self本身，所以该方法实际与下面这个调用是相同的：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">objc_msgSend(<span class="keyword">self</span>, <span class="keyword">@selector</span>(viewDidLoad))</div></pre></td></tr></table></figure>
+<p>为了便于理解，我们看以下实例：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyClass</span> : <span class="title">NSObject</span></span></div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">MyClass</span></span></div><div class="line">- (<span class="keyword">void</span>)test &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"self class: %@"</span>, <span class="keyword">self</span>.class);</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"super class: %@"</span>, <span class="keyword">super</span>.class);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>调用MyClass的test方法后，其输出是：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="number">2014</span><span class="number">-11</span><span class="number">-08</span> <span class="number">15</span>:<span class="number">55</span>:<span class="number">03.256</span> [<span class="number">824</span>:<span class="number">209297</span>] <span class="keyword">self</span> <span class="keyword">class</span>: MyClass</div><div class="line"><span class="number">2014</span><span class="number">-11</span><span class="number">-08</span> <span class="number">15</span>:<span class="number">55</span>:<span class="number">03.256</span> [<span class="number">824</span>:<span class="number">209297</span>] <span class="keyword">super</span> <span class="keyword">class</span>: MyClass</div></pre></td></tr></table></figure>
+<p>从上例中可以看到，两者的输出都是MyClass。</p>
+<h4 id="库相关操作"><a href="#库相关操作" class="headerlink" title="库相关操作"></a>库相关操作</h4><p>库相关的操作主要是用于获取由系统提供的库相关的信息，主要包含以下函数：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 获取所有加载的Objective-C框架和动态库的名称</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> ** objc_copyImageNames ( <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 获取指定类所在动态库</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> * class_getImageName ( Class cls );</div><div class="line"><span class="comment">// 获取指定库或框架中所有类的类名</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> ** objc_copyClassNamesForImage ( <span class="keyword">const</span> <span class="keyword">char</span> *image, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div></pre></td></tr></table></figure>
+<p>通过这几个函数，我们可以了解到某个类所有的库，以及某个库中包含哪些类。如下代码所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"获取指定类所在动态库"</span>);</div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"UIView's Framework: %s"</span>, class_getImageName(<span class="built_in">NSClassFromString</span>(<span class="string">@"UIView"</span>)));</div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"获取指定库或框架中所有类的类名"</span>);</div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> ** classes = objc_copyClassNamesForImage(class_getImageName(<span class="built_in">NSClassFromString</span>(<span class="string">@"UIView"</span>)), &amp;outCount);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; outCount; i++) &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"class name: %s"</span>, classes[i]);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其输出结果如下：</p>
+<figure class="highlight"><table><tr><td class="code"><pre><div class="line">2014-11-08 12:57:32.689 [747:184013] 获取指定类所在动态库</div><div class="line">2014-11-08 12:57:32.690 [747:184013] UIView's Framework: /System/Library/Frameworks/UIKit.framework/UIKit</div><div class="line">2014-11-08 12:57:32.690 [747:184013] 获取指定库或框架中所有类的类名</div><div class="line">2014-11-08 12:57:32.691 [747:184013] class name: UIKeyboardPredictiveSettings</div><div class="line">2014-11-08 12:57:32.691 [747:184013] class name: _UIPickerViewTopFrame</div><div class="line">2014-11-08 12:57:32.691 [747:184013] class name: _UIOnePartImageView</div><div class="line">2014-11-08 12:57:32.692 [747:184013] class name: _UIPickerViewSelectionBar</div><div class="line">2014-11-08 12:57:32.692 [747:184013] class name: _UIPickerWheelView</div><div class="line">2014-11-08 12:57:32.692 [747:184013] class name: _UIPickerViewTestParameters</div><div class="line">......</div></pre></td></tr></table></figure>
+<h4 id="块操作"><a href="#块操作" class="headerlink" title="块操作"></a>块操作</h4><p>我们都知道block给我们带到极大的方便，苹果也不断提供一些使用block的新的API。同时，苹果在runtime中也提供了一些函数来支持针对block的操作，这些函数包括：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 创建一个指针函数的指针，该函数调用时会调用特定的block</span></div><div class="line">IMP imp_implementationWithBlock ( <span class="keyword">id</span> block );</div><div class="line"><span class="comment">// 返回与IMP(使用imp_implementationWithBlock创建的)相关的block</span></div><div class="line"><span class="keyword">id</span> imp_getBlock ( IMP anImp );</div><div class="line"><span class="comment">// 解除block与IMP(使用imp_implementationWithBlock创建的)的关联关系，并释放block的拷贝</span></div><div class="line"><span class="built_in">BOOL</span> imp_removeBlock ( IMP anImp );</div></pre></td></tr></table></figure>
+<ul>
+<li>imp_implementationWithBlock函数：参数block的签名必须是method_return_type ^(id self, method_args …)形式的。该方法能让我们使用block作为IMP。如下代码所示：</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyRuntimeBlock</span> : <span class="title">NSObject</span></span></div><div class="line"><span class="keyword">@end</span>	</div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">MyRuntimeBlock</span></span></div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="comment">// 测试代码</span></div><div class="line">IMP imp = imp_implementationWithBlock(^(<span class="keyword">id</span> obj, <span class="built_in">NSString</span> *str) &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, str);</div><div class="line">&#125;);</div><div class="line">class_addMethod(MyRuntimeBlock.class, <span class="keyword">@selector</span>(testBlock:), imp, <span class="string">"v@:@"</span>);</div><div class="line">MyRuntimeBlock *runtime = [[MyRuntimeBlock alloc] init];</div><div class="line">[runtime performSelector:<span class="keyword">@selector</span>(testBlock:) withObject:<span class="string">@"hello world!"</span>];</div></pre></td></tr></table></figure>
+<p>输出结果是</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="number">2014</span><span class="number">-11</span><span class="number">-09</span> <span class="number">14</span>:<span class="number">03</span>:<span class="number">19.779</span> [<span class="number">1172</span>:<span class="number">395446</span>] hello world!</div></pre></td></tr></table></figure>
+<h4 id="弱引用操作"><a href="#弱引用操作" class="headerlink" title="弱引用操作"></a>弱引用操作</h4><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 加载弱引用指针引用的对象并返回</span></div><div class="line"><span class="keyword">id</span> objc_loadWeak ( <span class="keyword">id</span> *location );</div><div class="line"><span class="comment">// 存储__weak变量的新值</span></div><div class="line"><span class="keyword">id</span> objc_storeWeak ( <span class="keyword">id</span> *location, <span class="keyword">id</span> obj );</div></pre></td></tr></table></figure>
+<ul>
+<li>objc_loadWeak函数：该函数加载一个弱指针引用的对象，并在对其做retain和autoreleasing操作后返回它。这样，对象就可以在调用者使用它时保持足够长的生命周期。该函数典型的用法是在任何有使用__weak变量的表达式中使用。</li>
+<li>objc_storeWeak函数：该函数的典型用法是用于__weak变量做为赋值对象时。</li>
+</ul>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>至此，本系列对runtime的整理已完结。当然这只是对runtime的一些基础知识的归纳，力图起个抛砖引玉的作用。还有许多关于runtime有意思东西还需要读者自己去探索发现。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;前面几篇基本介绍了runtime中的大部分功能，包括对类与对象、成员变量与属性、方法与消息、分类与协议的处理。runtime大部分的功能都是围绕这几点来实现的。&lt;/p&gt;
+&lt;p&gt;本章的内容并不算重点，主要针对前文中对Objective-C Runtime Reference内容遗漏的地方做些补充。当然这并不能包含所有的内容。runtime还有许多内容。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+    
+    
+      <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Objective-C-Runtime运行时之五：协议与分类</title>
+    <link href="http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E4%BA%94%EF%BC%9A%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E7%B1%BB/"/>
+    <id>http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/</id>
+    <published>2016-12-18T06:25:59.000Z</published>
+    <updated>2017-01-03T07:09:39.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。</p>
+<p>Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过<code>@protocol</code>定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，<code>@protocol</code>声明了可以被其他任何类实现的方法，协议仅仅是定义一个接口，而由其他的类去负责实现。</p>
+<p>在本章中，我们来看看runtime对分类与协议的支持。</p>
+<a id="more"></a>
+<h4 id="基础数据类型"><a href="#基础数据类型" class="headerlink" title="基础数据类型"></a>基础数据类型</h4><h5 id="Category"><a href="#Category" class="headerlink" title="Category"></a>Category</h5><p>Category是表示一个指向分类的结构体的指针，其定义如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_category *Category;</div><div class="line"><span class="keyword">struct</span> objc_category &#123;</div><div class="line">    <span class="keyword">char</span> *category_name                          OBJC2_UNAVAILABLE;	<span class="comment">// 分类名</span></div><div class="line">    <span class="keyword">char</span> *class_name                             OBJC2_UNAVAILABLE;	<span class="comment">// 分类所属的类名</span></div><div class="line">    <span class="keyword">struct</span> objc_method_list *instance_methods    OBJC2_UNAVAILABLE;	<span class="comment">// 实例方法列表</span></div><div class="line">    <span class="keyword">struct</span> objc_method_list *class_methods       OBJC2_UNAVAILABLE;	<span class="comment">// 类方法列表</span></div><div class="line">    <span class="keyword">struct</span> objc_protocol_list *protocols         OBJC2_UNAVAILABLE;	<span class="comment">// 分类所实现的协议列表</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个结构体主要包含了分类定义的实例方法与类方法，其中<code>instance_methods</code>列表是元类方法列表的一个子集。</p>
+<h5 id="Protocol"><a href="#Protocol" class="headerlink" title="Protocol"></a>Protocol</h5><p>Protocol的定义如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_object Protocol;</div></pre></td></tr></table></figure>
+<p>我们可以看到，Protocol其实就是一个对象结构体。</p>
+<h5 id="操作函数"><a href="#操作函数" class="headerlink" title="操作函数"></a>操作函数</h5><p>Runtime并没有在<code>&lt;objc/runtime.h&gt;</code>头文件中提供针对分类的操作函数。因为这些分类中的信息都包含在<code>objc_class</code>中，我们可以通过针对<code>objc_class</code>的操作函数来获取分类的信息。如下里所示：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RuntimeCategoryClass</span> : <span class="title">NSObject</span></span></div><div class="line">- (<span class="keyword">void</span>)method1;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RuntimeCategoryClass</span> (<span class="title">Category</span>)</span></div><div class="line">- (<span class="keyword">void</span>)method2;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">RuntimeCategoryClass</span></span></div><div class="line">- (<span class="keyword">void</span>)method1 &#123;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">RuntimeCategoryClass</span> (<span class="title">Category</span>)</span></div><div class="line">- (<span class="keyword">void</span>)method2 &#123;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="meta">#pragma mark -</span></div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"测试objc_class中的方法列表是否包含分类中的方法"</span>);</div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> outCount = <span class="number">0</span>;</div><div class="line">Method *methodList = class_copyMethodList(RuntimeCategoryClass.class, &amp;outCount);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; outCount; i++) &#123;</div><div class="line">    Method method = methodList[i];</div><div class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name = sel_getName(method_getName(method));</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"RuntimeCategoryClass's method: %s"</span>, name);</div><div class="line">    <span class="keyword">if</span> (strcmp(name, sel_getName(<span class="keyword">@selector</span>(method2)))) &#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"分类方法method2在objc_class的方法列表中"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其输出是：</p>
+<figure class="highlight"><table><tr><td class="code"><pre><div class="line">2014-11-08 10:36:39.213 [561:151847] 测试objc_class中的方法列表是否包含分类中的方法</div><div class="line">2014-11-08 10:36:39.215 [561:151847] RuntimeCategoryClass's method: method2</div><div class="line">2014-11-08 10:36:39.215 [561:151847] RuntimeCategoryClass's method: method1</div><div class="line">2014-11-08 10:36:39.215 [561:151847] 分类方法method2在objc_class的方法列表中</div></pre></td></tr></table></figure>
+<p>而对于Protocol，runtime提供了一系列函数来对其进行操作，这些函数包括：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 返回指定的协议</span></div><div class="line">Protocol * objc_getProtocol ( <span class="keyword">const</span> <span class="keyword">char</span> *name );</div><div class="line"><span class="comment">// 获取运行时所知道的所有协议的数组</span></div><div class="line">Protocol ** objc_copyProtocolList ( <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 创建新的协议实例</span></div><div class="line">Protocol * objc_allocateProtocol ( <span class="keyword">const</span> <span class="keyword">char</span> *name );</div><div class="line"><span class="comment">// 在运行时中注册新创建的协议</span></div><div class="line"><span class="keyword">void</span> objc_registerProtocol ( Protocol *proto );</div><div class="line"><span class="comment">// 为协议添加方法</span></div><div class="line"><span class="keyword">void</span> protocol_addMethodDescription ( Protocol *proto, SEL name, <span class="keyword">const</span> <span class="keyword">char</span> *types, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod );</div><div class="line"><span class="comment">// 添加一个已注册的协议到协议中</span></div><div class="line"><span class="keyword">void</span> protocol_addProtocol ( Protocol *proto, Protocol *addition );</div><div class="line"><span class="comment">// 为协议添加属性</span></div><div class="line"><span class="keyword">void</span> protocol_addProperty ( Protocol *proto, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> objc_property_attribute_t *attributes, <span class="keyword">unsigned</span> <span class="keyword">int</span> attributeCount, <span class="built_in">BOOL</span> isRequiredProperty, <span class="built_in">BOOL</span> isInstanceProperty );</div><div class="line"><span class="comment">// 返回协议名</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> * protocol_getName ( Protocol *p );</div><div class="line"><span class="comment">// 测试两个协议是否相等</span></div><div class="line"><span class="built_in">BOOL</span> protocol_isEqual ( Protocol *proto, Protocol *other );</div><div class="line"><span class="comment">// 获取协议中指定条件的方法的方法描述数组</span></div><div class="line"><span class="keyword">struct</span> objc_method_description * protocol_copyMethodDescriptionList ( Protocol *p, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 获取协议中指定方法的方法描述</span></div><div class="line"><span class="keyword">struct</span> objc_method_description protocol_getMethodDescription ( Protocol *p, SEL aSel, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod );</div><div class="line"><span class="comment">// 获取协议中的属性列表</span></div><div class="line">objc_property_t * protocol_copyPropertyList ( Protocol *proto, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 获取协议的指定属性</span></div><div class="line">objc_property_t protocol_getProperty ( Protocol *proto, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="built_in">BOOL</span> isRequiredProperty, <span class="built_in">BOOL</span> isInstanceProperty );</div><div class="line"><span class="comment">// 获取协议采用的协议</span></div><div class="line">Protocol ** protocol_copyProtocolList ( Protocol *proto, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 查看协议是否采用了另一个协议</span></div><div class="line"><span class="built_in">BOOL</span> protocol_conformsToProtocol ( Protocol *proto, Protocol *other );</div></pre></td></tr></table></figure>
+<ul>
+<li><code>objc_getProtocol</code>函数，需要注意的是如果仅仅是声明了一个协议，而未在任何类中实现这个协议，则该函数返回的是nil。</li>
+<li><code>objc_copyProtocolList</code>函数，获取的数值需要使用free来释放。</li>
+<li><code>objc_allcateProtocol</code>函数，如果同名的协议已经存在，则返回nil.</li>
+<li><code>objc_registerProtocol</code>函数，创建一个新的协议后，必须调用该函数以在运行时钟注册新的协议。协议注册后便可以使用，但不能再做修改，即注册完后不能再向协议添加方法或协议。</li>
+</ul>
+<p>需要强调的是，协议一旦注册后就不能修改，即无法再通过调用<code>protocol_addMethodDescription</code>、<code>protocol_addProtocol</code>和<code>protocol_addProperty</code>往协议中添加方法等。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>Runtime并没有提供过多的函数来处理分类。对于协议，我们可以动态地创建协议，并向其添加方法、属性及继承的协议，并在运行时动态地获取这些信息。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。&lt;/p&gt;
+&lt;p&gt;Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过&lt;code&gt;@protocol&lt;/code&gt;定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，&lt;code&gt;@protocol&lt;/code&gt;声明了可以被其他任何类实现的方法，协议仅仅是定义一个接口，而由其他的类去负责实现。&lt;/p&gt;
+&lt;p&gt;在本章中，我们来看看runtime对分类与协议的支持。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+    
+    
+      <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
+    
+  </entry>
   
   <entry>
     <title>Objective-C Runtime 运行时之四：Method Swizzling</title>
@@ -3764,1383 +4007,6 @@ CGAffineTransformTranslate(CGAffineTransform t, CGFloat tx, CGFloat ty)
     
     
       <category term="动画" scheme="http://www.guiyongdong.com/tags/%E5%8A%A8%E7%94%BB/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>聊一聊NSOperation的那些事</title>
-    <link href="http://www.guiyongdong.com/2016/09/18/%E8%81%8A%E4%B8%80%E8%81%8ANSOperation%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/"/>
-    <id>http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/</id>
-    <published>2016-09-18T08:23:05.000Z</published>
-    <updated>2016-09-18T09:06:34.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br><a id="more"></a></p>
-<h3 id="一、简介"><a href="#一、简介" class="headerlink" title="一、简介"></a>一、简介</h3><ul>
-<li>除了，NSThread和GCD实现多线程，配合使用NSOperation和NSOperationQueue也能实现多线程编程</li>
-</ul>
-<blockquote>
-<p>NSOperation和NSOperationQueue<code>实现多线程的具体步骤</code></p>
-</blockquote>
-<ul>
-<li>1、先将需要执行的操作封装到一个NSOperation的子类对象中<ul>
-<li>实际上，NSOperation是个抽象类,并不具备封装操作的能力，必须使用它的子类</li>
-</ul>
-</li>
-<li>2、然后将NSOperation对象添加到NSOperationQueue中</li>
-<li>3、系统会自动将NSOperationQueue中的NSOperation取出来</li>
-<li>4、将取出的NSOperation封装的操作放到一条新线程中执行</li>
-</ul>
-<h3 id="二、NSOperation"><a href="#二、NSOperation" class="headerlink" title="二、NSOperation"></a>二、NSOperation</h3><ul>
-<li>如上所示：要实现多线程，必须要将执行的操作封装到NSOperation的子类对象中，那么NSOperation的子类有哪些？</li>
-</ul>
-<p><strong>1、使用NSOperation子类的方式有3种</strong></p>
-<ul>
-<li>NSInvocationOperation</li>
-<li>NSBlockOperation</li>
-<li>自定义子类继承NSOperation，实现内部相应main的方法封装操作</li>
-</ul>
-<blockquote>
-<p>1.1 NSInvocationOperation</p>
-</blockquote>
-<ul>
-<li><p>创建NSInvocationOperation对象<br><code>-(id)initWithTarget:(id)target selector:(SEL)selector object:(id)arg;</code></p>
-</li>
-<li><p>调用start方法开始执行操作</p>
-<ul>
-<li>默认情况下，调用了start方法后并不会开一条新线程去执行操作，而是在当前线程同步执行操作<pre><code>// 一旦执行操作，就会调用target的selector方法
--(void)start;
-</code></pre></li>
-<li>只有将NSOperation操作任务放到一个NSOperationQueue中，才会异步执行操作</li>
-</ul>
-</li>
-<li><p>使用</p>
-<pre><code>- (void)invocation
-{    
-  // 1.将操作封装到Operation中
-  NSInvocationOperation *op1 = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(demo) object:nil];
-  // 2.执行封装的操作
-  // 如果直接执行NSInvocationOperation中的操作, 那么默认会在主线程中执行
-  [op1 start];
-
-  NSInvocationOperation *op2 = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(test) object:nil];
-  [op2 start];
-}
-</code></pre>
-
-</li>
-</ul>
-<blockquote>
-<p>1.2 NSBlockOperation</p>
-</blockquote>
-<ul>
-<li>注意点：<code>只要NSBlockOperation封装的操作数 &gt;1，就会异步执行操作</code></li>
-<li>创建NSBlockOperation对象<pre><code>+(id)blockOperationWithBlock:(void(^)(void))block;</code></pre></li>
-<li>通过addExecutionBlock:方法添加更多的操作<pre><code>-(void)addExecutionBlock:(void(^)(void))block;</code></pre></li>
-<li><p>使用</p>
-<pre><code>- (void)blockOperation
-{
-  // 1.封装操作
-  NSBlockOperation *op1 = [NSBlockOperation blockOperationWithBlock:^{
-      NSLog(@"1- %@", [NSThread currentThread]);
-  }];
-
-  // 2.添加操作
-  [op1 addExecutionBlock:^{
-      NSLog(@"2- %@", [NSThread currentThread]);
-  }];
-  [op1 addExecutionBlock:^{
-      NSLog(@"3- %@", [NSThread currentThread]);
-  }];
-
-  // 2.执行操作
-  // 如果只封装了一个操作, 那么默认会在主线程中执行
-  // 如果封装了多个操作, 那么除了第一个操作以外, 其它的操作会在子线程中执行
-  [op1 start];
-}</code></pre>
-
-</li>
-</ul>
-<blockquote>
-<p>1.3 自定义 NSOperation，继承NSOperation</p>
-</blockquote>
-<ul>
-<li>如果是自定义类继承于NSOperation, 那么需要将操作写到自定义类的main方法中，重写main方法<ul>
-<li>重写-(void)main方法的注意点<ul>
-<li>自己创建自动释放池（因为如果是异步操作，无法访问主线程的自动释放池）</li>
-<li>经常通过-(BOOL)isCancelled方法检测操作是否被取消，对取消做出响应</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>这种实现方式封装操作, 可以提高代码的复用性</li>
-<li>1.创建类JPOperation，继承NSOperation</li>
-</ul>
-<pre><code>#import <foundation foundation.h="">
-@interface JPOperation : NSOperation
-
-@end
-
-#import "JPOperation.h"
-
-@implementation JPOperation
-
-// 我们要重写main方法，封装操作
-- (void)main
-{
-    NSLog(@"%s, %@", __func__,[NSThread currentThread]);
-}
-@end
-</foundation></code></pre>
-
-<ul>
-<li>2.使用自定义的NSOperation</li>
-</ul>
-<pre><code>// 1.封装操作
-JPOperation *op1 = [[JPOperation alloc] init];
-// 2.执行操作
-[op1 start];
-
-JPOperation *op2 = [[JPOperation alloc] init];
-[op2 start];
-</code></pre>
-
-
-<h3 id="三、NSOperationQueue"><a href="#三、NSOperationQueue" class="headerlink" title="三、NSOperationQueue"></a>三、NSOperationQueue</h3><ul>
-<li><code>NSOperationQueue的作用:</code><ul>
-<li>如上所述：NSOperation可以调用start方法来执行任务，但默认是同步执行的</li>
-<li>如果将NSOperation<code>添加到NSOperationQueue</code>（操作队列）中，<code>系统会自动异步执行NSOperation中的操作</code></li>
-</ul>
-</li>
-<li>添加操作到NSOperationQueue：两个方法<ul>
-<li>只要将一个任务添加到alloc/init的队列(默认并发，可以设置其为串行)中, 那么队列内部会自动调用start</li>
-<li>如果想实现串行, 那么就设置队列的maxConcurrentOperationCount = 1</li>
-</ul>
-</li>
-</ul>
-<pre><code>-(void)addOperation:(NSOperation*)op;
--(void)addOperationWithBlock:(void(^)(void))block;
-</code></pre>
-
-<blockquote>
-<p>基本使用</p>
-</blockquote>
-<ul>
-<li>GCD队列:<ul>
-<li>串行: 自己创建, 主队列</li>
-<li>并发: 自己创建, 全局</li>
-</ul>
-</li>
-<li>NSOperationQueue:<ul>
-<li>自己创建: alloc/init –&gt; 默认是并发 –&gt; 也可以让它串行</li>
-<li>主队列 : mainQueue</li>
-</ul>
-</li>
-</ul>
-<pre><code>#import "ViewController.h"
-#import "JPOperation.h"
-
-@interface ViewController ()
-
-@end
-
-@implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // 1.创建队列
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    // 2.封装任务
-    JPOperation *op1 = [[JPOperation alloc] init];
-    JPOperation *op2 = [[JPOperation alloc] init];
-
-    // 3.将任务添加到队列中
-    [queue addOperation:op1];
-    [queue addOperation:op2];
-}
-
-- (void)block
-{
-    // 1.创建队列
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-
-    // 2.将任务添加到队列中
-    // addOperationWithBlock方法会做两件事情
-    // 1.根据传入的block, 创建一个NSBlockOperation对象
-    // 2.将内部创建好的NSBlockOperation对象, 添加到队列中
-    [queue addOperationWithBlock:^{
-        NSLog(@"1 = %@", [NSThread currentThread]);
-    }];
-    [queue addOperationWithBlock:^{
-        NSLog(@"2 = %@", [NSThread currentThread]);
-    }];
-}
-
-- (void)invation
-{
-    /*
-     GCD队列:
-     串行: 自己创建, 主队列
-     并发: 自己创建, 全局
-
-     NSOperationQueue:
-     自己创建: alloc/init --> 默认是并发 --> 也可以让它串行
-     主队列  : mainQueue
-     */
-    // 1.创建队列
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    //    NSOperationQueue *queue = [NSOperationQueue mainQueue];
-
-    // 2.封装任务
-    NSInvocationOperation *op1 = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(demo) object:nil];
-    NSInvocationOperation *op2 = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(test) object:nil];
-
-    // 3.将任务添加到队列中
-    // 只要将一个任务添加到alloc/init的队列中, 那么队列内部会自动调用start
-    // 只要将一个任务添加到alloc/init的队列中, 就会开启一个新的线程执行队列
-    [queue addOperation:op1];
-    [queue addOperation:op2];
-}
-
-- (void)demo
-{
-    NSLog(@"demo = %@", [NSThread currentThread]);
-}
-- (void)test
-{
-    NSLog(@"test = %@", [NSThread currentThread]);
-}
-@end
-</code></pre>
-
-
-<h3 id="四、NSOperatinoQueue的串行和并发-：-最大并发数"><a href="#四、NSOperatinoQueue的串行和并发-：-最大并发数" class="headerlink" title="四、NSOperatinoQueue的串行和并发 ： 最大并发数"></a>四、NSOperatinoQueue的串行和并发 ： 最大并发数</h3><ul>
-<li>队列的maxConcurrentOperationCount最大并发数</li>
-<li>maxConcurrentOperationCount 默认等于 -1, 代表不限制, 可以创建N多线程</li>
-<li>alloc/init的NSOperatinoQueue队列默认就是并发， 如果想实现串行, 那么就设置maxConcurrentOperationCount = 1</li>
-<li>注意: 最大并发数, 不能设置为0, 否则任务不会被执行 </li>
-</ul>
-<pre><code>#import "ViewController.h"
-
-@interface ViewController ()
-
-@end
-
-@implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // 1.创建队列
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init
-                               ];
-    // maxConcurrentOperationCount 默认等于 -1, 代表不限制, 可以创建N多线程
-    // 默认就是并发
-    // 如果想实现串行, 那么就设置maxConcurrentOperationCount = 1
-    // 注意: 最大并发数, 不能设置为0, 否则任务不会被执行 \
-    如果想再主线程中执行任务, 那么直接创建mainQueu即可
-//    queue.maxConcurrentOperationCount = 1;
-
-    // 2.创建任务
-    NSBlockOperation *op1 = [NSBlockOperation blockOperationWithBlock:^{
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"1 = %@", [NSThread currentThread]);
-    }];
-    NSBlockOperation *op2 = [NSBlockOperation blockOperationWithBlock:^{
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"2 = %@", [NSThread currentThread]);
-    }];
-    NSBlockOperation *op3 = [NSBlockOperation blockOperationWithBlock:^{
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"3 = %@", [NSThread currentThread]);
-    }];
-
-    // 3.将任务添加到队列中
-    [queue addOperation:op1];
-    [queue addOperation:op2];
-    [queue addOperation:op3];   
-}
-@end
-</code></pre>
-
-<h3 id="五、NSOperationQueue的暂停-恢复-取消"><a href="#五、NSOperationQueue的暂停-恢复-取消" class="headerlink" title="五、NSOperationQueue的暂停-恢复-取消"></a>五、NSOperationQueue的暂停-恢复-取消</h3><blockquote>
-<p>1、取消队列的所有操作</p>
-</blockquote>
-<ul>
-<li>也可以调用NSOperation的-(void)cancel方法取消单个操作</li>
-<li>注意点：<ul>
-<li>任务只要被取消, 就不会再恢复了</li>
-<li>取消任务和暂停任务一样, 不会取消当前正在执行的任务, 只能取消还未执行的任务<pre><code>-(void)cancelAllOperations;
-</code></pre>
-
-</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>2、暂停和恢复队列</p>
-</blockquote>
-<ul>
-<li>注意:<ul>
-<li>1.如果在任务执行的过程中暂停队列中的任务, 那么当前正在执行的任务并不会被暂停, 而是会暂停队列中的下一个任务</li>
-<li>2.恢复任务, 是从队列第一个没有被执行过的任务开始恢复<pre><code>-(void)setSuspended:(BOOL)b;//如果是YES, 代表需要暂停，NO代表代表不需要暂停 ==  恢复执行
--(BOOL)isSuspended;
-</code></pre>
-
-</li>
-</ul>
-</li>
-</ul>
-<h3 id="六、NSOperationQueue线程间通信"><a href="#六、NSOperationQueue线程间通信" class="headerlink" title="六、NSOperationQueue线程间通信"></a>六、NSOperationQueue线程间通信</h3><blockquote>
-<p>实例程序：开启子线程下载图片，下载好图片后，回到主线程进行更新UI</p>
-</blockquote>
-<pre><code>#import "ViewController.h"
-
-@interface ViewController ()
-@property (weak, nonatomic) IBOutlet UIImageView *imageView;
-
-@end
-
-@implementation ViewController
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    // 1.开启子线程下载图片
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    [queue addOperationWithBlock:^{
-     // 子线程
-        NSString *urlStr = @"https://www.baidu.com/img/bd_logo1.png";
-    // url中文编码，防止乱码
-    // urlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        NSURL *url = [NSURL URLWithString:urlStr];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        // 2.生成下载好的图片
-        UIImage *image = [UIImage imageWithData:data];
-
-        // 3.回到主线程更新UI
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            NSLog(@"更新UI");
-           // 主线程
-            self.imageView.image = image;
-        }];
-    }];
-}
-@end
-</code></pre>
-
-<h3 id="七、操作依赖"><a href="#七、操作依赖" class="headerlink" title="七、操作依赖"></a>七、操作依赖</h3><ul>
-<li>1、目的 -&gt; NSOperation之间可以设置依赖来保证执行顺序<ul>
-<li>例如：一定要让操作A执行完后，才能执行操作B，可以这么写</li>
-</ul>
-</li>
-<li>只要添加了依赖, 那么就会等依赖的任务执行完毕, 才会执行当前任务  <pre><code>[operationB addDependency:operationA];// 操作B依赖于操作A , A操作执行完才会执行操作B</code></pre></li>
-<li>2、除了同一quere操作间建立依赖关系，当然也可以在不同queue的NSOperation之间创建依赖关系</li>
-<li>注意点：<ul>
-<li>不能相互依赖 -&gt; 比如A依赖B，B依赖A</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>经典实例：合成图片</p>
-</blockquote>
-<pre><code>#import "ViewController.h"
-
-@interface ViewController ()
-@property (weak, nonatomic) IBOutlet UIImageView *imageView;
-
-@end
-
-@implementation ViewController
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    NSOperationQueue *queue2 = [[NSOperationQueue alloc] init];
-
-    __block UIImage *image1 = nil;
-    __block UIImage *image2 = nil;
-    // 1.开启一个线程下载第一张图片
-    NSOperation *op1 = [NSBlockOperation blockOperationWithBlock:^{
-        NSURL *url = [NSURL URLWithString:@"http://cdn.cocimg.com/assets/images/logo.png?v=201510272"];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        // 2.生成下载好的图片
-        UIImage *image = [UIImage imageWithData:data];
-        image1 = image;
-    }];
-
-    // 2.开启一个线程下载第二长图片
-    NSOperation *op2 = [NSBlockOperation blockOperationWithBlock:^{
-        NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/img/bd_logo1.png"];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        // 2.生成下载好的图片
-        UIImage *image = [UIImage imageWithData:data];
-        image2 = image;
-
-    }];
-    // 3.开启一个线程合成图片
-    NSOperation *op3 = [NSBlockOperation blockOperationWithBlock:^{
-        UIGraphicsBeginImageContext(CGSizeMake(200, 200));
-        [image1 drawInRect:CGRectMake(0, 0, 100, 200)];
-        [image2 drawInRect:CGRectMake(100, 0, 100, 200)];
-        UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-
-        // 4.回到主线程更新UI
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            NSLog(@"回到主线程更新UI");
-            self.imageView.image = newImage;
-        }];
-    }];
-
-
-    // 监听任务是否执行完毕
-    op1.completionBlock = ^{
-        NSLog(@"第一张图片下载完毕");
-    };
-    op2.completionBlock = ^{
-        NSLog(@"第二张图片下载完毕");
-    };
-
-    // 添加依赖
-    // 只要添加了依赖, 那么就会等依赖的任务执行完毕, 才会执行当前任务
-    // 注意:
-    // 1.添加依赖, 不能添加循环依赖
-    // 2.NSOperation可以跨队列添加依赖
-    [op3 addDependency:op1];
-    [op3 addDependency:op2];
-
-    // 将任务添加到队列中
-    [queue addOperation:op1];
-    [queue addOperation:op2];
-    [queue2 addOperation:op3];
-}
-@end</code></pre>
-
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。&lt;br&gt;
-    
-    </summary>
-    
-      <category term="NSOperation" scheme="http://www.guiyongdong.com/categories/NSOperation/"/>
-    
-    
-      <category term="NSOperation" scheme="http://www.guiyongdong.com/tags/NSOperation/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>聊一聊GCD的那些事</title>
-    <link href="http://www.guiyongdong.com/2016/09/13/%E8%81%8A%E4%B8%80%E8%81%8AGCD%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/"/>
-    <id>http://www.guiyongdong.com/2016/09/13/聊一聊GCD的那些事/</id>
-    <published>2016-09-13T08:56:07.000Z</published>
-    <updated>2016-11-23T08:01:42.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。</p>
-<a id="more"></a>
-<p><strong>目录</strong></p>
-<blockquote>
-<ol>
-<li>文字描述</li>
-<li>Dispatch Queue</li>
-<li>dispatch_sync&amp;dispatch_async</li>
-<li>创建的线程任务有四种执行方式</li>
-<li>Dispatch Group</li>
-<li>Dispatch Block</li>
-<li>dispatch_after</li>
-<li>dispatch_apply</li>
-<li>dispatch_once</li>
-<li>dispatch_barrier_async</li>
-<li>dispatch_set_target_queue</li>
-<li>dispatch_semaphore_t(信号量)</li>
-<li>GCD定时器</li>
-</ol>
-</blockquote>
-<h3 id="1-文字描述"><a href="#1-文字描述" class="headerlink" title="1. 文字描述"></a>1. 文字描述</h3><blockquote>
-<p>GCD英文全称：Grand Central Dispatch 翻译就是 宏大的中央调度，是苹果开发的一种支持并行操作的机制,基于C语言，提供了非常多强大的函数</p>
-</blockquote>
-<p>在了解GCD并使用之前，必须要掌握四个名词：<strong>串行</strong>，<strong>并发</strong>，<strong>同步</strong>，<strong>异步</strong></p>
-<p><strong>串行(Serial)：</strong><br>一个任务执行完, 再执行下一个任务</p>
-<p><strong>并发 (Concurrent)：</strong><br>多个任务同时执行(自动开启多个线程),只有在异步函数下才有效</p>
-<p><strong>同步(Synchronous)：</strong><br>在当前线程中执行任务，不具备开启新线程的能力<br>提交的任务在执行完成后才会返回<br>同步函数: dispatch_sync()</p>
-<p><strong>异步 (Asynchronous)：</strong><br>在新的线程中执行任务, 具备开启线程的能力<br>在新线程中执行任务，具备开启新线程的能力<br>提交的任务立刻返回，在后台队列中执行<br>异步函数: dispatch_async()</p>
-<hr>
-<h3 id="2-Dispatch-Queue"><a href="#2-Dispatch-Queue" class="headerlink" title="2.Dispatch Queue"></a>2.Dispatch Queue</h3><p>Dispatch Queue是执行处理的等待队列, 按照先进先出(FIFO, First-In-First-Out)的顺序进行任务处理.<br>开发者将需要执行的任务添加到合适的Dispatch Queue中即可，Dispatch Queue会根据任务添加的顺序先到先执行，其中有以下几种队列：</p>
-<p>另外, 队列分两种, 一种是<strong>串行队列(Serial Dispatch Queue)</strong>, 一种是<strong>并行队列(Concurrent Dispatch Queue)</strong>.</p>
-<table>
-<thead>
-<tr>
-<th>Dispatch Queue的种类</th>
-<th style="text-align:center">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Serial Dispatch Queue</td>
-<td style="text-align:center">等待现在执行中处理结束</td>
-</tr>
-<tr>
-<td>Concurrent Dispatch Queue</td>
-<td style="text-align:center">不等待现在执行中处理结束</td>
-</tr>
-</tbody>
-</table>
-<pre><code>
-//创建一个串行队列
-dispatch_queue_t serialQueue=dispatch_queue_create("com.serial.queue", DISPATCH_QUEUE_SERIAL);
-
-//创建一个并发队列
-dispatch_queue_t concurrentQueue=dispatch_queue_create("com.concurrent.queue", DISPATCH_QUEUE_CONCURRENT);
-
-//第一个参数为队列名，第二个参数为队列类型，当然，第二个参数人如果写NULL，创建出来的也是一个串行队列。然后我们在异步线程来执行这个队列：
-</code></pre>
-
-<p>另外系统为我们准备了两个队列</p>
-<ul>
-<li><p><strong>main dispatch queue</strong><br>功能跟主线程一样，通过dispatch_get_main_queue()来获取，提交到main queue的任务实际上都是在主线程执行的，所以这是一个串行队列<br><code>dispatch_queue_t queue = dispatch_get_main_queue();</code></p>
-</li>
-<li><p><strong>global dispatch queues</strong><br>系统给每个应用提供四个全局的并发队列，这四个队列分别有不同的优先级：高、默认、低以及后台，用户不能去创建全局队列，只能根据优先级去获取:</p>
-<pre><code>dispatch_queue_t queue  = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);</code></pre>    
-
-
-
-</li>
-</ul>
-<hr>
-<h3 id="3-dispatch-sync-amp-dispatch-async"><a href="#3-dispatch-sync-amp-dispatch-async" class="headerlink" title="3.dispatch_sync&amp;dispatch_async"></a>3.dispatch_sync&amp;dispatch_async</h3><p>执行队列中任务的两种方式，dispatch_sync是同步任务，dispatch_async是异步任务</p>
-<p>1.<strong>用同步的方式执行任务(同步：synchronization)</strong>， 只能在当前线程中执行任务，不具备开启新线程的能力</p>
-<pre><code>/*
- *  第一个参数：该任务所在的队列
- *  第二个参数：该任务要做的事情
- */
-dispatch_sync(dispatch_queue_t queue, dispatch_block_t block);</code></pre>
-
-<ul>
-<li><p>假如我指定的队列A是串行队列，则该队列中只能有一个线程，也就是说我放在队列A中的任务，所以必须得一个一个的执行。不仅如此，在上面我们还手动选择了在队列A中用同步的方式执行任务，这也限制了，队列中的任务只能一个一个执行。</p>
-</li>
-<li><p>假如我指定的队列A是并行队列，则该队列中可以开辟多个线程去执行任务，虽然如此，但由于我们在上面手动选择了在队列A中用同步的方式执行线程，所以队列A中的任务也只能一个一个去执行，<strong>不能开辟多线程同时执行</strong>。</p>
-</li>
-</ul>
-<p>2.用异步的方式执行任务(异步：asynchronous)，可以在新的线程中执行任务，具备开启新线程的能力。</p>
-<pre><code>dispatch_async(dispatch_queue_t queue, dispatch_block_t block);</code></pre>
-
-<ul>
-<li>假如此时我指定的队列B是并行队列，则表明该队列中可以存在多个线程，又因为我们采用的是异步的方式执行任务，所以在这个队列的任务可以实现同时运行。</li>
-<li>假如此时我指定的队列B是串行队列，则表明该队列中，只能有一个线程，所以尽管我采用异步的方式执行任务，但该队列中的任务还是只能一个一个的运行。</li>
-</ul>
-<hr>
-<h3 id="4-创建的线程任务有四种执行方式"><a href="#4-创建的线程任务有四种执行方式" class="headerlink" title="4.创建的线程任务有四种执行方式"></a>4.创建的线程任务有四种执行方式</h3><p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/GCD1.png?raw=true" alt=""></p>
-<h5 id="1-串行队列同步执行任务"><a href="#1-串行队列同步执行任务" class="headerlink" title="1. 串行队列同步执行任务"></a>1. 串行队列同步执行任务</h5><ul>
-<li>同步不具有开辟新线程的能力，不会开辟新的线程去执行任务，会在当前程序的主线程中执行任务。</li>
-<li>按照串行的方式去执行任务</li>
-</ul>
-<pre><code>-(void)syncSERIAL{
-    NSLog(@"star");
-    //不会开辟新的线程
-    dispatch_queue_t queue=dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_SERIAL);
-    dispatch_sync(queue, ^{
-        NSLog(@"SERIAL_work_1 ");
-    });
-    dispatch_sync(queue, ^{
-        NSLog(@"SERIAL_work_2 ");
-    });
-    dispatch_sync(queue, ^{
-        NSLog(@"SERIAL_work_3 ");
-    });
-
-    NSLog(@"end");
-
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-20 20:08:09.695 GCD_Demo[8196:1029563] star
-2016-07-20 20:08:09.696 GCD_Demo[8196:1029563] SERIAL_work_1 
-2016-07-20 20:08:09.696 GCD_Demo[8196:1029563] SERIAL_work_2 
-2016-07-20 20:08:09.696 GCD_Demo[8196:1029563] SERIAL_work_3 
-2016-07-20 20:08:09.696 GCD_Demo[8196:1029563] end</code></pre>
-
-<p><strong>由于是同步操作，不能开辟线程，所以都是在主线程并按照顺序执行</strong></p>
-<h5 id="2-串行队列异步执行任务"><a href="#2-串行队列异步执行任务" class="headerlink" title="2. 串行队列异步执行任务"></a>2. 串行队列异步执行任务</h5><ul>
-<li>异步具有创建新线程的能力，会开辟新的线程去执行任务</li>
-<li>按照串行的方式去执行任务</li>
-</ul>
-<pre><code>-(void)asyncSERIAL{
-    NSLog(@"star");
-
-    //会开辟新的线程,但是是串行执行任务
-    dispatch_queue_t queue=dispatch_queue_create("ki", DISPATCH_QUEUE_SERIAL);
-    dispatch_async(queue, ^{
-        [NSThread sleepForTimeInterval:3];
-        NSLog(@"SERIAL_work_1 ");
-    });
-    dispatch_async(queue, ^{
-        [NSThread sleepForTimeInterval:2];
-        NSLog(@"SERIAL_work_2 ");
-    });
-    dispatch_async(queue, ^{
-        NSLog(@"SERIAL_work_3 ");
-    });
-
-    NSLog(@"end");
-
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-20 20:09:58.494 GCD_Demo[8213:1031268] star
-2016-07-20 20:09:58.495 GCD_Demo[8213:1031268] end
-2016-07-20 20:10:01.496 GCD_Demo[8213:1031315] SERIAL_work_1 
-2016-07-20 20:10:03.502 GCD_Demo[8213:1031315] SERIAL_work_2 
-2016-07-20 20:10:03.502 GCD_Demo[8213:1031315] SERIAL_work_3</code></pre>
-
-<p><strong>因为是异步操作，所以有个编号为2的子线程被开辟，但有因为是串行队列，所以只开辟了一个线程。最终造就了三个任务顺序执行。</strong></p>
-<h5 id="3-并行队列同步执行任务"><a href="#3-并行队列同步执行任务" class="headerlink" title="3. 并行队列同步执行任务"></a>3. 并行队列同步执行任务</h5><ul>
-<li>同步不具有创建新线程的能力，不会开辟新的线程去执行任务，会在当前程序的主线程去执行任务</li>
-<li>按照同步的方式去执行任务</li>
-</ul>
-<pre><code>-(void)syncCONCURRENT{
-  NSLog(@"star");
-  //不会开辟新的线程
-  //串行执行命令
-  dispatch_queue_t queue=dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_CONCURRENT);
-  dispatch_sync(queue, ^{
-      [NSThread sleepForTimeInterval:3];
-      NSLog(@"CONCURRENT_work_1 ");
-  });
-  dispatch_sync(queue, ^{
-      [NSThread sleepForTimeInterval:2];
-      NSLog(@"CONCURRENT_work_2 ");
-  });
-  dispatch_sync(queue, ^{
-      NSLog(@"CONCURRENT_work_3 ");
-  });
-
-  NSLog(@"end");
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-20 20:13:03.753 GCD_Demo[8232:1033759] star
-2016-07-20 20:13:06.755 GCD_Demo[8232:1033759] CONCURRENT_work_1 
-2016-07-20 20:13:08.756 GCD_Demo[8232:1033759] CONCURRENT_work_2 
-2016-07-20 20:13:08.756 GCD_Demo[8232:1033759] CONCURRENT_work_3 
-2016-07-20 20:13:08.757 GCD_Demo[8232:1033759] end</code></pre>
-
-<p><strong>虽然并行队列决定了该队列中可以有多个线程，但由于是同步操作，不能开辟线程，所以还都是在主线程中按顺序执行。</strong></p>
-<h5 id="4-并发队列异步执行任务-常用"><a href="#4-并发队列异步执行任务-常用" class="headerlink" title="4. 并发队列异步执行任务(常用)"></a>4. 并发队列异步执行任务(常用)</h5><ul>
-<li>异步具有创建新线程的能力，会开辟新的线程去执行任务，不会在当前程序的主线程去执行任务</li>
-<li>按照并发的方式去执行任务</li>
-</ul>
-<pre><code>-(void)asyncCONCURRENT{
-  NSLog(@"star");
-
-  //一个队列 为 每个任务开辟一个线程
-  dispatch_queue_t queue=dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_CONCURRENT);
-  dispatch_async(queue, ^{
-      [NSThread sleepForTimeInterval:3];
-      NSLog(@"CONCURRENT_work_1 ");
-  });
-  dispatch_async(queue, ^{
-      [NSThread sleepForTimeInterval:2];
-      NSLog(@"CONCURRENT_work_2 ");
-  });
-  dispatch_async(queue, ^{
-      NSLog(@"CONCURRENT_work_3 ");
-  });
-
-  NSLog(@"end");
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-20 20:18:26.768 GCD_Demo[8256:1038143] star
-2016-07-20 20:18:26.768 GCD_Demo[8256:1038143] end
-2016-07-20 20:18:26.769 GCD_Demo[8256:1038192] CONCURRENT_work_3 
-2016-07-20 20:18:28.771 GCD_Demo[8256:1038179] CONCURRENT_work_2 
-2016-07-20 20:18:29.773 GCD_Demo[8256:1038188] CONCURRENT_work_1</code></pre>
-
-<p><strong>并行队列可以里可以有多个线程，同步执行的方式又可以开辟多个线程，所以这里实现了多个线程并行执行。</strong></p>
-<hr>
-<h3 id="5-Dispatch-Group"><a href="#5-Dispatch-Group" class="headerlink" title="5.Dispatch Group"></a>5.Dispatch Group</h3><p>当我们想在gcd queue中所有的任务执行完毕之后做些特定事情的时候，也就是队列的同步问题，如果队列是串行的话，那将该操作最后添加到队列中即可，但如果队列是并行队列的话，这时候就可以利用dispatch_group来实现了，dispatch_group能很方便的解决同步的问题。dispatch_group_create可以创建一个group对象，然后可以添加block到该组里面，下面看下它的一些用法：</p>
-<ul>
-<li><p>dispatch_group_notify<br>  是通过异步的方式通知，所以，不会阻塞线程</p>
-<pre><code>-(void)asyncGroupNotify
-{
-NSLog(@"star");
-dispatch_group_t group=dispatch_group_create();
-dispatch_queue_t queue=dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_CONCURRENT);
-dispatch_group_async(group, queue, ^{
-    [NSThread sleepForTimeInterval:1];
-    NSLog(@"group_work_1");
-});
-dispatch_group_async(group, queue, ^{
-    [NSThread sleepForTimeInterval:6];
-    NSLog(@"group_work_2");
-});
-dispatch_group_async(group, queue, ^{
-    [NSThread sleepForTimeInterval:2];
-    NSLog(@"group_work_3");
-});
-
-dispatch_group_notify(group, queue, ^{
-    NSLog(@"dispatch_group_Notify 结束");
-});
-}</code></pre>
-
-</li>
-</ul>
-<p>运行结果</p>
-<pre><code>2016-07-21 13:51:40.600 GCD_Demo[9044:1162213] star
-2016-07-21 13:51:41.605 GCD_Demo[9044:1162359] group_work_1
-2016-07-21 13:51:42.608 GCD_Demo[9044:1162389] group_work_3
-2016-07-21 13:51:46.603 GCD_Demo[9044:1162349] group_work_2
-2016-07-21 13:51:46.605 GCD_Demo[9044:1162349] dispatch_group_Notify 结束</code></pre>
-
-<ul>
-<li>dispatch_group_wait<br>  会阻塞当前线程，知道任务都完成时才会继续执行下面的代码</li>
-</ul>
-<pre><code>-(void)asyncGroupWait
-{
-    NSLog(@"star");
-    dispatch_group_t group=dispatch_group_create();
-    dispatch_queue_t queue=dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_CONCURRENT);
-    dispatch_group_async(group, queue, ^{
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"group_work_1");
-    });
-    dispatch_group_async(group, queue, ^{
-        [NSThread sleepForTimeInterval:6];
-        NSLog(@"group_work_2");
-    });
-    dispatch_group_async(group, queue, ^{
-        [NSThread sleepForTimeInterval:2];
-        NSLog(@"group_work_3");
-    });
-
-    //在此设置了一个12秒的等待时间，如果group的执行结束没有到12秒那么就返回0
-    //如果执行group的执行时间超过了12秒，那么返回非0 数值，
-    //在使用dispatch_group_wait函数的时候，会阻塞当前线程，阻塞的时间 在wait函数时间值和当前group执行时间值取最小的。
-    long kk=dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 12 * NSEC_PER_SEC));
-    if(kk==0)
-    {
-         NSLog(@"dispatch_group_wait 结果1");
-    }
-    else
-    {
-         NSLog(@"dispatch_group_wait 结果2");
-    }
-
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 13:56:47.471 GCD_Demo[9065:1165380] star
-2016-07-21 13:56:48.472 GCD_Demo[9065:1165494] group_work_1
-2016-07-21 13:56:49.476 GCD_Demo[9065:1165502] group_work_3
-2016-07-21 13:56:53.475 GCD_Demo[9065:1165485] group_work_2
-2016-07-21 13:56:53.475 GCD_Demo[9065:1165380] dispatch_group_wait 结果1</code></pre>
-
-<ul>
-<li>dispatch_group_enter&amp;dispatch_group_leave<br>  假如我们不想使用dispatch_group_async异步的将任务丢到group中去执行，这时候就需要用到dispatch_group_enter跟dispatch_group_leave方法，这两个方法要配对出现，以下这两种方法是等价的：</li>
-</ul>
-<pre><code>-(void)asyncGroupEnter
-{
-  // 群组－统一监控一组任务
-  dispatch_group_t group = dispatch_group_create();
-
-  dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
-
-  // 1> 入组 -> 之后的 block 会被 group 监听
-  // dispatch_group_enter 一定和 dispatch_group_leave 要配对出现
-  dispatch_group_enter(group);
-  dispatch_async(queue, ^{
-      NSLog(@"dispatch_async_work1");
-
-      // block 的末尾，所有任务执行完毕后，添加一个出组
-      dispatch_group_leave(group);
-  });
-
-  //  再次入组
-  dispatch_group_enter(group);
-  dispatch_async(queue, ^{
-      [NSThread sleepForTimeInterval:6];
-
-      NSLog(@"dispatch_async_work1");
-
-      // block 的末尾，所有任务执行完毕后，添加一个出组
-      dispatch_group_leave(group);
-  });
-
-  // 群组结束
-  dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-      NSLog(@"OVER");
-  });  
-  NSLog(@"come here");
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 15:21:40.707 GCD_Demo[9256:1205427] come here
-2016-07-21 15:21:40.707 GCD_Demo[9256:1205465] dispatch_async_work1
-2016-07-21 15:21:46.709 GCD_Demo[9256:1205460] dispatch_async_work1
-2016-07-21 15:21:46.710 GCD_Demo[9256:1205427] OVER</code></pre>
-
-
-
-<hr>
-<h3 id="6-Dispatch-Block"><a href="#6-Dispatch-Block" class="headerlink" title="6. Dispatch Block"></a>6. Dispatch Block</h3><p>添加到gcd队列中执行的任务是以block的形式添加的，block封装了需要执行功能，block带来的开发效率提升就不说了，gcd跟block可以说是一对好基友，能够很好的配合使用。</p>
-<pre><code>-(void)dispatchBlock
-{
-    dispatch_queue_t queue = dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_SERIAL);
-    dispatch_block_t block=dispatch_block_create(0, ^{
-        NSLog(@"dispatchBlock_work");
-    });
-
-    dispatch_sync(queue, block);
-}</code></pre>
-
-<h5 id="1-dispatch-block-wait"><a href="#1-dispatch-block-wait" class="headerlink" title="1.dispatch_block_wait"></a>1.dispatch_block_wait</h5><p>当需要等待前面的任务执行完毕时，我们可以使用dispatch_block_wait这个接口，设置等待时间DISPATCH_TIME_FOREVER会一直等待直到前面的任务完成.用法跟dispatch_group_wait类似</p>
-<pre><code>-(void)dispatchBlockWait
-{
-    dispatch_queue_t queue = dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_SERIAL);
-    dispatch_block_t block = dispatch_block_create(0, ^{
-        NSLog(@"before sleep");
-        [NSThread sleepForTimeInterval:6];
-        NSLog(@"after sleep");
-    });
-    dispatch_async(queue, block);
-    //等待前面的任务执行完毕
-    long kk=dispatch_block_wait(block, dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC));
-    if(kk==0)
-    {
-        NSLog(@"coutinue");
-    }
-    else
-    {
-        NSLog(@"timeOut！！！");
-    }
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 16:28:38.313 GCD_Demo[9533:1251011] before sleep
-2016-07-21 16:28:41.314 GCD_Demo[9533:1250971] timeOut！！！
-2016-07-21 16:28:44.318 GCD_Demo[9533:1251011] after sleep</code></pre>
-
-<h5 id="2-dispatch-block-notify"><a href="#2-dispatch-block-notify" class="headerlink" title="2.dispatch_block_notify"></a>2.dispatch_block_notify</h5><p>dispatch_block_notify当观察的某个block执行结束之后立刻通知提交另一特定的block到指定的queue中执行，该函数有三个参数，第一参数是需要观察的block，第二个参数是被通知block提交执行的queue，第三参数是当需要被通知执行的block</p>
-<pre><code>-(void)dispatchBlockNotify
-{
-    dispatch_queue_t queue = dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_SERIAL);
-    dispatch_block_t previousBlock = dispatch_block_create(0, ^{
-        NSLog(@"previousBlock begin");
-        [NSThread sleepForTimeInterval:2];
-        NSLog(@"previousBlock done");
-    });
-    dispatch_async(queue, previousBlock);
-    dispatch_block_t notifyBlock = dispatch_block_create(0, ^{
-        NSLog(@"notifyBlock");
-    });
-    //当previousBlock执行完毕后，提交notifyBlock到global queue中执行
-    dispatch_block_notify(previousBlock, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), notifyBlock);
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 16:38:19.756 GCD_Demo[9664:1261328] previousBlock begin
-2016-07-21 16:38:21.762 GCD_Demo[9664:1261328] previousBlock done
-2016-07-21 16:38:21.762 GCD_Demo[9664:1261329] notifyBlock</code></pre>
-
-<h5 id="3-dispatch-block-cancel"><a href="#3-dispatch-block-cancel" class="headerlink" title="3. dispatch_block_cancel"></a>3. dispatch_block_cancel</h5><p>可以取消提交到队列的block</p>
-<pre><code>-(void)dispatchBlockCancel
-{
-    dispatch_queue_t queue = dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_CONCURRENT);
-    dispatch_block_t block1 = dispatch_block_create(0, ^{
-        NSLog(@"block1 begin");
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"block1 done");
-    });
-    dispatch_block_t block2 = dispatch_block_create(0, ^{
-        NSLog(@"block2 ");
-    });
-    dispatch_async(queue, block1);
-    dispatch_async(queue, block2);
-    dispatch_block_cancel(block2);
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 16:50:28.140 GCD_Demo[9723:1272259] block1 begin
-2016-07-21 16:50:29.144 GCD_Demo[9723:1272259] block1 done</code></pre>
-
-
-<hr>
-<h3 id="7-dispatch-after"><a href="#7-dispatch-after" class="headerlink" title="7.dispatch_after"></a>7.dispatch_after</h3><p>来延迟执行的GCD方法，因为在主线程中我们不能用sleep来延迟方法的调用，所以用它是最合适的，我们做一个简单的例子：</p>
-<pre><code>-(void)dispatchAfter
-{
-    NSLog(@"dispatchAfter_star");
-    int64_t time=2*NSEC_PER_SEC;
-
-    dispatch_queue_t mainQueue=dispatch_get_main_queue();
-
-        for (int i=0; i<5; i++)="" {="" dispatch_time_t="" distime="dispatch_time(DISPATCH_TIME_NOW," time*i);="" dispatch_after(distime,="" mainqueue,="" ^{="" nslog(@"dispatchafter_work");="" });="" }="" }<="" code=""></5;></code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 16:12:07.204 GCD_Demo[9439:1237251] dispatchAfter_star
-2016-07-21 16:12:07.211 GCD_Demo[9439:1237251] dispatchAfter_work
-2016-07-21 16:12:09.398 GCD_Demo[9439:1237251] dispatchAfter_work
-2016-07-21 16:12:11.205 GCD_Demo[9439:1237251] dispatchAfter_work
-2016-07-21 16:12:13.205 GCD_Demo[9439:1237251] dispatchAfter_work
-2016-07-21 16:12:15.205 GCD_Demo[9439:1237251] dispatchAfter_work</code></pre>
-
-
-<hr>
-<h3 id="8-dispatch-apply"><a href="#8-dispatch-apply" class="headerlink" title="8.dispatch_apply"></a>8.dispatch_apply</h3><p>dispatch_apply类似一个for循环，会在指定的dispatch queue中运行block任务n次，如果队列是并发队列，则会并发执行block任务，dispatch_apply是一个同步调用，block任务执行n次后才返回。</p>
-<pre><code>-(void)dispatchApply
-{
-    dispatch_queue_t queue = dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_CONCURRENT);
-
-
-    dispatch_apply(6, queue, ^(size_t i) {
-        NSLog(@"do a job %zu times",i);
-
-    });
-    NSLog(@"go on");
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 17:04:54.558 GCD_Demo[9831:1284549] do a job 0 times
-2016-07-21 17:04:54.564 GCD_Demo[9831:1284583] do a job 1 times
-2016-07-21 17:04:54.564 GCD_Demo[9831:1284589] do a job 2 times
-2016-07-21 17:04:54.564 GCD_Demo[9831:1284593] do a job 3 times
-2016-07-21 17:04:54.564 GCD_Demo[9831:1284549] do a job 4 times
-2016-07-21 17:04:54.564 GCD_Demo[9831:1284583] do a job 5 times
-2016-07-21 17:04:54.566 GCD_Demo[9831:1284549] go on</code></pre>
-
-
-<hr>
-<h3 id="9-dispatch-once"><a href="#9-dispatch-once" class="headerlink" title="9.dispatch_once"></a>9.dispatch_once</h3><p>整个程序运行中只会执行一次，使用dispatch_once可以简化代码并且彻底保证线程安全，开发者根本无须担心加锁或者同步。所有问题都由GCD在底层处理。由于每次调用时都必须使用完全相同的标记，所以标记要声明成static。所以用在单例模式上是最好的</p>
-<pre><code>static SingletonTimer * instance;
-static dispatch_once_t onceToken;
-dispatch_once(&onceToken, ^{
-    instance = [[SingletonTimer alloc] init];
-});
-
-return instance;</code></pre>
-
-
-<hr>
-<h3 id="10-dispatch-barrier-async"><a href="#10-dispatch-barrier-async" class="headerlink" title="10. dispatch_barrier_async"></a>10. dispatch_barrier_async</h3><p>dispatch_barrier_async用于等待前面的任务执行完毕后自己才执行，而它后面的任务需等待它完成之后才执行。一个典型的例子就是数据的读写，通常为了防止文件读写导致冲突，我们会创建一个串行的队列，所有的文件操作都是通过这个队列来执行，比如FMDB，这样就可以避免读写冲突。不过其实这样效率是有提升的空间的，当没有更新数据时，读操作其实是可以并行进行的，而写操作需要串行的执行</p>
-<pre><code>-(void)diapatchBarrier
-{
-    dispatch_queue_t queue = dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_CONCURRENT);
-
-    dispatch_async(queue, ^{
-        [NSThread sleepForTimeInterval:6];
-        NSLog(@"dispatch_async_work1");
-    });
-    dispatch_async(queue, ^{
-        [NSThread sleepForTimeInterval:2];
-        NSLog(@"dispatch_async_work2");
-    });
-    dispatch_barrier_async(queue, ^{
-        NSLog(@"dispatch_async_work3");
-        [NSThread sleepForTimeInterval:1];
-
-    });
-    dispatch_async(queue, ^{
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"dispatch_async_work4");
-    });
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 15:54:24.402 GCD_Demo[9354:1225160] dispatch_async_work2
-2016-07-21 15:54:28.403 GCD_Demo[9354:1225152] dispatch_async_work1
-2016-07-21 15:54:28.403 GCD_Demo[9354:1225152] dispatch_async_work3
-2016-07-21 15:54:30.412 GCD_Demo[9354:1225152] dispatch_async_work4</code></pre>
-
-
-<hr>
-<h3 id="11-dispatch-set-target-queue"><a href="#11-dispatch-set-target-queue" class="headerlink" title="11.dispatch_set_target_queue"></a>11.dispatch_set_target_queue</h3><p>1.系统的Global Queue是可以指定优先级的，那我们可以用到dispatch_set_target_queue这个方法来指定自己创建队列的优先级</p>
-<pre><code>-(void)DispatchSet
-{
-    dispatch_queue_t serialDiapatchQueue=dispatch_queue_create("com.GCD_demo.www", DISPATCH_QUEUE_SERIAL);
-    dispatch_queue_t dispatchgetglobalqueue=dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
-    dispatch_set_target_queue(serialDiapatchQueue, dispatchgetglobalqueue);
-    dispatch_async(serialDiapatchQueue, ^{
-        NSLog(@"我优先级低，先让让");
-    });
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSLog(@"我优先级高,我先block");
-    });
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 17:22:02.512 GCD_Demo[9902:1297023] 我优先级高,我先block
-2016-07-21 17:22:02.512 GCD_Demo[9902:1297035] 我优先级低，先让让</code></pre>
-
-<p>2.dispatch_set_target_queue除了能用来设置队列的优先级之外，还能够创建队列的层次体系，当我们想让不同队列中的任务同步的执行时，我们可以创建一个串行队列，然后将这些队列的target指向新创建的队列即可</p>
-<pre><code>-(void)dispatchSet2
-{
-    dispatch_queue_t targetQueue = dispatch_queue_create("target_queue", DISPATCH_QUEUE_SERIAL);
-    dispatch_queue_t queue1 = dispatch_queue_create("queue1", DISPATCH_QUEUE_SERIAL);
-    dispatch_queue_t queue2 = dispatch_queue_create("queue2", DISPATCH_QUEUE_CONCURRENT);
-
-
-    dispatch_set_target_queue(queue1, targetQueue);
-    dispatch_set_target_queue(queue2, targetQueue);
-
-    dispatch_async(queue1, ^{
-        [NSThread sleepForTimeInterval:3.f];
-        NSLog(@"do job1");
-
-    });
-    dispatch_async(queue2, ^{
-        [NSThread sleepForTimeInterval:2.f];
-        NSLog(@"do job2");
-
-    });
-    dispatch_async(queue2, ^{
-        [NSThread sleepForTimeInterval:1.f];
-        NSLog(@"do job3");
-
-    });
-}</code></pre>
-
-<p>执行结果</p>
-<pre><code>2016-07-21 17:28:54.327 GCD_Demo[10043:1303853] do job1
-2016-07-21 17:28:56.331 GCD_Demo[10043:1303853] do job2
-2016-07-21 17:28:57.335 GCD_Demo[10043:1303853] do job3</code></pre>
-
-
-<hr>
-<h3 id="12-dispatch-semaphore-t"><a href="#12-dispatch-semaphore-t" class="headerlink" title="12.dispatch_semaphore_t"></a>12.dispatch_semaphore_t</h3><p>信号量是一种老式的线程概念，由非常谦卑的 Edsger W. Dijkstra 介绍给世界。信号量之所以比较复杂是因为它建立在操作系统的复杂性之上。</p>
-<pre><code>- (void)downloadImageURLWithString:(NSString *)URLString
-{
-    // 1
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-
-    NSURL *url = [NSURL URLWithString:URLString];
-    __unused Photo *photo = [[Photo alloc]
-                             initwithURL:url
-                             withCompletionBlock:^(UIImage *image, NSError *error) {
-                                 if (error) {
-                                     XCTFail(@"%@ failed. %@", URLString, error);
-                                 }
-
-                                 // 2
-                                 dispatch_semaphore_signal(semaphore);
-                             }];
-
-    // 3
-    dispatch_time_t timeoutTime = dispatch_time(DISPATCH_TIME_NOW, kDefaultTimeoutLengthInNanoSeconds);
-    if (dispatch_semaphore_wait(semaphore, timeoutTime)) {
-        XCTFail(@"%@ timed out", URLString);
-    }
-}</code></pre>
-
-<p>下面来说明你代码中的信号量是如何工作的：</p>
-<ol>
-<li>创建一个信号量。参数指定信号量的起始值。这个数字是你可以访问的信号量，不需要有人先去增加它的数量。（注意到增加信号量也被叫做发射信号量）。译者注：这里初始化为0，也就是说，有人想使用信号量必然会被阻塞，直到有人增加信号量。</li>
-<li>在 Completion Block 里你告诉信号量你不再需要资源了。这就会增加信号量的计数并告知其他想使用此资源的线程。</li>
-<li>这会在超时之前等待信号量。这个调用阻塞了当前线程直到信号量被发射。这个函数的一个非零返回值表示到达超时了。在这个例子里，测试将会失败因为它以为网络请求不会超过 10 秒钟就会返回——一个平衡点！</li>
-</ol>
-<hr>
-<h3 id="13-GCD定时器"><a href="#13-GCD定时器" class="headerlink" title="13.GCD定时器"></a>13.GCD定时器</h3><p>基于以前讲的runloop中的CFRunLoopTimerRef :</p>
-<ul>
-<li>CFRunLoopTimerRef是基于时间的触发器</li>
-<li>CFRunLoopTimerRef基本上说的就是NSTimer,它受RunLoop的Mode的影响(Tracking,Defalult)</li>
-<li>GCD的定时器不受RunLoop中Mode的影响(RunLoop内部也是基于GCD实现的,可以根据源码看到), 比如滚动TableView的时候,GCD的定时器不受影响</li>
-<li>一般NSTimer不是特别准, NSTimer是在RunLoop中, RunLoop要处理各种东西(source,timer,observe),有时导致NSTimer不是特别准</li>
-</ul>
-<p>GCD定时器算是一个源(source),类型是Timer</p>
-<pre><code>-(void)startTime{
-    __block int timeout=30; //倒计时时间
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
-
-    dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
-    dispatch_source_set_event_handler(_timer, ^{
-        if(timeout=0){ //倒计时结束，关闭
-            dispatch_source_cancel(_timer);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                //倒计时时间结束，回到主线程 根据自己需求设置
-
-            });
-        }else{
-            //            int minutes = timeout / 60;
-            int seconds = timeout % 60;
-            NSString *strTime = [NSString stringWithFormat:@"%.2d", seconds];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                //设置界面的按钮显示 根据自己需求设置
-                NSLog(@"____%@",strTime);
-                [l_timeButton setTitle:[NSString stringWithFormat:@"%@秒后重新发送",strTime] forState:UIControlStateNormal];
-                l_timeButton.userInteractionEnabled = NO;
-
-            });
-            timeout--;
-
-        }
-    });
-    dispatch_resume(_timer);
-
-}</code></pre>
-
-
-
-
-
-
-<!-- more -->]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="GCD" scheme="http://www.guiyongdong.com/categories/GCD/"/>
-    
-    
-      <category term="GCD" scheme="http://www.guiyongdong.com/tags/GCD/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>RunLoop总结</title>
-    <link href="http://www.guiyongdong.com/2016/09/08/RunLoop%E6%80%BB%E7%BB%93/"/>
-    <id>http://www.guiyongdong.com/2016/09/08/RunLoop总结/</id>
-    <published>2016-09-08T09:05:52.000Z</published>
-    <updated>2016-09-08T09:43:27.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p>
-<a id="more"></a>
-<h3 id="关于RunLoop的资料总结"><a href="#关于RunLoop的资料总结" class="headerlink" title="关于RunLoop的资料总结"></a>关于RunLoop的资料总结</h3><p>网上关于RunLoop的总结大致相同，这里推荐几篇好的文章共大家学习。</p>
-<ul>
-<li><p>YYModel作者关于RunLoop的总结 《<a href="http://blog.ibireme.com/2015/05/18/runloop/" target="_blank" rel="external">深入理解RunLoop</a>》</p>
-</li>
-<li><p>简书上不错的文章 《<a href="http://www.jianshu.com/p/37ab0397fec7" target="_blank" rel="external">【iOS程序启动与运转】- RunLoop个人小结</a>》</p>
-</li>
-<li><p>sunnyxx的RunLoop线下讨论会 <a href="https://pan.baidu.com/s/1i5bN3dN" target="_blank" rel="external">百度网盘</a></p>
-</li>
-<li><p>用RunLoop捕获程序Crash 防止用户使用时程序崩溃 <a href="https://github.com/guiyongdong/Resource/tree/master/%20CrashManager" target="_blank" rel="external">git连接</a></p>
-</li>
-</ul>
-<h3 id="关于CFRunLoop-h的总结"><a href="#关于CFRunLoop-h的总结" class="headerlink" title="关于CFRunLoop.h的总结"></a>关于CFRunLoop.h的总结</h3><pre><code>
-
-//Runloop
-typedef struct __CFRunLoop * CFRunLoopRef;
-//事件源
-typedef struct __CFRunLoopSource * CFRunLoopSourceRef;
-//观察者
-typedef struct __CFRunLoopObserver * CFRunLoopObserverRef;
-//定时器
-typedef struct CF_BRIDGED_MUTABLE_TYPE(NSTimer) __CFRunLoopTimer * CFRunLoopTimerRef;
-
-/* Reasons for CFRunLoopRunInMode() to Return */
-enum {
-    kCFRunLoopRunFinished = 1, //Run Loop结束，没有Timer或者其他Input Source
-    kCFRunLoopRunStopped = 2, //Run Loop被停止，使用CFRunLoopStop停止Run Loop
-    kCFRunLoopRunTimedOut = 3, //RunLoop 超时
-    kCFRunLoopRunHandledSource = 4 //Run Loop处理完事件，注意Timer事件的触发是不会让Run Loop退出返回的，即使CFRunLoopRunInMode的第三个参数是YES也不行
-};
-
-/* Run Loop Observer Activities */
-typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
-    kCFRunLoopEntry = (1UL << 0), // 即将进入Loop
-    kCFRunLoopBeforeTimers = (1UL << 1), // 即将处理 Timer
-    kCFRunLoopBeforeSources = (1UL << 2), // 即将处理 Source
-    kCFRunLoopBeforeWaiting = (1UL << 5), // 即将进入休眠
-    kCFRunLoopAfterWaiting = (1UL << 6), // 刚从休眠中唤醒
-    kCFRunLoopExit = (1UL << 7), // 即将退出Loop
-    kCFRunLoopAllActivities = 0x0FFFFFFFU
-};
-
-//默认model
-CF_EXPORT const CFStringRef kCFRunLoopDefaultMode;
-//当uiscrollView滑动时Model
-CF_EXPORT const CFStringRef kCFRunLoopCommonModes;
-
-//获取当前RunLoop 当当前RunLoop没有的时候回创建一个  一个线程对应一个RunLoop
-CF_EXPORT CFRunLoopRef CFRunLoopGetCurrent(void);
-//获取主线程的RunLoop
-CF_EXPORT CFRunLoopRef CFRunLoopGetMain(void);
-//复制当前RunLoop
-CF_EXPORT CFStringRef CFRunLoopCopyCurrentMode(CFRunLoopRef rl);
-//复制当前RunLoop的所有Model
-CF_EXPORT CFArrayRef CFRunLoopCopyAllModes(CFRunLoopRef rl);
-//给当前RunLoop添加Model
-CF_EXPORT void CFRunLoopAddCommonMode(CFRunLoopRef rl, CFStringRef mode);
-//获取RunLoop model的超时时间
-CF_EXPORT CFAbsoluteTime CFRunLoopGetNextTimerFireDate(CFRunLoopRef rl, CFStringRef mode);
-//手动启动RunLoop
-CF_EXPORT void CFRunLoopRun(void);
-/**
- *  切换当前RunLoop的model
- *
- *  @param mode                     model
- *  @param seconds                  执行时间
- *  @param returnAfterSourceHandled 执行完是否结束
- */
-CF_EXPORT SInt32 CFRunLoopRunInMode(CFStringRef mode, CFTimeInterval seconds, Boolean returnAfterSourceHandled);
-//当前RunLoop是否休眠
-CF_EXPORT Boolean CFRunLoopIsWaiting(CFRunLoopRef rl);
-//唤醒RunLoop
-CF_EXPORT void CFRunLoopWakeUp(CFRunLoopRef rl);
-//手动停止RunLoop
-CF_EXPORT void CFRunLoopStop(CFRunLoopRef rl);
-
-#if __BLOCKS__
-//在RunLoop 特定Model执行 操作
-CF_EXPORT void CFRunLoopPerformBlock(CFRunLoopRef rl, CFTypeRef mode, void (^block)(void)) CF_AVAILABLE(10_6, 4_0); 
-#endif
-//RunLoop下是否包含某个Source
-CF_EXPORT Boolean CFRunLoopContainsSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
-//添加Source
-CF_EXPORT void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
-//移除Source
-CF_EXPORT void CFRunLoopRemoveSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
-//是否包换观察者
-CF_EXPORT Boolean CFRunLoopContainsObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
-//添加某个model下的观察者
-CF_EXPORT void CFRunLoopAddObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
-//移除观察者
-CF_EXPORT void CFRunLoopRemoveObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
-//是否包含定时器
-CF_EXPORT Boolean CFRunLoopContainsTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
-//添加定时器
-CF_EXPORT void CFRunLoopAddTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
-//移除定时器
-CF_EXPORT void CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
-
-typedef struct {
-    CFIndex    version;
-    void *    info;
-    const void *(*retain)(const void *info);
-    void    (*release)(const void *info);
-    CFStringRef    (*copyDescription)(const void *info);
-    Boolean    (*equal)(const void *info1, const void *info2);
-    CFHashCode    (*hash)(const void *info);
-    void    (*schedule)(void *info, CFRunLoopRef rl, CFStringRef mode);
-    void    (*cancel)(void *info, CFRunLoopRef rl, CFStringRef mode);
-    void    (*perform)(void *info);
-} CFRunLoopSourceContext;
-
-typedef struct {
-    CFIndex    version;
-    void *    info;
-    const void *(*retain)(const void *info);
-    void    (*release)(const void *info);
-    CFStringRef    (*copyDescription)(const void *info);
-    Boolean    (*equal)(const void *info1, const void *info2);
-    CFHashCode    (*hash)(const void *info);
-#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) || (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
-    mach_port_t    (*getPort)(void *info);
-    void *    (*perform)(void *msg, CFIndex size, CFAllocatorRef allocator, void *info);
-#else
-    void *    (*getPort)(void *info);
-    void    (*perform)(void *info);
-#endif
-} CFRunLoopSourceContext1;
-
-CF_EXPORT CFTypeID CFRunLoopSourceGetTypeID(void);
-
-//创建事件源
-CF_EXPORT CFRunLoopSourceRef CFRunLoopSourceCreate(CFAllocatorRef allocator, CFIndex order, CFRunLoopSourceContext *context);
-
-CF_EXPORT CFIndex CFRunLoopSourceGetOrder(CFRunLoopSourceRef source);
-CF_EXPORT void CFRunLoopSourceInvalidate(CFRunLoopSourceRef source);
-CF_EXPORT Boolean CFRunLoopSourceIsValid(CFRunLoopSourceRef source);
-CF_EXPORT void CFRunLoopSourceGetContext(CFRunLoopSourceRef source, CFRunLoopSourceContext *context);
-CF_EXPORT void CFRunLoopSourceSignal(CFRunLoopSourceRef source);
-
-typedef struct {
-    CFIndex    version;
-    void *    info;
-    const void *(*retain)(const void *info);
-    void    (*release)(const void *info);
-    CFStringRef    (*copyDescription)(const void *info);
-} CFRunLoopObserverContext;
-
-typedef void (*CFRunLoopObserverCallBack)(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info);
-
-CF_EXPORT CFTypeID CFRunLoopObserverGetTypeID(void);
-
-CF_EXPORT CFRunLoopObserverRef CFRunLoopObserverCreate(CFAllocatorRef allocator, CFOptionFlags activities, Boolean repeats, CFIndex order, CFRunLoopObserverCallBack callout, CFRunLoopObserverContext *context);
-#if __BLOCKS__
-/**
- *  创建观察者
- *
- *  @param allocator  默认 kCFAllocatorDefault
- *  @param activities 监听 RunLoop的哪种状态
- *  @param repeats    是否一直监听
- *  @param order      优先级 默认 0
- *  @param ^block     回调
- *
- */
-CF_EXPORT CFRunLoopObserverRef CFRunLoopObserverCreateWithHandler(CFAllocatorRef allocator, CFOptionFlags activities, Boolean repeats, CFIndex order, void (^block) (CFRunLoopObserverRef observer, CFRunLoopActivity activity)) CF_AVAILABLE(10_7, 5_0);
-#endif
-
-//获取当前观察者观察的状态
-CF_EXPORT CFOptionFlags CFRunLoopObserverGetActivities(CFRunLoopObserverRef observer);
-//获取当前观察者是否一直观察
-CF_EXPORT Boolean CFRunLoopObserverDoesRepeat(CFRunLoopObserverRef observer);
-//获取优先级
-CF_EXPORT CFIndex CFRunLoopObserverGetOrder(CFRunLoopObserverRef observer);
-CF_EXPORT void CFRunLoopObserverInvalidate(CFRunLoopObserverRef observer);
-CF_EXPORT Boolean CFRunLoopObserverIsValid(CFRunLoopObserverRef observer);
-CF_EXPORT void CFRunLoopObserverGetContext(CFRunLoopObserverRef observer, CFRunLoopObserverContext *context);
-
-typedef struct {
-    CFIndex    version;
-    void *    info;
-    const void *(*retain)(const void *info);
-    void    (*release)(const void *info);
-    CFStringRef    (*copyDescription)(const void *info);
-} CFRunLoopTimerContext;
-
-typedef void (*CFRunLoopTimerCallBack)(CFRunLoopTimerRef timer, void *info);
-
-CF_EXPORT CFTypeID CFRunLoopTimerGetTypeID(void);
-//创建定时器
-CF_EXPORT CFRunLoopTimerRef CFRunLoopTimerCreate(CFAllocatorRef allocator, CFAbsoluteTime fireDate, CFTimeInterval interval, CFOptionFlags flags, CFIndex order, CFRunLoopTimerCallBack callout, CFRunLoopTimerContext *context);
-#if __BLOCKS__
-//使用Block创建定时器
-CF_EXPORT CFRunLoopTimerRef CFRunLoopTimerCreateWithHandler(CFAllocatorRef allocator, CFAbsoluteTime fireDate, CFTimeInterval interval, CFOptionFlags flags, CFIndex order, void (^block) (CFRunLoopTimerRef timer)) CF_AVAILABLE(10_7, 5_0);
-#endif
-//获取超时时间
-CF_EXPORT CFAbsoluteTime CFRunLoopTimerGetNextFireDate(CFRunLoopTimerRef timer);
-//设置超时时间
-CF_EXPORT void CFRunLoopTimerSetNextFireDate(CFRunLoopTimerRef timer, CFAbsoluteTime fireDate);
-CF_EXPORT CFTimeInterval CFRunLoopTimerGetInterval(CFRunLoopTimerRef timer);
-//是否循环执行
-CF_EXPORT Boolean CFRunLoopTimerDoesRepeat(CFRunLoopTimerRef timer);
-//获取优先级
-CF_EXPORT CFIndex CFRunLoopTimerGetOrder(CFRunLoopTimerRef timer);
-CF_EXPORT void CFRunLoopTimerInvalidate(CFRunLoopTimerRef timer);
-CF_EXPORT Boolean CFRunLoopTimerIsValid(CFRunLoopTimerRef timer);
-CF_EXPORT void CFRunLoopTimerGetContext(CFRunLoopTimerRef timer, CFRunLoopTimerContext *context);
-
-// Setting a tolerance for a timer allows it to fire later than the scheduled fire date, improving the ability of the system to optimize for increased power savings and responsiveness. The timer may fire at any time between its scheduled fire date and the scheduled fire date plus the tolerance. The timer will not fire before the scheduled fire date. For repeating timers, the next fire date is calculated from the original fire date regardless of tolerance applied at individual fire times, to avoid drift. The default value is zero, which means no additional tolerance is applied. The system reserves the right to apply a small amount of tolerance to certain timers regardless of the value of this property.
-// As the user of the timer, you will have the best idea of what an appropriate tolerance for a timer may be. A general rule of thumb, though, is to set the tolerance to at least 10% of the interval, for a repeating timer. Even a small amount of tolerance will have a significant positive impact on the power usage of your application. The system may put a maximum value of the tolerance.
-CF_EXPORT CFTimeInterval CFRunLoopTimerGetTolerance(CFRunLoopTimerRef timer) CF_AVAILABLE(10_9, 7_0);
-CF_EXPORT void CFRunLoopTimerSetTolerance(CFRunLoopTimerRef timer, CFTimeInterval tolerance) CF_AVAILABLE(10_9, 7_0);
-
-CF_EXTERN_C_END
-CF_IMPLICIT_BRIDGING_DISABLED
-
-
-</code></pre>
-
-
-
-
-
-
-<!-- more -->
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对&lt;code&gt;&amp;lt;CoreFoundation/CFRunLoop.h&amp;gt;&lt;/code&gt;的头文件函数总结。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="RunLoop" scheme="http://www.guiyongdong.com/categories/RunLoop/"/>
-    
-    
-      <category term="RunLoop" scheme="http://www.guiyongdong.com/tags/RunLoop/"/>
     
   </entry>
   
