@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2017-02-05T11:34:45.000Z</updated>
+  <updated>2017-03-01T02:52:14.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,205 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>AFNetworking源码解析</title>
+    <link href="http://www.guiyongdong.com/2017/02/15/AFNetworking%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/"/>
+    <id>http://www.guiyongdong.com/2017/02/15/AFNetworking源码解析/</id>
+    <published>2017-02-15T06:15:04.000Z</published>
+    <updated>2017-03-01T02:52:14.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>网络是APP开发中非常重要的一部分，除非这个APP是本地自玩，否则就离不开网络。在iOS开发中，我们一般都会去使用别人造好的轮子，其中最有名也最常用的非<code>AFNetworking</code>莫属。这篇文章就深入探讨一下<code>AFNetworking</code>是如何工作的。</p>
+<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><hr>
+<p>我们先来看看<code>AFNetworking</code>整个架构体系：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/af2.png?raw=true"><br></div>
+
+<p>首先，我们有两个问题需要了解：</p>
+<ul>
+<li>如何使用NSURLSession发出HTTP请求</li>
+<li>如何使用AFNetworking发出HTTP请求</li>
+</ul>
+<a id="more"></a>
+<h4 id="NSURLSession"><a href="#NSURLSession" class="headerlink" title="NSURLSession"></a>NSURLSession</h4><hr>
+<p><code>NSURLSession</code>以及与它相关的类为我们提供了下载内容的API，这个API提供了一系列的代理方法来支持身份认证，并且支持后台下载。</p>
+<p>使用<code>NSURLSession</code>来运行HTTP请求并且获得数据总共有五个步骤：</p>
+<ol>
+<li>实例化一个<code>NSURLRequest/NSMutableURLRequest</code>,设置URL</li>
+<li>通过<code>- shareSession</code>方法获取<code>NSURLSession</code></li>
+<li>在session上调用<code>- dataTaskWithRequest:completionHandler:</code>方法返回一个<code>NSURLSessionDataTask</code></li>
+<li>调用dataTask的<code>- resume</code>,开始执行任务</li>
+<li>在completionHandler中将数据编码，返回字符串</li>
+</ol>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="built_in">NSMutableURLRequest</span> *request = [[<span class="built_in">NSMutableURLRequest</span> alloc] initWithURL:[[<span class="built_in">NSURL</span> alloc] initWithString:<span class="string">@"https://github.com"</span>]];</div><div class="line"><span class="built_in">NSURLSession</span> *session = [<span class="built_in">NSURLSession</span> sharedSession];</div><div class="line"><span class="built_in">NSURLSessionDataTask</span> *task = [session dataTaskWithRequest:request</div><div class="line">                                       completionHandler:^(<span class="built_in">NSData</span> * _Nullable data, <span class="built_in">NSURLResponse</span> * _Nullable response, <span class="built_in">NSError</span> * _Nullable error) &#123;</div><div class="line">                                           <span class="built_in">NSString</span> *dataStr = [[<span class="built_in">NSString</span> alloc] initWithData:data encoding:<span class="built_in">NSUTF8StringEncoding</span>];</div><div class="line">                                           <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, dataStr);</div><div class="line">                                       &#125;];</div><div class="line">[task resume];</div></pre></td></tr></table></figure>
+<p>这一段代码可以说是使用<code>NSURLSession</code>发送请求最简单的一段代码了，当你运行这段代码会在控制台看到github首页的html</p>
+<figure class="highlight"><table><tr><td class="code"><pre><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line">&lt;html lang="en" class=""&gt;</div><div class="line">  &lt;head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# object: http://ogp.me/ns/object# article: http://ogp.me/ns/article# profile: http://ogp.me/ns/profile#"&gt;</div><div class="line">    &lt;meta charset='utf-8'&gt;</div><div class="line">        ...</div><div class="line">    &lt;/head&gt;</div><div class="line">    ...</div><div class="line">&lt;/html&gt;</div></pre></td></tr></table></figure>
+<p>想对<code>NSURLSession</code>有更深的了解，<a href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/">请点这里</a></p>
+<h4 id="AFNetworking"><a href="#AFNetworking" class="headerlink" title="AFNetworking"></a>AFNetworking</h4><hr>
+<p>AFNetworking的使用也比较简单的，使用它来发送HTTP请求有两个步骤</p>
+<ol>
+<li>以服务器的主机地址或者域名生成一个<code>AFHTTPSessionManager</code>的实例</li>
+<li>调用<code>- GET:parameters:progress:success:failure:</code>方法</li>
+</ol>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] initWithBaseURL:[[<span class="built_in">NSURL</span> alloc] initWithString:<span class="string">@"hostname"</span>]];</div><div class="line">[manager GET:<span class="string">@"relative_url"</span> parameters:<span class="literal">nil</span> progress:<span class="literal">nil</span></div><div class="line">    success:^(<span class="built_in">NSURLSessionDataTask</span> * _Nonnull task, <span class="keyword">id</span>  _Nullable responseObject) &#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@"</span> ,responseObject);</div><div class="line">    &#125; failure:^(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> * _Nonnull error) &#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, error);</div><div class="line">    &#125;];</div></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：在iOS9中，苹果默认全局HTTPS，如果你要发送不安全的HTTP请求，需要在info.plist中加入如下键值对才能发出不安全的HTTP请求<br><span></span><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/af3.jpeg?raw=true"><br>还有一件事情是要注意的是，AFNetworking默认接收json格式的响应（因为这是在iOS平台上的框架，一般不需要text/html）,如果想要返回html,需要设置<code>acceptableContentTypes</code>。</p>
+</blockquote>
+<h4 id="AFNetworking的调用栈"><a href="#AFNetworking的调用栈" class="headerlink" title="AFNetworking的调用栈"></a>AFNetworking的调用栈</h4><hr>
+<p>刚才我们写了一个简单的网络请求，接下来，我们来看看<code>AFHTTPSessionManager</code>的初始化方法<code>- initWithBaseURL:</code>的调用栈：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- [AFHTTPSessionManager initWithBaseURL:]</div><div class="line">    - [AFHTTPSessionManager initWithBaseURL:sessionConfiguration:]</div><div class="line">        - [AFURLSessionManager initWithSessionConfiguration:]</div><div class="line">            - [<span class="built_in">NSURLSession</span> sessionWithConfiguration:delegate:delegateQueue:]</div><div class="line">            - [AFJSONResponseSerializer serializer] <span class="comment">// 负责序列化响应</span></div><div class="line">            - [AFSecurityPolicy defaultPolicy] <span class="comment">// 负责身份认证</span></div><div class="line">            - [AFNetworkReachabilityManager sharedManager] <span class="comment">// 查看网络连接情况</span></div><div class="line">        - [AFHTTPRequestSerializer serializer] <span class="comment">// 负责序列化请求</span></div><div class="line">        - [AFJSONResponseSerializer serializer] <span class="comment">// 负责序列化响应</span></div></pre></td></tr></table></figure>
+<p>从这个初始化方法的调用栈，我们可以非常清晰地了解这个架构的结构：</p>
+<ul>
+<li>其中<code>AFURLSessionManager</code>是<code>AFHTTPSessionManager</code>的父类</li>
+<li><code>AFURLSessionManager</code>负责生成<code>NSURLSession</code>的实例，管理<code>AFSecurityPolicy</code>和<code>AFNetworkReachabilityManager</code>,来保证请求的安全和查看网络连接情况，它有一个<code>AFJSONResponseSerializer</code>的实例来序列化HTTP响应</li>
+<li><code>AFHTTPSessionManager</code>有着自己的<code>AFHTTPRequestSerialier</code>和<code>AFJSONResponseSerializer</code>来管理请求和响应的序列化，同时依赖父类提供的接口保证安全、监控网络状态，实现发出HTTP请求这一核心功能</li>
+</ul>
+<p>初始化方法很好地揭示了AFNetworking整个框架的架构，接下来我们要通过分析另一个方法<code>- GET:parameters:process:success:failure:</code>的调用栈，看一下HTTP请求是如何发出的：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- [AFHTTPSessionManager GET:parameters:process:success:failure:]</div><div class="line">    - [AFHTTPSessionManager dataTaskWithHTTPMethod:parameters:uploadProgress:downloadProgress:success:failure:] <span class="comment">// 返回 NSURLSessionDataTask #1</span></div><div class="line">        - [AFHTTPRequestSerializer requestWithMethod:URLString:parameters:error:] <span class="comment">// 返回 NSMutableURLRequest</span></div><div class="line">        - [AFURLSessionManager dataTaskWithRequest:uploadProgress:downloadProgress:completionHandler:] <span class="comment">// 返回 NSURLSessionDataTask #2</span></div><div class="line">            - [<span class="built_in">NSURLSession</span> dataTaskWithRequest:] <span class="comment">// 返回 NSURLSessionDataTask #3</span></div><div class="line">            - [AFURLSessionManager addDelegateForDataTask:uploadProgress:downloadProgress:completionHandler:]</div><div class="line">                - [AFURLSessionManagerTaskDelegate init]</div><div class="line">                - [AFURLSessionManager setDelegate:forTask:]</div><div class="line">    - [<span class="built_in">NSURLSessionDataTask</span> resume]</div></pre></td></tr></table></figure>
+<p>在这里 <code>#1</code> <code>#2</code> <code>#3</code>处返回的是同一个dataTask，我们可以看到，在<code>#3</code>出调用的方法<code>- [NSURLSession dataTaskWithRequest:]</code>和只使用<code>NSURLSession</code>发出HTTP请求时调用的方法<code>- [NSURLSession dataTaskWithRequest:completionHandler:]</code>差不多。在这个地方返回dataTask之后，我们再调用<code>- resume</code>方法执行请求，并在某些事件执行时通知代理<code>AFURLSessionManagerTaskDelegate</code></p>
+<h3 id="AFNetworking的核心AFURLSessionManager"><a href="#AFNetworking的核心AFURLSessionManager" class="headerlink" title="AFNetworking的核心AFURLSessionManager"></a>AFNetworking的核心AFURLSessionManager</h3><hr>
+<p><code>AFURLSessionManager</code>绝对可以称得上是AFNetworking的核心</p>
+<ul>
+<li>负责创建和管理NSURLSession</li>
+<li>管理NSURLSessionTask</li>
+<li>实现NSURLSessionDelegate等协议中的代理方法</li>
+<li>使用_AFURLSessionTaskSwizzling调剂方法</li>
+<li>引入AFSecurityPolicy保证请求的安全</li>
+<li>引入AFNetworkingReachabilityManager监控网络状态</li>
+</ul>
+<p>这一节将会着重介绍上面七个功能中的前五个，分析它是如何包装<code>NSURLSession</code>以及众多代理方法的。</p>
+<h4 id="创建和管理NSURLSession"><a href="#创建和管理NSURLSession" class="headerlink" title="创建和管理NSURLSession"></a>创建和管理NSURLSession</h4><hr>
+<p>使用<code>AFURLSessionManager</code>时，第一件要做的事情一定是初始化：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">instancetype</span>)initWithSessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration &#123;</div><div class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</div><div class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (!configuration) &#123;</div><div class="line">        configuration = [<span class="built_in">NSURLSessionConfiguration</span> defaultSessionConfiguration];</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">self</span>.sessionConfiguration = configuration;</div><div class="line"></div><div class="line">    <span class="keyword">self</span>.operationQueue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</div><div class="line">    <span class="keyword">self</span>.operationQueue.maxConcurrentOperationCount = <span class="number">1</span>;</div><div class="line"></div><div class="line">    <span class="keyword">self</span>.session = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:<span class="keyword">self</span>.sessionConfiguration delegate:<span class="keyword">self</span> delegateQueue:<span class="keyword">self</span>.operationQueue];</div><div class="line"></div><div class="line">    <span class="keyword">self</span>.responseSerializer = [AFJSONResponseSerializer serializer];</div><div class="line"></div><div class="line">    <span class="keyword">self</span>.securityPolicy = [AFSecurityPolicy defaultPolicy];</div><div class="line"></div><div class="line"><span class="meta">#if !TARGET_OS_WATCH</span></div><div class="line">    <span class="keyword">self</span>.reachabilityManager = [AFNetworkReachabilityManager sharedManager];</div><div class="line"><span class="meta">#endif</span></div><div class="line"></div><div class="line">    <span class="keyword">self</span>.mutableTaskDelegatesKeyedByTaskIdentifier = [[<span class="built_in">NSMutableDictionary</span> alloc] init];</div><div class="line"></div><div class="line">    <span class="keyword">self</span>.lock = [[<span class="built_in">NSLock</span> alloc] init];</div><div class="line">    <span class="keyword">self</span>.lock.name = AFURLSessionManagerLockName;</div><div class="line">    <span class="comment">//为已有的task设置代理</span></div><div class="line">    [<span class="keyword">self</span>.session getTasksWithCompletionHandler:^(<span class="built_in">NSArray</span> *dataTasks, <span class="built_in">NSArray</span> *uploadTasks, <span class="built_in">NSArray</span> *downloadTasks) &#123;</div><div class="line">        <span class="keyword">for</span> (<span class="built_in">NSURLSessionDataTask</span> *task <span class="keyword">in</span> dataTasks) &#123;</div><div class="line">            [<span class="keyword">self</span> addDelegateForDataTask:task uploadProgress:<span class="literal">nil</span> downloadProgress:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">for</span> (<span class="built_in">NSURLSessionUploadTask</span> *uploadTask <span class="keyword">in</span> uploadTasks) &#123;</div><div class="line">            [<span class="keyword">self</span> addDelegateForUploadTask:uploadTask progress:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">for</span> (<span class="built_in">NSURLSessionDownloadTask</span> *downloadTask <span class="keyword">in</span> downloadTasks) &#123;</div><div class="line">            [<span class="keyword">self</span> addDelegateForDownloadTask:downloadTask progress:<span class="literal">nil</span> destination:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</div><div class="line">        &#125;</div><div class="line">    &#125;];</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在初始化方法中，需要完成初始化一些自己持有的特例：</p>
+<ol>
+<li>初始化 <strong>会话配置</strong> (NSURLSessionConfiguration)，默认为<code>defaultSessionConfiguration</code></li>
+<li>初始化 <strong>会话</strong> (session)，并设置会话的代理以及代理列队</li>
+<li>初始化管理 <strong>响应序列化</strong> (AFJSONResponseSerializer)，<strong>安全认证</strong> (AFSecurityPolicy) 以及 <strong>监控网络状态</strong> (AFNetworkReachabilityManager) 的实例</li>
+<li>初始化保存data task的字典(mutableTaskDelegatesKeysByTaskIdentifier)</li>
+</ol>
+<h4 id="管理NSURLSessionTask"><a href="#管理NSURLSessionTask" class="headerlink" title="管理NSURLSessionTask"></a>管理NSURLSessionTask</h4><hr>
+<p>接下来，在获得了<code>AFURLSessionManager</code>的实例之后，我们可以通过以下方法创建<code>NSURLSessionDataTask</code>的实例：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</div><div class="line">                               uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</div><div class="line">                             downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</div><div class="line">                            completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject,  <span class="built_in">NSError</span> * _Nullable error))completionHandler;</div><div class="line"></div><div class="line">- (<span class="built_in">NSURLSessionUploadTask</span> *)uploadTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</div><div class="line">                                         fromFile:(<span class="built_in">NSURL</span> *)fileURL</div><div class="line">                                         progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</div><div class="line">                                completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject, <span class="built_in">NSError</span>  * _Nullable error))completionHandler;</div><div class="line"></div><div class="line">...</div><div class="line"></div><div class="line">- (<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</div><div class="line">                                             progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</div><div class="line">                                          destination:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> * (^)(<span class="built_in">NSURL</span> *targetPath, <span class="built_in">NSURLResponse</span> *response))destination</div><div class="line">                                    completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSURL</span> * _Nullable filePath, <span class="built_in">NSError</span> * _Nullable error))completionHandler;</div><div class="line"></div><div class="line">...</div></pre></td></tr></table></figure>
+<p>这里省略了一些返回NSURLSessionTask的方法，因为这些接口的形式都是差不多的。</p>
+<p>我们将以 <code>[AFURLSessionManager dataTaskWithRequest:uploadProgress:downloadProgress:completionHandler:]</code>方法的实现为例，分析它是如何实例化并返回一个<code>NSURLSessionTask</code>的实例的：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</div><div class="line">                               uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</div><div class="line">                             downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</div><div class="line">                            completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject,  <span class="built_in">NSError</span> * _Nullable error))completionHandler &#123;</div><div class="line"></div><div class="line">    __block <span class="built_in">NSURLSessionDataTask</span> *dataTask = <span class="literal">nil</span>;</div><div class="line">    url_session_manager_create_task_safely(^&#123;</div><div class="line">        dataTask = [<span class="keyword">self</span>.session dataTaskWithRequest:request];</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    [<span class="keyword">self</span> addDelegateForDataTask:dataTask uploadProgress:uploadProgressBlock downloadProgress:downloadProgressBlock completionHandler:completionHandler];</div><div class="line"></div><div class="line">    <span class="keyword">return</span> dataTask;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>调用<code>- [NSURLSession dataTaskWithRequest:]</code>方法传入<code>NSURLRequest</code></li>
+<li>调用<code>- [AFURLSessionManager addDelegateForDataTask:uploadProgress:downloadProgress:completionHandler:]</code>方法返回一个<code>AFURLSessionManagerTaskDelegate</code>对象</li>
+<li>将<code>completionHandler</code> <code>uploadProgressBlock</code>和<code>downloadProgressBlock</code>传入该对象并在相应事件发生时进行回调</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)addDelegateForDataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask</div><div class="line">                uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</div><div class="line">              downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</div><div class="line">             completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error))completionHandler</div><div class="line">&#123;</div><div class="line">    AFURLSessionManagerTaskDelegate *delegate = [[AFURLSessionManagerTaskDelegate alloc] init];</div><div class="line">    delegate.manager = <span class="keyword">self</span>;</div><div class="line">    delegate.completionHandler = completionHandler;</div><div class="line"></div><div class="line">    dataTask.taskDescription = <span class="keyword">self</span>.taskDescriptionForSessionTasks;</div><div class="line">    [<span class="keyword">self</span> setDelegate:delegate forTask:dataTask];</div><div class="line"></div><div class="line">    delegate.uploadProgressBlock = uploadProgressBlock;</div><div class="line">    delegate.downloadProgressBlock = downloadProgressBlock;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在这个方法中同时调用了另一个方法<code>- [AFURLSessionManager setDelegate:forTask:]</code>来设置代理：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)setDelegate:(AFURLSessionManagerTaskDelegate *)delegate</div><div class="line">            forTask:(<span class="built_in">NSURLSessionTask</span> *)task</div><div class="line">&#123;</div><div class="line">    <span class="built_in">NSParameterAssert</span>(task);</div><div class="line">    <span class="built_in">NSParameterAssert</span>(delegate);</div><div class="line"></div><div class="line">    [<span class="keyword">self</span>.lock lock];</div><div class="line">    <span class="keyword">self</span>.mutableTaskDelegatesKeyedByTaskIdentifier[@(task.taskIdentifier)] = delegate;</div><div class="line">    [delegate setupProgressForTask:task];</div><div class="line">    [<span class="keyword">self</span> addNotificationObserverForTask:task];</div><div class="line">    [<span class="keyword">self</span>.lock unlock];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>正如上面所提到的，<code>AFURLSessionManager</code>就是通过字典<code>mutableTaskDelegatesKeyedByTaskIdentifier</code>来存储并管理每一个<code>NSURLSessionTask</code>，它以<code>taskIdentifier</code>为键存储task。</p>
+<p>该方法使用<code>NSLock</code>来保证不同线程使用<code>mutableTaskDelegatesKeyedByTaskIdentifier</code>时，不会出现线程竞争的问题。</p>
+<p>同时调用<code>-setupProgressForTask</code>，我们会在下面具体介绍这个方法。</p>
+<h4 id="实现NSURLSessionDelegate等协议中的代理方法"><a href="#实现NSURLSessionDelegate等协议中的代理方法" class="headerlink" title="实现NSURLSessionDelegate等协议中的代理方法"></a>实现NSURLSessionDelegate等协议中的代理方法</h4><hr>
+<p>在<code>AFURLSessionManager</code>的头文件中可以看到，它遵循了多个协议，其中包括：</p>
+<ul>
+<li>NSURLSessionDelegate</li>
+<li>NSURLSessionTaskDelegate</li>
+<li>NSURLSessionDataDelegate</li>
+<li>NSURLSessionDownloadDelegate</li>
+</ul>
+<p>它的初始化方法<code>- [AFURLSessionManager initWithSessionConfiguration:]</code>将<code>NSURLSession</code>的代理指向self，然后实现这些方法，提供更简洁的block的接口：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)setSessionDidBecomeInvalidBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSError</span> *error))block;</div><div class="line">- (<span class="keyword">void</span>)setSessionDidReceiveAuthenticationChallengeBlock:(<span class="keyword">nullable</span> <span class="built_in">NSURLSessionAuthChallengeDisposition</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLAuthenticationChallenge</span> *challenge, <span class="built_in">NSURLCredential</span> * _Nullable __autoreleasing * _Nullable credential))block;</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>它为所有的代理协议都提供了对应的block接口，方法实现的思路都是相似的，我们以<code>- [AFNRLSessionManager setSessionDidBecomeInvalidBlock:]</code>为例。</p>
+<p>首先调用setter方法，将block存入<code>sessionDidBecomeInvalid</code>属性中：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)setSessionDidBecomeInvalidBlock:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSError</span> *error))block &#123;</div><div class="line">    <span class="keyword">self</span>.sessionDidBecomeInvalid = block;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当代理方法调用时，如果存在对应的block，会执行对应的block:</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</div><div class="line">didBecomeInvalidWithError:(<span class="built_in">NSError</span> *)error  </div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.sessionDidBecomeInvalid) &#123;</div><div class="line">        <span class="keyword">self</span>.sessionDidBecomeInvalid(session, error);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFURLSessionDidInvalidateNotification object:session];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其他相似的接口实现也都差不多，这里直接跳过了。</p>
+<h4 id="使用AFURLSessionManagerTaskDelegate管理进度"><a href="#使用AFURLSessionManagerTaskDelegate管理进度" class="headerlink" title="使用AFURLSessionManagerTaskDelegate管理进度"></a>使用AFURLSessionManagerTaskDelegate管理进度</h4><hr>
+<p>在上面我们提到过<code>AFURLSessionManagerTaskDelegate</code>类，它主要为task提供进度管理功能，并在task结束时回调，也就是调用在<code>- [AFURLSessionManager dataTaskWithRequest:uploadProgress:downloadProgress:completionHandler:]</code>等方法中传入的<code>completionHandler</code>。</p>
+<p>我们首先分析一下<code>AFURLSessionManagerTaskDelegate</code>是如何对进度进行跟踪的：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)setupProgressForTask:(<span class="built_in">NSURLSessionTask</span> *)task &#123;</div><div class="line"></div><div class="line">    <span class="meta">#1：设置在上传进度或者下载进度状态改变时的回调</span></div><div class="line"></div><div class="line">    <span class="meta">#2：KVO</span></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>该方法的实现有两个部分，一部分是对代理持有的两个属性<code>uploadProgress</code>和<code>downloadProgress</code>设置回调</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">__<span class="keyword">weak</span> __typeof__(task) weakTask = task;</div><div class="line"></div><div class="line"><span class="keyword">self</span>.uploadProgress.totalUnitCount = task.countOfBytesExpectedToSend;  </div><div class="line">[<span class="keyword">self</span>.uploadProgress setCancellable:<span class="literal">YES</span>];</div><div class="line">[<span class="keyword">self</span>.uploadProgress setCancellationHandler:^&#123;</div><div class="line">   __typeof__(weakTask) strongTask = weakTask;</div><div class="line">   [strongTask cancel];</div><div class="line">&#125;];</div><div class="line">[<span class="keyword">self</span>.uploadProgress setPausable:<span class="literal">YES</span>];</div><div class="line">[<span class="keyword">self</span>.uploadProgress setPausingHandler:^&#123;</div><div class="line">   __typeof__(weakTask) strongTask = weakTask;</div><div class="line">   [strongTask suspend];</div><div class="line">&#125;];</div><div class="line"><span class="keyword">if</span> ([<span class="keyword">self</span>.uploadProgress respondsToSelector:<span class="keyword">@selector</span>(setResumingHandler:)]) &#123;  </div><div class="line">   [<span class="keyword">self</span>.uploadProgress setResumingHandler:^&#123;</div><div class="line">       __typeof__(weakTask) strongTask = weakTask;</div><div class="line">       [strongTask resume];</div><div class="line">   &#125;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里只有对<code>uploadProgress</code>设置回调的代码，设置<code>downloadProgress</code>与这里完全相同</p>
+<blockquote>
+<p>主要目的是在对应<code>NSProgress</code>的状态改变时，调用<code>resume</code> <code>suspend</code>等方法改变task的状态。</p>
+</blockquote>
+<p>第二部分是对task和<code>NSProgress</code>属性进行键值观测：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">[task addObserver:<span class="keyword">self</span></div><div class="line">      forKeyPath:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(countOfBytesReceived))</div><div class="line">         options:<span class="built_in">NSKeyValueObservingOptionNew</span></div><div class="line">         context:<span class="literal">NULL</span>];</div><div class="line">[task addObserver:<span class="keyword">self</span></div><div class="line">      forKeyPath:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(countOfBytesExpectedToReceive))</div><div class="line">         options:<span class="built_in">NSKeyValueObservingOptionNew</span></div><div class="line">         context:<span class="literal">NULL</span>];</div><div class="line"></div><div class="line">[task addObserver:<span class="keyword">self</span></div><div class="line">      forKeyPath:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(countOfBytesSent))</div><div class="line">         options:<span class="built_in">NSKeyValueObservingOptionNew</span></div><div class="line">         context:<span class="literal">NULL</span>];</div><div class="line">[task addObserver:<span class="keyword">self</span></div><div class="line">      forKeyPath:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(countOfBytesExpectedToSend))</div><div class="line">         options:<span class="built_in">NSKeyValueObservingOptionNew</span></div><div class="line">         context:<span class="literal">NULL</span>];</div><div class="line"></div><div class="line">[<span class="keyword">self</span>.downloadProgress addObserver:<span class="keyword">self</span></div><div class="line">                       forKeyPath:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(fractionCompleted))</div><div class="line">                          options:<span class="built_in">NSKeyValueObservingOptionNew</span></div><div class="line">                          context:<span class="literal">NULL</span>];</div><div class="line">[<span class="keyword">self</span>.uploadProgress addObserver:<span class="keyword">self</span></div><div class="line">                     forKeyPath:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(fractionCompleted))</div><div class="line">                        options:<span class="built_in">NSKeyValueObservingOptionNew</span></div><div class="line">                        context:<span class="literal">NULL</span>];</div></pre></td></tr></table></figure>
+<p>在<code>observeValueForKeypath:ofObject:change:context:</code>方法中改变进度，并调用block</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)observeValueForKeyPath:(<span class="built_in">NSString</span> *)keyPath ofObject:(<span class="keyword">id</span>)object change:(<span class="built_in">NSDictionary</span>&lt;<span class="built_in">NSString</span> *,<span class="keyword">id</span>&gt; *)change context:(<span class="keyword">void</span> *)context &#123;</div><div class="line">    <span class="keyword">if</span> ([object isKindOfClass:[<span class="built_in">NSURLSessionTask</span> <span class="keyword">class</span>]]) &#123;</div><div class="line">        <span class="keyword">if</span> ([keyPath isEqualToString:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(countOfBytesReceived))]) &#123;</div><div class="line">            <span class="keyword">self</span>.downloadProgress.completedUnitCount = [change[<span class="string">@"new"</span>] longLongValue];</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([keyPath isEqualToString:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(countOfBytesExpectedToReceive))]) &#123;</div><div class="line">            <span class="keyword">self</span>.downloadProgress.totalUnitCount = [change[<span class="string">@"new"</span>] longLongValue];</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([keyPath isEqualToString:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(countOfBytesSent))]) &#123;</div><div class="line">            <span class="keyword">self</span>.uploadProgress.completedUnitCount = [change[<span class="string">@"new"</span>] longLongValue];</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> ([keyPath isEqualToString:<span class="built_in">NSStringFromSelector</span>(<span class="keyword">@selector</span>(countOfBytesExpectedToSend))]) &#123;</div><div class="line">            <span class="keyword">self</span>.uploadProgress.totalUnitCount = [change[<span class="string">@"new"</span>] longLongValue];</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ([object isEqual:<span class="keyword">self</span>.downloadProgress]) &#123;</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.downloadProgressBlock) &#123;</div><div class="line">            <span class="keyword">self</span>.downloadProgressBlock(object);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ([object isEqual:<span class="keyword">self</span>.uploadProgress]) &#123;</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.uploadProgressBlock) &#123;</div><div class="line">            <span class="keyword">self</span>.uploadProgressBlock(object);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对象的某些属性改变时更新<code>NSProgress</code>对象或使用block传递<code>NSProgress</code>对象<br><code>self.uploadProgressBlock(object)</code>。</p>
+<h4 id="代理方法-URLSession-task-didCompleteWithError"><a href="#代理方法-URLSession-task-didCompleteWithError" class="headerlink" title="代理方法 URLSession:task:didCompleteWithError:"></a>代理方法 URLSession:task:didCompleteWithError:</h4><hr>
+<p>在每一个<code>NSURLSessionTask</code>结束时，都会在代理方法<code>URLSession:task:didCompleteWithError:</code>中：</p>
+<ol>
+<li>调用传入的<code>completionHander</code>block</li>
+<li>发出<code>AFNetworkingTaskDidCompleteNotification</code>通知</li>
+</ol>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)URLSession:(__unused <span class="built_in">NSURLSession</span> *)session</div><div class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task</div><div class="line">didCompleteWithError:(<span class="built_in">NSError</span> *)error  </div><div class="line">&#123;</div><div class="line">    <span class="meta">#1：获取数据, 存储 `responseSerializer` 和 `downloadFileURL`</span></div><div class="line"></div><div class="line">    <span class="keyword">if</span> (error) &#123;</div><div class="line">        <span class="meta">#2：在存在错误时调用 `completionHandler`</span></div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="meta">#3：调用 `completionHandler`</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这是整个代理方法的骨架，先看一下最简单的第一部分代码：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">__block <span class="built_in">NSMutableDictionary</span> *userInfo = [<span class="built_in">NSMutableDictionary</span> dictionary];  </div><div class="line">userInfo[AFNetworkingTaskDidCompleteResponseSerializerKey] = manager.responseSerializer;</div><div class="line"></div><div class="line"><span class="comment">//Performance Improvement from #2672</span></div><div class="line"><span class="built_in">NSData</span> *data = <span class="literal">nil</span>;  </div><div class="line"><span class="keyword">if</span> (<span class="keyword">self</span>.mutableData) &#123;  </div><div class="line">   data = [<span class="keyword">self</span>.mutableData <span class="keyword">copy</span>];</div><div class="line">   <span class="comment">//We no longer need the reference, so nil it out to gain back some memory.</span></div><div class="line">   <span class="keyword">self</span>.mutableData = <span class="literal">nil</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">if</span> (<span class="keyword">self</span>.downloadFileURL) &#123;  </div><div class="line">   userInfo[AFNetworkingTaskDidCompleteAssetPathKey] = <span class="keyword">self</span>.downloadFileURL;</div><div class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (data) &#123;</div><div class="line">   userInfo[AFNetworkingTaskDidCompleteResponseDataKey] = data;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这部分代码从<code>mutableData</code>中取出数据，设置了<code>userInfo</code>。</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">userInfo[AFNetworkingTaskDidCompleteErrorKey] = error;</div><div class="line"></div><div class="line">dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^&#123;  </div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.completionHandler) &#123;</div><div class="line">        <span class="keyword">self</span>.completionHandler(task.response, responseObject, error);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">        [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNetworkingTaskDidCompleteNotification object:task userInfo:userInfo];</div><div class="line">    &#125;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>如果当前manager持有<code>completionGroup</code>或者<code>completionQueue</code>就是用它们。否则会创建一个<code>dispatch_group_t</code>并在主线程中调用<code>completionHandler</code>并发送通知（在主线程中）。</p>
+<p>如果在执行当前task时没有遇到错误，那么先对数据进行序列化，然后同样调用block并发送通知。</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="built_in">dispatch_async</span>(url_session_manager_processing_queue(), ^&#123;  </div><div class="line">    <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</div><div class="line">    responseObject = [manager.responseSerializer responseObjectForResponse:task.response data:data error:&amp;serializationError];</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.downloadFileURL) &#123;</div><div class="line">        responseObject = <span class="keyword">self</span>.downloadFileURL;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (responseObject) &#123;</div><div class="line">        userInfo[AFNetworkingTaskDidCompleteSerializedResponseKey] = responseObject;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (serializationError) &#123;</div><div class="line">        userInfo[AFNetworkingTaskDidCompleteErrorKey] = serializationError;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^&#123;</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.completionHandler) &#123;</div><div class="line">            <span class="keyword">self</span>.completionHandler(task.response, responseObject, serializationError);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">            [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNetworkingTaskDidCompleteNotification object:task userInfo:userInfo];</div><div class="line">        &#125;);</div><div class="line">    &#125;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="代理方法URLSession-dataTask-didReceiveData-和URLSession-downloadTask-didFinishDownloadingToURL-这两个代理方法分别会在收到数据或者完成下载对应文件时调用，作用分别是为mutableData追加数据和处理下载的文件："><a href="#代理方法URLSession-dataTask-didReceiveData-和URLSession-downloadTask-didFinishDownloadingToURL-这两个代理方法分别会在收到数据或者完成下载对应文件时调用，作用分别是为mutableData追加数据和处理下载的文件：" class="headerlink" title="代理方法URLSession:dataTask:didReceiveData:和URLSession:downloadTask:didFinishDownloadingToURL: 这两个代理方法分别会在收到数据或者完成下载对应文件时调用，作用分别是为mutableData追加数据和处理下载的文件："></a>代理方法URLSession:dataTask:didReceiveData:和URLSession:downloadTask:didFinishDownloadingToURL: 这两个代理方法分别会在收到数据或者完成下载对应文件时调用，作用分别是为mutableData追加数据和处理下载的文件：</h4><hr>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)URLSession:(__unused <span class="built_in">NSURLSession</span> *)session</div><div class="line">          dataTask:(__unused <span class="built_in">NSURLSessionDataTask</span> *)dataTask</div><div class="line">    didReceiveData:(<span class="built_in">NSData</span> *)data</div><div class="line">&#123;</div><div class="line">    [<span class="keyword">self</span>.mutableData appendData:data];</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</div><div class="line">      downloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</div><div class="line">didFinishDownloadingToURL:(<span class="built_in">NSURL</span> *)location  </div><div class="line">&#123;</div><div class="line">    <span class="built_in">NSError</span> *fileManagerError = <span class="literal">nil</span>;</div><div class="line">    <span class="keyword">self</span>.downloadFileURL = <span class="literal">nil</span>;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.downloadTaskDidFinishDownloading) &#123;</div><div class="line">        <span class="keyword">self</span>.downloadFileURL = <span class="keyword">self</span>.downloadTaskDidFinishDownloading(session, downloadTask, location);</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.downloadFileURL) &#123;</div><div class="line">            [[<span class="built_in">NSFileManager</span> defaultManager] moveItemAtURL:location toURL:<span class="keyword">self</span>.downloadFileURL error:&amp;fileManagerError];</div><div class="line"></div><div class="line">            <span class="keyword">if</span> (fileManagerError) &#123;</div><div class="line">                [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFURLSessionDownloadTaskDidFailToMoveFileNotification object:downloadTask userInfo:fileManagerError.userInfo];</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="使用-AFURLSessionTaskSwizzling-调剂方法"><a href="#使用-AFURLSessionTaskSwizzling-调剂方法" class="headerlink" title="使用 _AFURLSessionTaskSwizzling 调剂方法"></a>使用 _AFURLSessionTaskSwizzling 调剂方法</h4><hr>
+<p><code>_AFURLSessionTaskSwizzling</code>的唯一功能就是修改<code>NSURLSessionTask</code>的<code>resume</code>和<code>suspend</code>方法，使用下面的方法替换原有的实现</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)af_resume &#123;</div><div class="line">    <span class="built_in">NSAssert</span>([<span class="keyword">self</span> respondsToSelector:<span class="keyword">@selector</span>(state)], <span class="string">@"Does not respond to state"</span>);</div><div class="line">    <span class="built_in">NSURLSessionTaskState</span> state = [<span class="keyword">self</span> state];</div><div class="line">    [<span class="keyword">self</span> af_resume];</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (state != <span class="built_in">NSURLSessionTaskStateRunning</span>) &#123;</div><div class="line">        [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNSURLSessionTaskDidResumeNotification object:<span class="keyword">self</span>];</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)af_suspend &#123;</div><div class="line">    <span class="built_in">NSAssert</span>([<span class="keyword">self</span> respondsToSelector:<span class="keyword">@selector</span>(state)], <span class="string">@"Does not respond to state"</span>);</div><div class="line">    <span class="built_in">NSURLSessionTaskState</span> state = [<span class="keyword">self</span> state];</div><div class="line">    [<span class="keyword">self</span> af_suspend];</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (state != <span class="built_in">NSURLSessionTaskStateSuspended</span>) &#123;</div><div class="line">        [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNSURLSessionTaskDidSuspendNotification object:<span class="keyword">self</span>];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样做的目的是为了在方法<code>resume</code>或者<code>suspend</code>被调用时发送通知。</p>
+<p>具体方法调剂的过程是在<code>+load</code>方法中进行的</p>
+<p><code>load</code>方法只会在整个文件被引入时调用一次</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">+ (<span class="keyword">void</span>)load &#123;</div><div class="line">    <span class="keyword">if</span> (<span class="built_in">NSClassFromString</span>(<span class="string">@"NSURLSessionTask"</span>)) &#123;</div><div class="line">        <span class="built_in">NSURLSessionConfiguration</span> *configuration = [<span class="built_in">NSURLSessionConfiguration</span> ephemeralSessionConfiguration];</div><div class="line">        <span class="built_in">NSURLSession</span> * session = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:configuration];</div><div class="line"><span class="meta">#pragma GCC diagnostic push</span></div><div class="line"><span class="meta">#pragma GCC diagnostic ignored <span class="meta-string">"-Wnonnull"</span></span></div><div class="line">        <span class="built_in">NSURLSessionDataTask</span> *localDataTask = [session dataTaskWithURL:<span class="literal">nil</span>];</div><div class="line"><span class="meta">#pragma clang diagnostic pop</span></div><div class="line">        IMP originalAFResumeIMP = method_getImplementation(class_getInstanceMethod([<span class="keyword">self</span> <span class="keyword">class</span>], <span class="keyword">@selector</span>(af_resume)));</div><div class="line">        Class currentClass = [localDataTask <span class="keyword">class</span>];</div><div class="line"></div><div class="line">        <span class="keyword">while</span> (class_getInstanceMethod(currentClass, <span class="keyword">@selector</span>(resume))) &#123;</div><div class="line">            Class superClass = [currentClass superclass];</div><div class="line">            IMP classResumeIMP = method_getImplementation(class_getInstanceMethod(currentClass, <span class="keyword">@selector</span>(resume)));</div><div class="line">            IMP superclassResumeIMP = method_getImplementation(class_getInstanceMethod(superClass, <span class="keyword">@selector</span>(resume)));</div><div class="line">            <span class="keyword">if</span> (classResumeIMP != superclassResumeIMP &amp;&amp;</div><div class="line">                originalAFResumeIMP != classResumeIMP) &#123;</div><div class="line">                [<span class="keyword">self</span> swizzleResumeAndSuspendMethodForClass:currentClass];</div><div class="line">            &#125;</div><div class="line">            currentClass = [currentClass superclass];</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        [localDataTask cancel];</div><div class="line">        [session finishTasksAndInvalidate];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>首先用<code>NSClassFromString(@&quot;NSURLSessionTask&quot;)</code>判断当前部署的iOS版本是否含有类<code>NSURLSessionTask</code></li>
+<li>因为iOS7和iOS8上对于<code>NSURLSesionTask</code>的实现不同，所以会通过<code>- [NSURLSession dataTaskWithURL:]</code>方法返回一个<code>NSURLSessionTask</code>实例</li>
+<li>取得当前类<code>_AFURLSessionTaskSwizzling</code>中的实现<code>af_resume</code></li>
+<li>判断当前类<code>currentClass</code>有<code>resume</code>方法</li>
+<li>使用<code>swizzleResumeAndSuspendMethodForClass:</code>调剂该类的<code>resume</code>和<code>suspend</code>方法</li>
+<li>currentClass = [currentClass superclass]</li>
+</ol>
+<h4 id="引入AFSecurityPolicy保证请求的安全"><a href="#引入AFSecurityPolicy保证请求的安全" class="headerlink" title="引入AFSecurityPolicy保证请求的安全"></a>引入AFSecurityPolicy保证请求的安全</h4><hr>
+<p><code>AFSecurityPolicy</code>是<code>AFNetworking</code>用来保证HTTP请求安全的类，它被<code>AFURLSessionManager</code>持有，如果你在<code>AFURLSessionManager</code>的实现文件中搜索self.securityPolicy，你只会得到三条结果：</p>
+<ol>
+<li>初始化<code>self.securityPolicy = [AFSecurityPolicy defaultPolicy]</code></li>
+<li>收到连接层的验证请求时</li>
+<li>任务接收到验证请求时</li>
+</ol>
+<p>在API调用上，后两者都调用了<code>- [AFSecurityPolicy evaluateServerTrust:forDomain:]</code>方法来判断当前服务器是否被信任，我们会在接下来的文章中具体介绍这个方法的实现的作用。</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</div><div class="line">didReceiveChallenge:(<span class="built_in">NSURLAuthenticationChallenge</span> *)challenge</div><div class="line"> completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionAuthChallengeDisposition</span> disposition, <span class="built_in">NSURLCredential</span> *credential))completionHandler</div><div class="line">&#123;</div><div class="line">    <span class="built_in">NSURLSessionAuthChallengeDisposition</span> disposition = <span class="built_in">NSURLSessionAuthChallengePerformDefaultHandling</span>;</div><div class="line">    __block <span class="built_in">NSURLCredential</span> *credential = <span class="literal">nil</span>;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.sessionDidReceiveAuthenticationChallenge) &#123;</div><div class="line">        disposition = <span class="keyword">self</span>.sessionDidReceiveAuthenticationChallenge(session, challenge, &amp;credential);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">if</span> ([challenge.protectionSpace.authenticationMethod isEqualToString:<span class="built_in">NSURLAuthenticationMethodServerTrust</span>]) &#123;</div><div class="line">            <span class="keyword">if</span> ([<span class="keyword">self</span>.securityPolicy evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:challenge.protectionSpace.host]) &#123;</div><div class="line">                credential = [<span class="built_in">NSURLCredential</span> credentialForTrust:challenge.protectionSpace.serverTrust];</div><div class="line">                <span class="keyword">if</span> (credential) &#123;</div><div class="line">                    disposition = <span class="built_in">NSURLSessionAuthChallengeUseCredential</span>;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    disposition = <span class="built_in">NSURLSessionAuthChallengePerformDefaultHandling</span>;</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                disposition = <span class="built_in">NSURLSessionAuthChallengeCancelAuthenticationChallenge</span>;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            disposition = <span class="built_in">NSURLSessionAuthChallengePerformDefaultHandling</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (completionHandler) &#123;</div><div class="line">        completionHandler(disposition, credential);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果没有传入<code>taskDidReceiveAuthenticationChallenge</code> block，只有在上述方法返回YES时，才会获得认证凭证<code>credential</code>。</p>
+<h4 id="引入AFNetworkingReachabilityManager监控网络状态"><a href="#引入AFNetworkingReachabilityManager监控网络状态" class="headerlink" title="引入AFNetworkingReachabilityManager监控网络状态"></a>引入AFNetworkingReachabilityManager监控网络状态</h4><hr>
+<p>与<code>AFSecurityPolicy</code>相同，<code>AFURLSessionManager</code>对网络状态的监控是由<code>AFNetworkReachabilityManager</code>来负责的，它仅仅是持有一个<code>AFNetworkReachabilityManager</code>的对象。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><hr>
+<ul>
+<li><code>AFURLSessionManager</code>是对<code>NSURLSession</code>的封装</li>
+<li>它通过<code>- [AFURLSessionManager dataTaskWithRequest:completionHandler:]</code>等接口创建<code>NSURLSessionDataTask</code>的实例</li>
+<li>持有一个字典<code>mutableTaskDelegatesKeyedByTaskIdentifier</code>管理这些data task 实例</li>
+<li>引入<code>AFURLSessionManagerTaskDelegate</code>来对传入的<code>uploadProgressBlock</code>        <code>downloadProgressBlock</code> <code>completionHandler</code> 在合适的时间进行调用</li>
+<li>实现了全部的代理方法来提供block接口</li>
+<li>通过方法调剂在data task 状态改变时，发出通知</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;网络是APP开发中非常重要的一部分，除非这个APP是本地自玩，否则就离不开网络。在iOS开发中，我们一般都会去使用别人造好的轮子，其中最有名也最常用的非&lt;code&gt;AFNetworking&lt;/code&gt;莫属。这篇文章就深入探讨一下&lt;code&gt;AFNetworking&lt;/code&gt;是如何工作的。&lt;/p&gt;
+&lt;h3 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot; title=&quot;概述&quot;&gt;&lt;/a&gt;概述&lt;/h3&gt;&lt;hr&gt;
+&lt;p&gt;我们先来看看&lt;code&gt;AFNetworking&lt;/code&gt;整个架构体系：&lt;/p&gt;
+&lt;div align=center&gt;&lt;br&gt;&lt;img src=&quot;https://github.com/guiyongdong/Resource/blob/master/hexoImage/af2.png?raw=true&quot;/&gt;&lt;br&gt;&lt;/div&gt;
+
+&lt;p&gt;首先，我们有两个问题需要了解：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;如何使用NSURLSession发出HTTP请求&lt;/li&gt;
+&lt;li&gt;如何使用AFNetworking发出HTTP请求&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="源码分析" scheme="http://www.guiyongdong.com/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="源码分析" scheme="http://www.guiyongdong.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
   
   <entry>
     <title>SDWebImage源码分析</title>
@@ -3754,252 +3953,6 @@ animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;
     <summary type="html">
     
       &lt;p&gt;App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。&lt;br&gt;
-    
-    </summary>
-    
-      <category term="动画" scheme="http://www.guiyongdong.com/categories/%E5%8A%A8%E7%94%BB/"/>
-    
-    
-      <category term="动画" scheme="http://www.guiyongdong.com/tags/%E5%8A%A8%E7%94%BB/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>iOS动画篇之UIView动画</title>
-    <link href="http://www.guiyongdong.com/2016/09/21/iOS%E5%8A%A8%E7%94%BB%E7%AF%87-transfrom/"/>
-    <id>http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/</id>
-    <published>2016-09-21T03:38:37.000Z</published>
-    <updated>2016-09-25T01:23:28.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br><a id="more"></a></p>
-<h4 id="UIViewAnimationOptions参考"><a href="#UIViewAnimationOptions参考" class="headerlink" title="UIViewAnimationOptions参考"></a>UIViewAnimationOptions参考</h4><pre><code>
-1.基本类型
-UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。
-UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。
-UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。
-UIViewAnimationOptionRepeat：重复运行动画。
-UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。
-UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。
-UIViewAnimationOptionOverrideInheritedCurve：忽略嵌套动画速度设置。
-UIViewAnimationOptionAllowAnimatedContent：动画过程中重绘视图（注意仅仅适用于转场动画）。  
-UIViewAnimationOptionShowHideTransitionViews：视图切换时直接隐藏旧视图、显示新视图，而不是将旧视图从父视图移除（仅仅适用于转场动画）
-UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。
-
-2.动画速度控制（可从其中选择一个设置）
-UIViewAnimationOptionCurveEaseInOut：动画先缓慢，然后逐渐加速。
-UIViewAnimationOptionCurveEaseIn ：动画逐渐变慢。
-UIViewAnimationOptionCurveEaseOut：动画逐渐加速。
-UIViewAnimationOptionCurveLinear ：动画匀速执行，默认值。
-
-3.转场类型（仅适用于转场动画设置，可以从中选择一个进行设置，基本动画、关键帧动画不需要设置）
-UIViewAnimationOptionTransitionNone：没有转场动画效果。
-UIViewAnimationOptionTransitionFlipFromLeft ：从左侧翻转效果。
-UIViewAnimationOptionTransitionFlipFromRight：从右侧翻转效果。
-UIViewAnimationOptionTransitionCurlUp：向后翻页的动画过渡效果。    
-UIViewAnimationOptionTransitionCurlDown ：向前翻页的动画过渡效果。    
-UIViewAnimationOptionTransitionCrossDissolve：旧视图溶解消失显示下一个新视图的效果。    
-UIViewAnimationOptionTransitionFlipFromTop ：从上方翻转效果。    
-UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。
-</code></pre>
-
-
-<h3 id="1-基本动画"><a href="#1-基本动画" class="headerlink" title="1. 基本动画"></a>1. 基本动画</h3><p><code>+ (void)animateWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion</code></p>
-<ul>
-<li><strong>参数详情:</strong></li>
-</ul>
-<pre><code>
-duration   :   持续时间  
-delay      :   延迟执行  
-options    :   动画选项(往复、循环等)  
-animations :   动画block  
-completion :   完成后的block 
-</code></pre>
-
-<ul>
-<li><strong>可实现动画的属性</strong></li>
-</ul>
-<pre><code>
-坐标尺寸类: bounds、frame、center  
-视图显示类: backgroundColor、alpha、hidden  
-形态变化类: transform
-</code></pre>
-
-<h3 id="2-弹簧动画"><a href="#2-弹簧动画" class="headerlink" title="2.弹簧动画"></a>2.弹簧动画</h3><p><code>+ (void)animateWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay usingSpringWithDamping:(CGFloat)dampingRatio initialSpringVelocity:(CGFloat)velocity options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion</code></p>
-<ul>
-<li><strong>参数详情:</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">usingSpringWithDamping   :   0.0 ~ 1.0 阻尼比例，数值越小「弹簧」的振动效果越明显</div><div class="line">initialSpringVelocity    :   初始的速度，数值越大一开始移动越快</div></pre></td></tr></table></figure>
-<h3 id="3-过渡动画"><a href="#3-过渡动画" class="headerlink" title="3.过渡动画"></a>3.过渡动画</h3><p><code>+ (void)transitionWithView:(UIView *)view duration:(NSTimeInterval)duration options:(UIViewAnimationOptions)options animations:(void (^ __nullable)(void))animations completion:(void (^ __nullable)(BOOL finished))completion</code></p>
-<ul>
-<li><strong>参数详情:</strong></li>
-</ul>
-<pre><code>
-view       :   需要进行转场动画的视图
-options    :   转场动画的类型
-</code></pre>
-
-<p><code>+ (void)transitionFromView:(UIView *)fromView toView:(UIView *)toView duration:(NSTimeInterval)duration options:(UIViewAnimationOptions)options completion:(void (^ __nullable)(BOOL finished))completion</code></p>
-<ul>
-<li><strong>参数详情:</strong></li>
-</ul>
-<pre><code>
-方法调用完毕后，相当于执行了下面两句代码：
-// 添加toView到父视图
-[fromView.superview addSubview:toView];
-// 把fromView从父视图中移除
-[fromView removeFromSuperview];
-</code></pre>
-
-<h3 id="4-keyframe动画"><a href="#4-keyframe动画" class="headerlink" title="4. keyframe动画"></a>4. keyframe动画</h3><p><code>+ (void)animateKeyframesWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewKeyframeAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion</code></p>
-<p><code>+ (void)addKeyframeWithRelativeStartTime:(double)frameStartTime relativeDuration:(double)frameDuration animations:(void (^)(void))animations</code></p>
-<ul>
-<li><strong>参数详情:</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">RelativeStartTime : 关键帧动画开始时间的比例值</div><div class="line">RelativeDuration  : 关键帧动画持续实践的比例值</div></pre></td></tr></table></figure>
-<ul>
-<li><strong>用法示例:</strong></li>
-</ul>
-<pre><code>
-[UIView animateKeyframesWithDuration:8 delay:0 options:UIViewKeyframeAnimationOptionCalculationModeLinear animations:^{
-        [UIView addKeyframeWithRelativeStartTime:0 relativeDuration:0.25 animations:^{
-            self.imgV.center = (CGPoint){center.x + 200 ,center.y + 150};
-        }];
-        [UIView addKeyframeWithRelativeStartTime:0.25 relativeDuration:0.25 animations:^{
-            self.imgV.center = (CGPoint){center.x ,center.y + 300};
-        }];
-        [UIView addKeyframeWithRelativeStartTime:0.5 relativeDuration:0.25 animations:^{
-            self.imgV.center = (CGPoint){center.x + 200,center.y + 450};
-        }];
-        [UIView addKeyframeWithRelativeStartTime:0.75 relativeDuration:0.25 animations:^{
-            self.imgV.center = (CGPoint){center.x + 0,center.y + 600 };
-        }];
-    } completion:nil];
-</code></pre>
-
-<h3 id="5-transform变换"><a href="#5-transform变换" class="headerlink" title="5. transform变换"></a>5. transform变换</h3><p><code>CGAffineTransform</code></p>
-<ul>
-<li><strong>变换原理</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">struct CGAffineTransform &#123;</div><div class="line">   CGFloat a;</div><div class="line">   CGFloat b;</div><div class="line">   CGFloat c;</div><div class="line">   CGFloat d;</div><div class="line">   CGFloat tx;</div><div class="line">   CGFloat ty;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
-<p>结构体矩阵图为：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_26.gif?raw=true" alt="矩阵图"><br></div>
-
-<p>因为最后一列总是是(0,0,1)，所以有用的信息就是前面两列<br>对一个view进行仿射变化就相当于对view上的每个点做一个乘法<br>结果就是：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_27.gif?raw=true" alt="映射变换"><br></div>
-
-<p><strong>相当于：</strong><br>(x, y, 1 ) –&gt; (ax + cy + tx, bx + dy + ty, 1) </p>
-<p>如果不看c和b的话<br>a表示x水平方向的缩放，tx表示x水平方向的偏移<br>d表示y垂直方向的缩放，ty表示y垂直方向的偏移<br>如果b和c不为零的话，那么视图肯定发生了旋转</p>
-<p><strong>常量</strong><br>CGAffineTransformIdentity<br>CGAffineTransform<br>CGAffineTransformIdentity;<br>这个就是没有变化的最初的样子 </p>
-<ul>
-<li><strong>常用函数</strong></li>
-</ul>
-<pre><code>
-/// 用来连接两个变换效果并返回。返回的t = t1 * t2
-CGAffineTransformConcat(CGAffineTransform t1, CGAffineTransform t2)
-
-/// 矩阵初始值。[ 1 0 0 1 0 0 ]
-CGAffineTransformIdentity
-
-/// 自定义矩阵变换，需要掌握矩阵变换的知识才知道怎么用。参照(x, y, 1 ) --> (ax + cy + tx, bx + dy + ty, 1)  
-CGAffineTransformMake(CGFloat a, CGFloat b, CGFloat c, CGFloat d, CGFloat tx, CGFloat ty)
-
-/// 旋转视图。传入参数为 角度 * (M_PI / 180)。等同于 CGAffineTransformRotate(self.transform, angle)
-CGAffineTransformMakeRotation(CGFloat angle)
-CGAffineTransformRotate(CGAffineTransform t, CGFloat angle)
-
-/// 缩放视图。等同于CGAffineTransformScale(self.transform, sx, sy)
-CGAffineTransformMakeScale(CGFloat sx, CGFloat sy)
-CGAffineTransformScale(CGAffineTransform t, CGFloat sx, CGFloat sy)
-
-/// 缩放视图。等同于CGAffineTransformTranslate(self.transform, tx, ty)
-CGAffineTransformMakeTranslation(CGFloat tx, CGFloat ty)
-CGAffineTransformTranslate(CGAffineTransform t, CGFloat tx, CGFloat ty)
-</code></pre>
-
-<ul>
-<li><strong>常用函数</strong></li>
-</ul>
-<pre><code>
-- (void)viewDidAppear:(BOOL)animated {
-    CGFloat offset = self.label1.frame.size.height * 0.5;
-
-    self.label1.transform = CGAffineTransformConcat(
-                                                    CGAffineTransformMakeScale(1, 0),
-                                                    CGAffineTransformMakeTranslation(0, -offset));
-
-    self.label1.alpha = 0;
-    [UIView animateWithDuration:3.0 animations:^{
-        self.label1.transform = CGAffineTransformIdentity;
-        self.label1.alpha = 1;
-
-        self.label2.transform = CGAffineTransformConcat(
-                                                        CGAffineTransformMakeScale(1, 0.1),
-                                                        CGAffineTransformMakeTranslation(0, offset));
-        self.label2.alpha = 0;
-    }];
-}
-</code></pre>
-
-
-<h3 id="6-UIView动画（首尾方式）"><a href="#6-UIView动画（首尾方式）" class="headerlink" title="6.UIView动画（首尾方式）"></a>6.UIView动画（首尾方式）</h3><p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持<br>执行动画所需要的工作由UIView类自动完成，但仍要在希望执行动画时通知视图，为此需要将改变属性的代码放在[UIView beginAnimations:nil context:nil]和[UIView commitAnimations]之间</p>
-<p>常见方法解析:<br>　　<strong>+ (void)setAnimationDelegate:(id)delegate</strong>     设置动画代理对象，当动画开始或者结束时会发消息给代理对象<br>　　<strong>+ (void)setAnimationWillStartSelector:(SEL)selector</strong>   当动画即将开始时，执行delegate对象的selector，并且把beginAnimations:context:中传入的参数传进selector<br>　　<strong>+ (void)setAnimationDidStopSelector:(SEL)selector</strong>  当动画结束时，执行delegate对象的selector，并且把beginAnimations:context:中传入的参数传进selector<br>　　<strong>+ (void)setAnimationDuration:(NSTimeInterval)duration</strong>   动画的持续时间，秒为单位<br>　　<strong>+ (void)setAnimationDelay:(NSTimeInterval)delay</strong>  动画延迟delay秒后再开始<br>　　<strong>+ (void)setAnimationStartDate:(NSDate *)startDate</strong>   动画的开始时间，默认为now<br>　　<strong>+ (void)setAnimationCurve:(UIViewAnimationCurve)curve</strong>  动画的节奏控制<br>　　<strong>+ (void)setAnimationRepeatCount:(float)repeatCount</strong>  动画的重复次数<br>　　<strong>+ (void)setAnimationRepeatAutoreverses:(BOOL)repeatAutoreverses</strong>  如果设置为YES,代表动画每次重复执行的效果会跟上一次相反<br>　　<strong>+ (void)setAnimationTransition:(UIViewAnimationTransition)transition forView:(UIView *)view cache:(BOOL)cache</strong>  设置视图view的过渡效果, transition指定过渡类型, cache设置YES代表使用视图缓存，性能较好</p>
-<p><strong>代码示例: </strong></p>
-<pre><code>
-@interface ViewController ()
-@property (weak, nonatomic) IBOutlet UIView *customView;
-
-
-@end
-
-@implementation YYViewController
-
-- (void)viewDidLoad
-{
-     [super viewDidLoad];
-
-}
-
--(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-     //打印动画块的位置
-     NSLog(@"动画执行之前的位置：%@",NSStringFromCGPoint(self.customView.center));
-
-     //首尾式动画
-     [UIView beginAnimations:nil context:nil];
-     //执行动画
-     //设置动画执行时间
-     [UIView setAnimationDuration:2.0];
-     //设置代理
-     [UIView setAnimationDelegate:self];
-     //设置动画执行完毕调用的事件
-     [UIView setAnimationDidStopSelector:@selector(didStopAnimation)];
-     self.customView.center=CGPointMake(200, 300);
-     [UIView commitAnimations];
-
-}
-
--(void)didStopAnimation
-{
-     NSLog(@"动画执行完毕");
-     //打印动画块的位置
-     NSLog(@"动画执行之后的位置：%@",NSStringFromCGPoint(self.customView.center));
-}
-@end
-</code></pre>
-
-<p><strong>说明:</strong><br>　　使用UIView和CALayer都能实现动画效果，但是在真实的开发中，一般还是主要使用UIView封装的动画，而很少使用CALayer的动画。</p>
-<p>CALayer核心动画与UIView动画的区别：<br>　　<strong>UIView封装的动画执行完毕之后不会反弹。即如果是通过CALayer核心动画改变layer的位置状态，表面上看虽然已经改变了，但是实际上它的位置是没有改变的。</strong></p>
-<h3 id="7-补充"><a href="#7-补充" class="headerlink" title="7.补充"></a>7.补充</h3><h5 id="UIImageView的帧动画"><a href="#UIImageView的帧动画" class="headerlink" title="UIImageView的帧动画"></a>UIImageView的帧动画</h5><p>UIImageView可以让一系列的图片在特定的时间内按顺序显示</p>
-<p>相关属性解析:<br>　　<strong>animationImages</strong>：要显示的图片(一个装着UIImage的NSArray)<br>　　<strong>animationDuration</strong>：完整地显示一次animationImages中的所有图片所需的时间<br>　　<strong>animationRepeatCount</strong>：动画的执行次数(默认为0，代表无限循环)</p>
-<p>相关方法解析:<br>　　<strong>- (void)startAnimating</strong>; 开始动画<br>　　<strong>- (void)stopAnimating</strong>;  停止动画<br>　　<strong>- (BOOL)isAnimating</strong>;  是否正在运行动画</p>
-<h5 id="UIActivityIndicatorView"><a href="#UIActivityIndicatorView" class="headerlink" title="UIActivityIndicatorView"></a>UIActivityIndicatorView</h5><p>是一个旋转进度轮，可以用来告知用户有一个操作正在进行中，一般用initWithActivityIndicatorStyle初始化</p>
-<p>相关方法解析:<br>　　<strong>- (void)startAnimating</strong>; 开始动画<br>　　<strong>- (void)stopAnimating</strong>;  停止动画<br>　　<strong>- (BOOL)isAnimating</strong>;  是否正在运行动画</p>
-<p>UIActivityIndicatorViewStyle有3个值可供选择：<br>　　<strong>UIActivityIndicatorViewStyleWhiteLarge</strong>   //大型白色指示器<br>　　<strong>UIActivityIndicatorViewStyleWhite</strong>      //标准尺寸白色指示器<br>　　<strong>UIActivityIndicatorViewStyleGray</strong>    //灰色指示器，用于白色背景</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。&lt;br&gt;
     
     </summary>
     

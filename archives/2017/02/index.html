@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>标签: ReactiveCocoa - 贵大头的博客</title>
+    <title>归档: 2017/2 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -19,7 +19,7 @@
     <meta name="description" content="iOS开发者">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="贵大头的博客">
-<meta property="og:url" content="http://www.guiyongdong.com/tags/ReactiveCocoa/index.html">
+<meta property="og:url" content="http://www.guiyongdong.com/archives/2017/02/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="iOS开发者">
 <meta name="twitter:card" content="summary">
@@ -219,21 +219,21 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/09/06/关于RAC的一些资料/">
-                            关于RAC的一些资料
+                        <a class="link-unstyled" href="/2017/02/15/AFNetworking源码解析/">
+                            AFNetworking源码解析
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T14:47:26+08:00">
+    <time itemprop="datePublished" datetime="2017-02-15T14:15:04+08:00">
 	
-		    9月 06, 2016
+		    2月 15, 2017
     	
     </time>
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
+    <a class="category-link" href="/categories/源码分析/">源码分析</a>
 
 
     
@@ -242,138 +242,18 @@
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p>
-                    
-                        <a href="/2016/09/06/关于RAC的一些资料/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/06/ReactiveCocoa和RXSwift速查表/">
-                            ReactiveCocoa和RXSwift速查表
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T09:55:48+08:00">
-	
-		    9月 06, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
+                    <p>网络是APP开发中非常重要的一部分，除非这个APP是本地自玩，否则就离不开网络。在iOS开发中，我们一般都会去使用别人造好的轮子，其中最有名也最常用的非<code>AFNetworking</code>莫属。这篇文章就深入探讨一下<code>AFNetworking</code>是如何工作的。</p>
+<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><hr>
+<p>我们先来看看<code>AFNetworking</code>整个架构体系：</p>
+<div align=center><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/af2.png?raw=true"/><br></div>
 
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p>
+<p>首先，我们有两个问题需要了解：</p>
+<ul>
+<li>如何使用NSURLSession发出HTTP请求</li>
+<li>如何使用AFNetworking发出HTTP请求</li>
+</ul>
                     
-                        <a href="/2016/09/06/ReactiveCocoa和RXSwift速查表/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/08/12/深入ReactiveCocoa/">
-                            深入ReactiveCocoa
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-08-12T17:37:47+08:00">
-	
-		    8月 12, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p>
-                    
-                        <a href="/2016/08/12/深入ReactiveCocoa/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/08/11/初识ReactiveCocoa/">
-                            初识ReactiveCocoa
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-08-11T17:44:58+08:00">
-	
-		    8月 11, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p>
-                    
-                        <a href="/2016/08/11/初识ReactiveCocoa/" class="postShorten-excerpt_link link">
+                        <a href="/2017/02/15/AFNetworking源码解析/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         
@@ -393,6 +273,7 @@
 </div>
 
 </section>
+
 
 
                 <footer id="footer" class="main-content-wrap">
