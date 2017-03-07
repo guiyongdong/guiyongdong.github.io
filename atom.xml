@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2017-03-01T02:52:14.000Z</updated>
+  <updated>2017-03-07T03:13:34.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,62 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>转场动画详解</title>
+    <link href="http://www.guiyongdong.com/2017/03/06/%E8%BD%AC%E5%9C%BA%E5%8A%A8%E7%94%BB%E8%AF%A6%E8%A7%A3/"/>
+    <id>http://www.guiyongdong.com/2017/03/06/转场动画详解/</id>
+    <published>2017-03-06T02:02:31.000Z</published>
+    <updated>2017-03-07T03:13:34.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>iOS开发中，页面之间的跳转无外乎由<code>UINavigationController</code>管理的<code>push</code>或者<code>pop</code>操作、以及由<code>UIViewController</code>管理的<code>present</code>和<code>dismiss</code>操作，无论何种操作，iOS原生系统都为我们提供了页面之间的基础跳转动画。但是往往在开发中，由于各种功能需求，iOS原生系统提供的跳转动画并不能满足我们的需求，好在iOS早就给我们提供了一套自定义转场动画的解决方案，这篇文章就来详细了解一下转场动画。在了解这篇文章之前，先看看iOS提供的整个转场框架</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/transition.png?raw=true"><br></div>
+
+<a id="more"></a>
+<h2 id="present-dismiss"><a href="#present-dismiss" class="headerlink" title="present/dismiss"></a>present/dismiss</h2><p>首先，我们先来了解一下<code>模态跳转</code>。开发中，假如在A界面需要模态跳转到B界面，通常会这么写：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span>&lt;<span class="built_in">UITouch</span> *&gt; *)touches withEvent:(<span class="built_in">UIEvent</span> *)event &#123;</div><div class="line">    PresentBViewController *bVC = [[PresentBViewController alloc] init];</div><div class="line">    [<span class="keyword">self</span> presentViewController:bVC animated:<span class="literal">YES</span> completion:<span class="literal">nil</span>];</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>模态消失当前界面则是这么写：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span>&lt;<span class="built_in">UITouch</span> *&gt; *)touches withEvent:(<span class="built_in">UIEvent</span> *)event &#123;</div><div class="line">    [<span class="keyword">self</span> dismissViewControllerAnimated:<span class="literal">YES</span> completion:<span class="literal">nil</span>];</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="UIViewControllerTransitioningDelegate"><a href="#UIViewControllerTransitioningDelegate" class="headerlink" title="UIViewControllerTransitioningDelegate"></a>UIViewControllerTransitioningDelegate</h4><p>使用模态跳转时，系统已经为我们写好的跳转的动画，而要想自定义模态跳转动画，则需要一个实现<code>UIViewControllerTransitioningDelegate</code>协议、并实现协议部分方法的对象。在<code>UIViewController.h</code>头文件中，我们可以发现如下定义：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">UIViewControllerTransitioningDelegate</span>;</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">UIViewController</span>(<span class="title">UIViewControllerTransitioning</span>)</span></div><div class="line"></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>, <span class="keyword">weak</span>) <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerTransitioningDelegate</span>&gt; transitioningDelegate <span class="built_in">NS_AVAILABLE_IOS</span>(<span class="number">7</span>_0);</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure></p>
+<p>如此，我们则需要定义一个对象，并实现<code>UIViewControllerTransitioningDelegate</code>协议方法，赋值给将要模态跳转的控制器(<code>PresentBViewController</code>)，如下：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">PresentAViewController</span> ()</span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) PresentManager *presentManager;</div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">PresentAViewController</span></span></div><div class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</div><div class="line">    [<span class="keyword">super</span> viewDidLoad];</div><div class="line">    <span class="keyword">self</span>.view.backgroundColor = [<span class="built_in">UIColor</span> blueColor];</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span>&lt;<span class="built_in">UITouch</span> *&gt; *)touches withEvent:(<span class="built_in">UIEvent</span> *)event &#123;</div><div class="line">    PresentBViewController *bVC = [[PresentBViewController alloc] init];</div><div class="line">    <span class="keyword">self</span>.presentManager = [[PresentManager alloc] init];</div><div class="line">    bVC.transitioningDelegate = <span class="keyword">self</span>.presentManager;</div><div class="line">    [<span class="keyword">self</span> presentViewController:bVC animated:<span class="literal">YES</span> completion:<span class="literal">nil</span>];</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure></p>
+<p>我们先来看看<code>UIViewControllerTransitioningDelegate</code>有哪些协议方法:<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//当使用模态弹出时 会调用此方法 返回一个实现 UIViewControllerAnimatedTransitioning 协议的对象 </span></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)animationControllerForPresentedController:(<span class="built_in">UIViewController</span> *)presented</div><div class="line">                                                                            presentingController:(<span class="built_in">UIViewController</span> *)presenting</div><div class="line">                                                                                sourceController:(<span class="built_in">UIViewController</span> *)source;</div><div class="line"><span class="comment">//当使用模态消失时 会调用此方法 返回一个实现 UIViewControllerAnimatedTransitioning 协议的对象</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)animationControllerForDismissedController:(<span class="built_in">UIViewController</span> *)dismissed;</div><div class="line"><span class="comment">// 当使用模态弹出时 会调用此方法 返回一个实现 UIViewControllerInteractiveTransitioning协议的对象</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerInteractiveTransitioning</span>&gt;)interactionControllerForPresentation:(<span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)animator;</div><div class="line"><span class="comment">// 当使用模态消失时 会调用此方法 返回一个实现 UIViewControllerInteractiveTransitioning协议的对象</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerInteractiveTransitioning</span>&gt;)interactionControllerForDismissal:(<span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)animator;</div><div class="line"></div><div class="line">- (<span class="keyword">nullable</span> <span class="built_in">UIPresentationController</span> *)presentationControllerForPresentedViewController:(<span class="built_in">UIViewController</span> *)presented</div><div class="line">                                                               presentingViewController:(<span class="keyword">nullable</span> <span class="built_in">UIViewController</span> *)presenting</div><div class="line">                                                                   sourceViewController:(<span class="built_in">UIViewController</span> *)source;</div></pre></td></tr></table></figure></p>
+<p>先来看这两个代理方法：<code>animationControllerForPresentedController:presentingController:sourceController:(UIViewController *)source</code>和<code>animationControllerForDismissedController:(UIViewController *)dismissed</code>他们都返回了一个实现<code>UIViewControllerAnimatedTransitioning</code>协议的对象。<code>UIViewControllerAnimatedTransitioning</code>协议的方法就是我们实现动画的地方。关于此协议我们等会再说。</p>
+<p>再来看如下两个方法:<br><code>interactionControllerForPresentation:(id &lt;UIViewControllerAnimatedTransitioning&gt;)animator</code>和<code>interactionControllerForDismissal:(id &lt;UIViewControllerAnimatedTransitioning&gt;)animator</code>，他们都返回了一个实现<code>UIViewControllerInteractiveTransitioning</code>协议的对象，而此协议主要用于交互式转场动画。关于此协议我们等会再说。</p>
+<h2 id="push-pop"><a href="#push-pop" class="headerlink" title="push/pop"></a>push/pop</h2><p>在使用<code>UINavigationController</code>进行页面之间的导航管理时，系统也是默认为我们实现了<code>push</code>和<code>pop</code>动画的，而如果想自定义<code>push/pop</code>动画，则需要一个实现<code>UINavigationControllerDelegate</code>协议的对象。如下：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">PushAViewController</span> ()</span></div><div class="line"></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) PushManager *pushManager;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">PushAViewController</span></span></div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</div><div class="line">    [<span class="keyword">super</span> viewDidLoad];</div><div class="line">    <span class="keyword">self</span>.view.backgroundColor = [<span class="built_in">UIColor</span> redColor];</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span>&lt;<span class="built_in">UITouch</span> *&gt; *)touches withEvent:(<span class="built_in">UIEvent</span> *)event &#123;</div><div class="line">    PushBViewController *bVC = [[PushBViewController alloc] init];</div><div class="line">    <span class="keyword">self</span>.pushManager = [[PushManager alloc] init];</div><div class="line">    bVC.navigationController.delegate = <span class="keyword">self</span>.pushManager;</div><div class="line">    [<span class="keyword">self</span>.navigationController pushViewController:bVC animated:<span class="literal">YES</span>];</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure></p>
+<h4 id="UINavigationControllerDelegate"><a href="#UINavigationControllerDelegate" class="headerlink" title="UINavigationControllerDelegate"></a>UINavigationControllerDelegate</h4><p>我们再来看看<code>UINavigationControllerDelegate</code>协议的相关方法：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//返回真正执行交互式动画的对象</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerInteractiveTransitioning</span>&gt;)navigationController:(<span class="built_in">UINavigationController</span> *)navigationController</div><div class="line">                                   interactionControllerForAnimationController:(<span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;) animationController;</div><div class="line"></div><div class="line"><span class="comment">//返回由谁去执行动画的对象</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)navigationController:(<span class="built_in">UINavigationController</span> *)navigationController</div><div class="line">                                            animationControllerForOperation:(<span class="built_in">UINavigationControllerOperation</span>)operation</div><div class="line">                                                         fromViewController:(<span class="built_in">UIViewController</span> *)fromVC</div><div class="line">                                                           toViewController:(<span class="built_in">UIViewController</span> *)toVC;</div></pre></td></tr></table></figure></p>
+<p>我们会发现 此两种方法分别返回了实现了<code>UIViewControllerInteractiveTransitioning</code>协议的对象和实现了<code>UIViewControllerAnimatedTransitioning</code>协议的对象。我们不难发现，无论是<code>push/pop</code>还是<code>present/dismiss</code>真正的执行动画都是一个实现了<code>UIViewControllerAnimatedTransitioning</code>协议的对象，而真正执行交互式动画的都是一个实现了<code>UIViewControllerInteractiveTransitioning</code>协议的对象。既然如此，那我们就来研究一下<code>UIViewControllerAnimatedTransitioning</code>和<code>UIViewControllerInteractiveTransitioning</code>协议</p>
+<h2 id="UIViewControllerAnimatedTransitioning"><a href="#UIViewControllerAnimatedTransitioning" class="headerlink" title="UIViewControllerAnimatedTransitioning"></a>UIViewControllerAnimatedTransitioning</h2><p>先来看此协议的方法:<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//动画执行的时间</span></div><div class="line">- (<span class="built_in">NSTimeInterval</span>)transitionDuration:(<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerContextTransitioning</span>&gt;)transitionContext;</div><div class="line"><span class="comment">//执行动画</span></div><div class="line">- (<span class="keyword">void</span>)animateTransition:(<span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerContextTransitioning</span>&gt;)transitionContext;</div></pre></td></tr></table></figure></p>
+<p>此协议的两个方法必须实现。<code>transitionDuration:</code>方法返回动画执行的时间。通常情况下，系统执行<code>present/dismiss</code>和<code>push/pop</code>动画的时间为0.5秒左右。<code>animateTransition</code>方法就是真正执行动画的地方。这个方法系统会给我们传过来一个实现了<code>UIViewControllerContextTransitioning</code>协议的对象（转场上下文），在执行动画之前，我们先来了解一下<code>UIViewControllerContextTransitioning</code>协议。</p>
+<p>先来看<code>UIViewControllerContextTransitioning</code>协议的定义<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//上下文的view 对做动画的view需要添加到此上下文的view中</span></div><div class="line">- (<span class="built_in">UIView</span> *)containerView;</div><div class="line"><span class="comment">//是否动画正在进行</span></div><div class="line">- (<span class="built_in">BOOL</span>)isAnimated;</div><div class="line"><span class="comment">//是否是交互式动画</span></div><div class="line">- (<span class="built_in">BOOL</span>)isInteractive; </div><div class="line"><span class="comment">//是否取消</span></div><div class="line">- (<span class="built_in">BOOL</span>)transitionWasCancelled;</div><div class="line"><span class="comment">//获取当前模态跳转的方式</span></div><div class="line">- (<span class="built_in">UIModalPresentationStyle</span>)presentationStyle;</div><div class="line"><span class="comment">//根据系数来更新交互式动画 0~1</span></div><div class="line">- (<span class="keyword">void</span>)updateInteractiveTransition:(<span class="built_in">CGFloat</span>)percentComplete;</div><div class="line"><span class="comment">//完成交互式动画</span></div><div class="line">- (<span class="keyword">void</span>)finishInteractiveTransition;</div><div class="line"><span class="comment">//取消交互式动画</span></div><div class="line">- (<span class="keyword">void</span>)cancelInteractiveTransition;</div><div class="line"><span class="comment">//iOS10新加入的方法 暂停交互式动画</span></div><div class="line">- (<span class="keyword">void</span>)pauseInteractiveTransition <span class="built_in">NS_AVAILABLE_IOS</span>(<span class="number">10</span>_0);</div><div class="line"><span class="comment">//当动画结束时 要调用此方法告诉上下文</span></div><div class="line">- (<span class="keyword">void</span>)completeTransition:(<span class="built_in">BOOL</span>)didComplete;</div><div class="line"><span class="comment">//获取当前上下文的控制器，使用UITransitionContextFromViewControllerKey获取fromVC 使用UITransitionContextToViewControllerKey获取toVC</span></div><div class="line">- (<span class="keyword">nullable</span> __kindof <span class="built_in">UIViewController</span> *)viewControllerForKey:(<span class="built_in">UITransitionContextViewControllerKey</span>)key;</div><div class="line"><span class="comment">//iOS8之后的方法 返回此上下文控制器的view ，通常情况下，尽可能不直接使用controller的view属性，因为有时候我们直接使用controller的view并不是我们真正要做动画的view。我们应该直接使用UITransitionContextFromViewKey来获取fromView，使用UITransitionContextToViewKey来获取toView。</span></div><div class="line">- (<span class="keyword">nullable</span> __kindof <span class="built_in">UIView</span> *)viewForKey:(<span class="built_in">UITransitionContextViewKey</span>)key <span class="built_in">NS_AVAILABLE_IOS</span>(<span class="number">8</span>_0);</div><div class="line"><span class="comment">//目标view的transform</span></div><div class="line">- (<span class="built_in">CGAffineTransform</span>)targetTransform <span class="built_in">NS_AVAILABLE_IOS</span>(<span class="number">8</span>_0);</div><div class="line"><span class="comment">//返回初始位置的frame 即fromView的frame</span></div><div class="line">- (<span class="built_in">CGRect</span>)initialFrameForViewController:(<span class="built_in">UIViewController</span> *)vc;</div><div class="line"><span class="comment">//返回动画结束位置的frame 即toView得frame</span></div><div class="line">- (<span class="built_in">CGRect</span>)finalFrameForViewController:(<span class="built_in">UIViewController</span> *)vc;</div></pre></td></tr></table></figure></p>
+<p>了解完<code>UIViewControllerContextTransitioning</code>协议后，我们就可以实现自定义转场动画了。</p>
+<p>第一节中，我们定义了类<code>PresentManager</code>并实现了<code>UIViewControllerAnimatedTransitioning</code>和<code>UIViewControllerTransitioningDelegate</code>,我们先来看<code>UIViewControllerTransitioningDelegate</code>协议的具体实现</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)animationControllerForPresentedController:(<span class="built_in">UIViewController</span> *)presented</div><div class="line">                                                                            presentingController:(<span class="built_in">UIViewController</span> *)presenting</div><div class="line">                                                                                sourceController:(<span class="built_in">UIViewController</span> *)source &#123;</div><div class="line">    <span class="comment">//标记此动画为Present 并使用自身为动画的最终执行者</span></div><div class="line">    <span class="keyword">self</span>.transitionStyle = TransitionStylePresent;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)animationControllerForDismissedController:(<span class="built_in">UIViewController</span> *)dismissed &#123;</div><div class="line">    <span class="comment">//标记此动画为Dismiss 并使用自身为动画的最终执行者</span></div><div class="line">    <span class="keyword">self</span>.transitionStyle = TransitionStyleDismiss;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>再来看看<code>UIViewControllerAnimatedTransitioning</code>协议的具体实现：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="built_in">NSTimeInterval</span>)transitionDuration:(<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerContextTransitioning</span>&gt;)transitionContext &#123;</div><div class="line">	<span class="comment">//返回动画的执行时间</span></div><div class="line">    <span class="keyword">return</span> <span class="number">1.0</span>;</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)animateTransition:(<span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerContextTransitioning</span>&gt;)transitionContext &#123;</div><div class="line">    <span class="comment">//1. 首先获取上下文的view</span></div><div class="line">    <span class="built_in">UIView</span>  *containerView = [transitionContext containerView];</div><div class="line">    <span class="keyword">if</span> (!containerView) &#123;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.transitionStyle == TransitionStylePresent) &#123;</div><div class="line">        <span class="comment">//present 动画</span></div><div class="line">        </div><div class="line">        <span class="comment">//2. 获取 fromViewController 和 toViewController</span></div><div class="line">        <span class="built_in">UIViewController</span> *fromViewController = [transitionContext viewControllerForKey:<span class="built_in">UITransitionContextFromViewControllerKey</span>];</div><div class="line">        <span class="built_in">UIViewController</span> *toViewController = [transitionContext viewControllerForKey:<span class="built_in">UITransitionContextToViewControllerKey</span>];</div><div class="line">        </div><div class="line">        <span class="comment">//3. 获取fromView和toView</span></div><div class="line">        <span class="built_in">UIView</span> *fromView, *toView;</div><div class="line">        <span class="keyword">if</span> ([transitionContext respondsToSelector:<span class="keyword">@selector</span>(viewForKey:)]) &#123;</div><div class="line">            fromView = [transitionContext viewForKey:<span class="built_in">UITransitionContextFromViewKey</span>];</div><div class="line">            toView = [transitionContext viewForKey:<span class="built_in">UITransitionContextToViewKey</span>];</div><div class="line">        &#125;<span class="keyword">else</span> &#123;</div><div class="line">            fromView = fromViewController.view;</div><div class="line">            toView = toViewController.view;</div><div class="line">        &#125;</div><div class="line">        fromView.frame = [transitionContext initialFrameForViewController:fromViewController];</div><div class="line">        toView.frame = [transitionContext finalFrameForViewController:toViewController];</div><div class="line">        </div><div class="line">        <span class="comment">//4. 设置toView动画初始frame 这里 模仿一下从屏幕左边模态跳转</span></div><div class="line">        toView.frame = <span class="built_in">CGRectMake</span>(-toView.frame.size.width, toView.frame.origin.y, toView.frame.size.width, toView.frame.size.height);</div><div class="line">        </div><div class="line">        <span class="comment">//5. 添加到上下文的view上</span></div><div class="line">        [containerView addSubview:fromView];</div><div class="line">        [containerView addSubview:toView];</div><div class="line">        </div><div class="line">        <span class="comment">//6. 执行动画</span></div><div class="line">        [<span class="built_in">UIView</span> animateWithDuration:[<span class="keyword">self</span> transitionDuration:transitionContext] animations:^&#123;</div><div class="line">            toView.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, toView.frame.origin.y, toView.frame.size.width, toView.frame.size.height);</div><div class="line">        &#125; completion:^(<span class="built_in">BOOL</span> finished) &#123;</div><div class="line">            <span class="comment">//7. 一定要告诉上下文 动画执行结束</span></div><div class="line">            [transitionContext completeTransition:![transitionContext transitionWasCancelled]];</div><div class="line">        &#125;];</div><div class="line">    &#125;<span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">// pop动画</span></div><div class="line">        <span class="comment">//2. 获取 fromViewController 和 toViewController</span></div><div class="line">        <span class="built_in">UIViewController</span> *fromViewController = [transitionContext viewControllerForKey:<span class="built_in">UITransitionContextFromViewControllerKey</span>];</div><div class="line">        <span class="built_in">UIViewController</span> *toViewController = [transitionContext viewControllerForKey:<span class="built_in">UITransitionContextToViewControllerKey</span>];</div><div class="line">        </div><div class="line">        <span class="comment">//3. 获取fromView和toView</span></div><div class="line">        <span class="built_in">UIView</span> *fromView, *toView;</div><div class="line">        <span class="keyword">if</span> ([transitionContext respondsToSelector:<span class="keyword">@selector</span>(viewForKey:)]) &#123;</div><div class="line">            fromView = [transitionContext viewForKey:<span class="built_in">UITransitionContextFromViewKey</span>];</div><div class="line">            toView = [transitionContext viewForKey:<span class="built_in">UITransitionContextToViewKey</span>];</div><div class="line">        &#125;<span class="keyword">else</span> &#123;</div><div class="line">            fromView = fromViewController.view;</div><div class="line">            toView = toViewController.view;</div><div class="line">        &#125;</div><div class="line">        fromView.frame = [transitionContext initialFrameForViewController:fromViewController];</div><div class="line">        toView.frame = [transitionContext finalFrameForViewController:toViewController];</div><div class="line">        </div><div class="line">        <span class="comment">//4. 添加到上下文的view上</span></div><div class="line">        [containerView addSubview:toView];</div><div class="line">        [containerView addSubview:fromView];</div><div class="line">        </div><div class="line">        <span class="comment">//5. 执行动画</span></div><div class="line">        [<span class="built_in">UIView</span> animateWithDuration:[<span class="keyword">self</span> transitionDuration:transitionContext] animations:^&#123;</div><div class="line">            fromView.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, -fromView.frame.size.height, fromView.frame.size.width, fromView.frame.size.height);</div><div class="line">        &#125; completion:^(<span class="built_in">BOOL</span> finished) &#123;</div><div class="line">            <span class="comment">//7. 一定要告诉上下文 动画执行结束</span></div><div class="line">            [transitionContext completeTransition:![transitionContext transitionWasCancelled]];</div><div class="line">        &#125;];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我这里只是做一个简单的动画，至于该如何做更复杂的动画，那就开动大家的大脑吧。</p>
+<p>同样的，自定义<code>push/pop</code>动画也是如此，这里不再详解。</p>
+<h2 id="交互式动画"><a href="#交互式动画" class="headerlink" title="交互式动画"></a>交互式动画</h2><p>在前面，我们一直提到一个协议<code>UIViewControllerInteractiveTransitioning</code>，实现此协议，我们就能使用交互式转场动画。iOS7为我们提供了已经实现好此协议的类<code>UIPercentDrivenInteractiveTransition</code>，我们只需继承此类，便可实现交互式动画。为了方便，下面的例子依旧在<code>present/dismiss</code>转场基础上讲解，我们让<code>PresentManager</code>继承<code>UIPercentDrivenInteractiveTransition</code>，并且在<code>PresentBViewController</code>上添加<code>pan</code>手势，具体代码如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//这里为了方便  当A控制器present B控制器的时候 直接在B控制器上添加pan手势，并且强引用B控制器。</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)animationControllerForPresentedController:(<span class="built_in">UIViewController</span> *)presented</div><div class="line">                                                                            presentingController:(<span class="built_in">UIViewController</span> *)presenting</div><div class="line">                                                                                sourceController:(<span class="built_in">UIViewController</span> *)source &#123;</div><div class="line">    <span class="comment">//标记此动画为Present 并使用自身为动画的最终执行者</span></div><div class="line">    <span class="keyword">self</span>.transitionStyle = TransitionStylePresent;</div><div class="line">    <span class="comment">//添加手势</span></div><div class="line">    [<span class="keyword">self</span> addGesture:presented];</div><div class="line">    <span class="keyword">self</span>.presentingVC = presented;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//在代理方法中返回`PresentManager`自己作为交互式代理</span></div><div class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerInteractiveTransitioning</span>&gt;)interactionControllerForDismissal:(<span class="keyword">id</span> &lt;<span class="built_in">UIViewControllerAnimatedTransitioning</span>&gt;)animator &#123;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.interacting) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//添加手势</span></div><div class="line">- (<span class="keyword">void</span>)addGesture:(<span class="built_in">UIViewController</span> *)viewController &#123;</div><div class="line">    <span class="built_in">UIPanGestureRecognizer</span> *pan = [[<span class="built_in">UIPanGestureRecognizer</span> alloc] initWithTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(panGesture:)];</div><div class="line">    [viewController.view addGestureRecognizer:pan];</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//监听手势变化</span></div><div class="line">- (<span class="keyword">void</span>)panGesture:(<span class="built_in">UIPanGestureRecognizer</span> *)gesture &#123;</div><div class="line">    <span class="built_in">CGPoint</span> translation = [gesture translationInView:gesture.view];</div><div class="line">    <span class="keyword">switch</span> (gesture.state) &#123;</div><div class="line">        <span class="keyword">case</span> <span class="built_in">UIGestureRecognizerStateBegan</span>:</div><div class="line">        		<span class="comment">//标记当前模态消失为手势调用</span></div><div class="line">            <span class="keyword">self</span>.interacting = <span class="literal">YES</span>;</div><div class="line">            [<span class="keyword">self</span>.presentingVC dismissViewControllerAnimated:<span class="literal">YES</span> completion:<span class="literal">nil</span>];</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        <span class="keyword">case</span> <span class="built_in">UIGestureRecognizerStateChanged</span>: &#123;</div><div class="line">        		<span class="comment">//根据手势的滑动距离 更新状态</span></div><div class="line">            <span class="built_in">CGFloat</span> fraction = translation.x / gesture.view.frame.size.width;</div><div class="line">            [<span class="keyword">self</span> updateInteractiveTransition:fraction];</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">case</span> <span class="built_in">UIGestureRecognizerStateEnded</span>:</div><div class="line">        <span class="keyword">case</span> <span class="built_in">UIGestureRecognizerStateCancelled</span>: &#123;</div><div class="line">        		<span class="comment">//如果划过50% dismiss掉 否则恢复</span></div><div class="line">            <span class="keyword">self</span>.interacting = <span class="literal">NO</span>;</div><div class="line">            <span class="built_in">CGFloat</span> fraction = translation.x / gesture.view.frame.size.width;</div><div class="line">            <span class="keyword">if</span> (fraction&lt;<span class="number">0.5</span> || gesture.state == <span class="built_in">UIGestureRecognizerStateCancelled</span>) &#123;</div><div class="line">                [<span class="keyword">self</span> cancelInteractiveTransition];</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                [<span class="keyword">self</span> finishInteractiveTransition];</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">default</span>:</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>同样的，<code>push/pop</code>亦是如此。</p>
+<h2 id="UIPresentationController"><a href="#UIPresentationController" class="headerlink" title="UIPresentationController"></a>UIPresentationController</h2><p>在第一节，我们说到<code>UIViewControllerTransitioningDelegate</code>协议的时候，还有个方法没有说，它是iOS8以后才有的，此方法为：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">nullable</span> <span class="built_in">UIPresentationController</span> *)presentationControllerForPresentedViewController:(<span class="built_in">UIViewController</span> *)presented</div><div class="line">                                                               presentingViewController:(<span class="keyword">nullable</span> <span class="built_in">UIViewController</span> *)presenting</div><div class="line">                                                                   sourceViewController:(<span class="built_in">UIViewController</span> *)source</div></pre></td></tr></table></figure></p>
+<p>此方法返回一个<code>UIPresentationController</code>对象，这个对象是做什么的呢？</p>
+<p><code>UIViewController</code>有一个属性<code>modalPresentationStyle</code>，我们来看看它有哪些值：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="built_in">NS_ENUM</span>(<span class="built_in">NSInteger</span>, <span class="built_in">UIModalPresentationStyle</span>) &#123;</div><div class="line">        <span class="built_in">UIModalPresentationFullScreen</span> = <span class="number">0</span>,</div><div class="line">        <span class="built_in">UIModalPresentationPageSheet</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">3</span>_2) __TVOS_PROHIBITED,</div><div class="line">        <span class="built_in">UIModalPresentationFormSheet</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">3</span>_2) __TVOS_PROHIBITED,</div><div class="line">        <span class="built_in">UIModalPresentationCurrentContext</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">3</span>_2),</div><div class="line">        <span class="built_in">UIModalPresentationCustom</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">7</span>_0),</div><div class="line">        <span class="built_in">UIModalPresentationOverFullScreen</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">        <span class="built_in">UIModalPresentationOverCurrentContext</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0),</div><div class="line">        <span class="built_in">UIModalPresentationPopover</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">8</span>_0) __TVOS_PROHIBITED,</div><div class="line">        <span class="built_in">UIModalPresentationNone</span> <span class="built_in">NS_ENUM_AVAILABLE_IOS</span>(<span class="number">7</span>_0) = <span class="number">-1</span>,         </div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>平常开发中，我们使用最多的就是<code>UIModalPresentationCustom</code>，如果我们不使用<code>UIModalPresentationCustom</code>，默认的系统会在我们调用“上下文”的<code>completeTransition</code>方法后会把fromVC移除掉。</p>
+<p>如果我们想在<code>present/pop</code>执行动画的生命周期过程中，任意的在上下文中插入视图或者更改最终视图的大小等，使用<code>UIPresentationController</code>便可实现。我们来看<code>UIPresentationController</code>类的定义：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">//上下文的view</span></div><div class="line"><span class="keyword">@property</span>(<span class="keyword">nullable</span>, <span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">strong</span>) <span class="built_in">UIView</span> *containerView;</div><div class="line"></div><div class="line"><span class="comment">//即将布局</span></div><div class="line">- (<span class="keyword">void</span>)containerViewWillLayoutSubviews;</div><div class="line"><span class="comment">//正在布局</span></div><div class="line">- (<span class="keyword">void</span>)containerViewDidLayoutSubviews;</div><div class="line"></div><div class="line"><span class="comment">//返回模态跳转后的view（B控制器View）的最终frame  通常情况下要重写此方法</span></div><div class="line">- (<span class="built_in">CGRect</span>)frameOfPresentedViewInContainerView;</div><div class="line"></div><div class="line"><span class="comment">//周期方法</span></div><div class="line">- (<span class="keyword">void</span>)presentationTransitionWillBegin;</div><div class="line">- (<span class="keyword">void</span>)presentationTransitionDidEnd:(<span class="built_in">BOOL</span>)completed;</div><div class="line">- (<span class="keyword">void</span>)dismissalTransitionWillBegin;</div><div class="line">- (<span class="keyword">void</span>)dismissalTransitionDidEnd:(<span class="built_in">BOOL</span>)completed;</div></pre></td></tr></table></figure></p>
+<p>如此，我们便可在视图周期方法中任意的添加和删除视图，以满足我们的需求。也可以在布局过程中，改变弹出视图的frame。切记，视图的添加和删除都是在上下文的view中进行的。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>了解完整个转场动画的框架，我们合理的使用框架中的协议和类，便能尽可能的满足我们的开发需求。至于该如何实现，大家可以动脑了~</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;iOS开发中，页面之间的跳转无外乎由&lt;code&gt;UINavigationController&lt;/code&gt;管理的&lt;code&gt;push&lt;/code&gt;或者&lt;code&gt;pop&lt;/code&gt;操作、以及由&lt;code&gt;UIViewController&lt;/code&gt;管理的&lt;code&gt;present&lt;/code&gt;和&lt;code&gt;dismiss&lt;/code&gt;操作，无论何种操作，iOS原生系统都为我们提供了页面之间的基础跳转动画。但是往往在开发中，由于各种功能需求，iOS原生系统提供的跳转动画并不能满足我们的需求，好在iOS早就给我们提供了一套自定义转场动画的解决方案，这篇文章就来详细了解一下转场动画。在了解这篇文章之前，先看看iOS提供的整个转场框架&lt;/p&gt;
+&lt;div align=center&gt;&lt;br&gt;&lt;img src=&quot;https://github.com/guiyongdong/Resource/blob/master/hexoImage/transition.png?raw=true&quot;/&gt;&lt;br&gt;&lt;/div&gt;
+    
+    </summary>
+    
+      <category term="动画" scheme="http://www.guiyongdong.com/categories/%E5%8A%A8%E7%94%BB/"/>
+    
+    
+      <category term="动画" scheme="http://www.guiyongdong.com/tags/%E5%8A%A8%E7%94%BB/"/>
+    
+  </entry>
   
   <entry>
     <title>AFNetworking源码解析</title>
@@ -3530,429 +3586,6 @@ case CurlDown:
     <summary type="html">
     
       &lt;p&gt;今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="动画" scheme="http://www.guiyongdong.com/categories/%E5%8A%A8%E7%94%BB/"/>
-    
-    
-      <category term="动画" scheme="http://www.guiyongdong.com/tags/%E5%8A%A8%E7%94%BB/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>iOS动画篇之CoreAnimation动画</title>
-    <link href="http://www.guiyongdong.com/2016/09/22/iOS%E5%8A%A8%E7%94%BB%E7%AF%87%E4%B9%8BCoreAnimation%E5%8A%A8%E7%94%BB/"/>
-    <id>http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/</id>
-    <published>2016-09-22T06:08:56.000Z</published>
-    <updated>2016-09-25T01:21:08.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br><a id="more"></a></p>
-<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>开发中用的最多的是<code>CoreAnimation</code>动画库，简称是CA，所以动画类都是CA开头。所有的动画类都在<code>QuartzCore</code>库中，在iOS7之前使用需要<code>#import &lt;QuartzCore/QuartzCore.h&gt;</code>,iOS7之后系统已经将其自动导入了。<code>CoreAnimation</code>动画都是作用在<code>layer</code>上。<br>先来看下动画类的层级关系：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_12.png?raw=true" alt="动画层级结构"><br></div><br>关于上图中的层级结构只需要了解一下，用的多了，自然就记住了。本篇只讲述<code>CABasicAnimation</code>、<code>CAKeyframeAnimation</code>、<code>CAAnimationGroup</code>的使用。<br><br>### 使用<br>上面讲了CA动画都是作用在Layer上，而CA动画中修改的也是Layer的动画属性，可以产生动画的layer属性也有<code>Animatable</code>标识。<br>#### 1.CABasicAnimation<br><code>CABasicAnimation</code>动画主要是设置某个动画属性的初始值fromValue和结束值toValue，来产生动画效果。<br>先上个示例代码，将一个视图往上移动一段距离：<br><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_13.gif?raw=true" alt="animation"><br></div>
-
-<pre><code>
-CABasicAnimation *postionAnimation = [CABasicAnimation animationWithKeyPath:@"position.y"];
-postionAnimation.duration = 1.0f;
-postionAnimation.fromValue = @(self.squareView.center.y);
-postionAnimation.toValue = @(self.squareView.center.y - 300);
-postionAnimation.removedOnCompletion = NO;
-postionAnimation.delegate = self;
-postionAnimation.autoreverses = YES;
-postionAnimation.fillMode = kCAFillModeForwards;
-postionAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-[self.squareView.layer addAnimation:postionAnimation forKey:@"posstionAnimation"];
-</code></pre>
-
-<blockquote>
-<ul>
-<li>动画的创建使用<code>animationWithKeyPath:</code>,因为使用的keyPath所以动画属性或者其结构体中元素都可以产生动画。</li>
-<li><code>duration</code> 动画的时长。</li>
-<li><code>fromValue</code>和<code>toValue</code> 是<code>CABasicAnimation</code>的属性，都是id类型的，所以要将基本类型包装成对象。</li>
-<li><code>removedOnCompletion</code> 决定动画执行完之后是否将该动画的影响移除，默认是YES,则layer回到动画前的状态。</li>
-<li><code>fillMode</code> 是个枚举值（四种），当<code>removedOnCompletion</code>设置为NO之后才会起作用。可以设置layer是保持动画开始前的状态还是动画结束后的状态，或是其他的。</li>
-<li><code>autoreverses</code> 表示动画结束后是否 backwards(回退) 到动画开始前的状态。可与上面两个属性组合出不同效果。</li>
-<li><code>timingFunction</code> 动画的运动是匀速线性的还是先快后慢等，类似UIView动画的opitions。另外，CAMediaTimingFunction 方法可以自定义。</li>
-<li><code>delegate</code> 代理，两个动画代理方法：<code>- (void)animationDidStart:(CAAnimation *)anim</code>; 和<code>- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag</code>;</li>
-<li><code>-(void)addAnimation:(CAAnimation *)anim forKey:(nullable NSString *)key</code>; 给某个layer添加动画，与之对应的移除某个动画是<code>- (void)removeAnimationForKey:(NSString *)key</code>;</li>
-<li>还有一些其他的属性，就不一一介绍了，可以在使用的使用去.h文件中查看。</li>
-</ul>
-</blockquote>
-<p>在这里简单介绍一下fillMode<br>注意：fillMode这个属性，必须要配合下面这个属性来使用。这个属性的默认值是YES(回到原处),此时fillMode是没有作用的如果设置为NO那么就需要设置一个fillMode属性，就是动画结束之后的状态，如果不设置，动画也会回到原处。</p>
-<p><code>postionAnimation.removedOnCompletion = NO;</code></p>
-<pre><code>
-kCAFillModeRemoved 这个是默认值,也就是说当动画开始前和动画结束后,动画对layer都没有影响,动画结束后,layer会恢复到之前的状态 
-kCAFillModeForwards 当动画结束后,layer会一直保持着动画最后的状态 
-kCAFillModeBackwards 这个和kCAFillModeForwards是相对的,就是在动画开始前,你只要将动画加入了
-一个layer,layer便立即进入动画的初始状态并等待动画开始.你可以这样设定测试代码,将一个动画加入一个
-layer的时候延迟5秒执行.然后就会发现在动画没有开始的时候,只要动画被加入了layer,layer便处于动画初
-始状态 
-kCAFillModeBoth 理解了上面两个,这个就很好理解了,这个其实就是上面两个的合成.动画加入后开始之
-前,layer便处于动画初始状态,动画结束后layer保持动画最后的状态.</code></pre>    
-
-
-<h5 id="Rotation旋转"><a href="#Rotation旋转" class="headerlink" title="Rotation旋转"></a>Rotation旋转</h5><ul>
-<li><strong>Z轴</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *rotationAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
-rotationAnimation.fromValue = [NSNumber numberWithFloat:0.0];
-rotationAnimation.toValue = [NSNumber numberWithFloat:2*M_PI];
-rotationAnimation.repeatCount = MAXFLOAT;
-rotationAnimation.duration =10;
-[self.rotationImgView.layer addAnimation:rotationAnimation forKey:@"transform.rotation.z"];
-</code></pre>
-
-<ul>
-<li><strong>X轴</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *rotationXAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.x"];
-rotationXAnimation.fromValue = [NSNumber numberWithFloat:0.0];
-rotationXAnimation.toValue = [NSNumber numberWithFloat:2*M_PI];
-rotationXAnimation.repeatCount = MAXFLOAT;
-rotationXAnimation.duration =3;
-[self.rotationXImgView.layer addAnimation:rotationXAnimation forKey:@"transform.rotation.x"];
-</code></pre>
-
-<ul>
-<li><strong>Y轴</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *rotationYAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.y"];
-rotationYAnimation.fromValue = [NSNumber numberWithFloat:0.0];
-rotationYAnimation.toValue = [NSNumber numberWithFloat:2*M_PI];
-rotationYAnimation.repeatCount = MAXFLOAT;
-rotationYAnimation.duration =10;
-[self.rotationYImgView.layer addAnimation:rotationYAnimation forKey:@"transform.rotation.y"];
-</code></pre>
-
-<h5 id="Scale放大缩小"><a href="#Scale放大缩小" class="headerlink" title="Scale放大缩小"></a>Scale放大缩小</h5><ul>
-<li><strong>任意方向放大</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *scaleAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-scaleAnimation.fromValue = [NSNumber numberWithFloat:1.0];
-scaleAnimation.toValue = [NSNumber numberWithFloat:1.5];
-scaleAnimation.autoreverses = YES;//自动反向执行动画效果
-scaleAnimation.repeatCount = MAXFLOAT;
-scaleAnimation.duration = 0.8;
-[self.scaleImgView.layer addAnimation:scaleAnimation forKey:@"FlyElephant.scale"];
-</code></pre>
-
-<ul>
-<li><strong>X轴放大</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *scaleXAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.x"];
-scaleXAnimation.fromValue = [NSNumber numberWithFloat:1.0];
-scaleXAnimation.toValue = [NSNumber numberWithFloat:1.5];
-scaleXAnimation.autoreverses = YES;//自动反向执行动画效果
-scaleXAnimation.repeatCount = MAXFLOAT;
-scaleXAnimation.duration = 0.8;
-[self.scaleXImgView.layer addAnimation:scaleXAnimation forKey:@"FlyElephant.scale.x"];
-</code></pre>
-
-<ul>
-<li><strong>Y轴放大</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *scaleYAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.y"];
-scaleYAnimation.fromValue = [NSNumber numberWithFloat:1.0];
-scaleYAnimation.toValue = [NSNumber numberWithFloat:1.5];
-scaleYAnimation.autoreverses = YES;//自动反向执行动画效果
-scaleYAnimation.repeatCount = MAXFLOAT;
-scaleYAnimation.duration = 0.8;
-[self.scaleYImgView.layer addAnimation:scaleYAnimation forKey:@"FlyElephant.scale.y"];
-</code></pre>
-
-<ul>
-<li><strong>Z轴放大</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *scaleZAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.z"];
-scaleZAnimation.fromValue = [NSNumber numberWithFloat:1.0];
-scaleZAnimation.toValue = [NSNumber numberWithFloat:1.5];
-scaleZAnimation.autoreverses = YES;//自动反向执行动画效果
-scaleZAnimation.repeatCount = MAXFLOAT;
-scaleZAnimation.duration = 0.8;
-[self.scaleZImgView.layer addAnimation:scaleZAnimation forKey:@"FlyElephant.scale.z"];
-</code></pre>
-
-<h5 id="Translation平移"><a href="#Translation平移" class="headerlink" title="Translation平移"></a>Translation平移</h5><ul>
-<li><strong>X轴平移</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *translationX=[CABasicAnimation animationWithKeyPath:@"transform.translation.x"];
-translationX.toValue=@(200);
-translationX.duration=5;
-translationX.removedOnCompletion=NO;
-translationX.fillMode=kCAFillModeForwards;
-translationX.repeatCount=MAXFLOAT;
-translationX.autoreverses=YES;
-[self.translationXImgView.layer addAnimation:translationX forKey:@"FlyElephant.translation.x"];
-
-</code></pre>
-
-<ul>
-<li><strong>Y轴平移</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *translationY=[CABasicAnimation animationWithKeyPath:@"transform.translation.y"];
-translationY.toValue=@(100);
-translationY.duration=5;
-translationY.removedOnCompletion=NO;
-translationY.fillMode=kCAFillModeForwards;
-translationY.repeatCount=MAXFLOAT;
-translationY.autoreverses=YES;
-[self.translationYImgView.layer addAnimation:translationY forKey:@"FlyElephant.translation.y"];
-</code></pre>
-
-<ul>
-<li><strong>XY轴平移</strong></li>
-</ul>
-<pre><code>
-CABasicAnimation *translation=[CABasicAnimation animationWithKeyPath:@"transform.translation"];
-translation.toValue=[NSValue valueWithCGPoint:CGPointMake(100, 100)];
-translation.duration=5;
-translation.removedOnCompletion=NO;
-translation.fillMode=kCAFillModeForwards;
-translation.repeatCount=MAXFLOAT;
-translation.autoreverses=YES;
-[self.translationImgView.layer addAnimation:translation forKey:@"FlyElephant.translation"];
-</code></pre>
-
-<p><font color="blue"><strong>动画实例图：</strong></font></p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_14.gif?raw=true" alt="animation"><br></div>
-
-<h4 id="2-CAKeyframeAnimation"><a href="#2-CAKeyframeAnimation" class="headerlink" title="2.CAKeyframeAnimation"></a>2.CAKeyframeAnimation</h4><p>CAKeyframeAnimation我们一般称为关键帧动画，主要是利用其values属性，设置多个关键帧属性值，来产生动画。</p>
-<h5 id="基于Scale变换"><a href="#基于Scale变换" class="headerlink" title="基于Scale变换:"></a>基于Scale变换:</h5><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_15.gif?raw=true" alt="animation"><br></div>
-
-<pre><code>
-CAKeyframeAnimation *keyAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform"];
-keyAnimation.duration = 1.0f;
-keyAnimation.beginTime = CACurrentMediaTime() + 1.0;
-
-CATransform3D transform1 = CATransform3DMakeScale(1.5, 1.5, 0);
-CATransform3D transform2 = CATransform3DMakeScale(0.8, 0.8, 0);
-CATransform3D transform3 = CATransform3DMakeScale(3, 3, 0);
-
-keyAnimation.values = @[[NSValue valueWithCATransform3D:transform1],[NSValue valueWithCATransform3D:transform2],[NSValue valueWithCATransform3D:transform3]];
-keyAnimation.keyTimes = @[@0,@0.5,@1];
-keyAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-keyAnimation.removedOnCompletion = NO;
-keyAnimation.fillMode = kCAFillModeForwards;
-[_someView.layer addAnimation:keyAnimation forKey:nil];
-</code></pre>
-
-<blockquote>
-<ul>
-<li><code>beginTime</code> 也是<code>CAAnimation</code>类的属性，可以设置动画延迟多久执行，示例代码是延迟1秒执行。</li>
-<li><code>values</code> 是<code>CAKeyframeAnimation</code>的属性，设置keyPath属性在几个关键帧的值，也是id类型的。</li>
-<li><code>keyTimes</code> 也是<code>CAKeyframeAnimation</code>的属性，每个值对应相应关键帧的时间比例值。</li>
-<li><code>timingFunctions</code> 也是<code>CAKeyframeAnimation</code>的属性，对应每个动画段的动画过渡情况；而<code>timingFunction</code>是<code>CAAnimation</code>的属性。</li>
-</ul>
-</blockquote>
-<h5 id="基于Point的变换"><a href="#基于Point的变换" class="headerlink" title="基于Point的变换:"></a>基于Point的变换:</h5><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_16.gif?raw=true" alt="animation"><br></div>
-
-<pre><code>
-CGPoint p1=CGPointMake(self.positionImgView.center.x, self.positionImgView.center.y);
-CGPoint p2=CGPointMake(80, 100);
-CGPoint p3=CGPointMake(100, 120);
-
-CGPoint p4=CGPointMake(120, 150);
-CGPoint p5=CGPointMake(140, 160);
-NSArray *values=[NSArray arrayWithObjects:[NSValue valueWithCGPoint:p1],[NSValue valueWithCGPoint:p2],[NSValue valueWithCGPoint:p3],[NSValue valueWithCGPoint:p4],[NSValue valueWithCGPoint:p5], nil];
-CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
-[animation setValues:values];
-[animation setDuration:10.0];
-[animation setCalculationMode:kCAAnimationCubic];
-animation.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-[self.positionImgView.layer addAnimation:animation forKey:@"FlyElephant.point"];
-</code></pre>
-
-<h5 id="基于Path的变换"><a href="#基于Path的变换" class="headerlink" title="基于Path的变换:"></a>基于Path的变换:</h5><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_17.gif?raw=true" alt="animation"><br></div>
-
-<pre><code>
-CGMutablePathRef path = CGPathCreateMutable();
-CGPathMoveToPoint(path,NULL,self.positionImgView.center.x,self.positionImgView.center.y);
-for(NSInteger i = 1; i < 5 i++){
-    CGPathAddLineToPoint(path, NULL, self.positionImgView.center.x+i*10,     self.positionImgView.center.y);
-}
-//曲线
-CGPathAddCurveToPoint(path,NULL,50.0,275.0,150.0,275.0,70.0,120.0);
-CGPathAddCurveToPoint(path,NULL,150.0,275.0,250.0,275.0,90.0,120.0);
-CGPathAddCurveToPoint(path,NULL,250.0,275.0,350.0,275.0,110.0,120.0);
-CGPathAddCurveToPoint(path,NULL,350.0,275.0,450.0,275.0,130.0,120.0);
-CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
-[animation setPath:path];
-[animation setDuration:3.0];
-// [animation setAutoreverses:YES];
-CFRelease(path);
-[self.positionImgView.layer addAnimation:animation:@"FlyElephant"];
-</code></pre>
-
-<p>通过代码我们发现，Path和values接收都是一个数组，而不是一个固定值，这里面我们没有设置keyTimes，下面看一个常见的抖动效果:</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_18.gif?raw=true" alt="animation"><br></div>
-
-<pre><code>
-CAKeyframeAnimation *animation = [CAKeyframeAnimation animation];
-animation.keyPath = @"position.x";
-animation.values = @[ @0, @20, @-20, @20, @0 ];
-animation.keyTimes = @[ @0, @(1 /8.0), @(1/ 2.0), @(7/ 8.0), @1 ];
-animation.duration =0.5;
-animation.additive = YES;
-[self.textField.layer addAnimation:animation forKey:@"FlyElephant.Shake"];
-</code></pre>
-
-<h4 id="3-CAAnimationGroup"><a href="#3-CAAnimationGroup" class="headerlink" title="3.CAAnimationGroup"></a>3.CAAnimationGroup</h4><p>CAAnimationGroup的用法与其他动画类一样，都是添加到layer上，比CAAnimation多了一个animations属性。<br>先看示例代码，动画效果是视图一边向上移动，一边绕Y轴旋转：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_19.gif?raw=true" alt="animation"><br></div>
-
-<pre><code>
-CABasicAnimation *rotationYAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.y"];
-rotationYAnimation.fromValue = @0;
-rotationYAnimation.toValue = @(M_PI);
-rotationYAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-
-CABasicAnimation *postionAnimation = [CABasicAnimation animationWithKeyPath:@"position.y"];
-postionAnimation.fromValue = @(_markView.center.y);
-postionAnimation.toValue = @(_markView.center.y - 100);
-postionAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-
-CAAnimationGroup *animationGroup = [CAAnimationGroup animation];
-animationGroup.duration = kUpDuration;
-animationGroup.removedOnCompletion = NO;
-animationGroup.fillMode = kCAFillModeForwards;
-animationGroup.delegate = self;
-animationGroup.animations = @[rotationYAnimation, postionAnimation];
-
-[_markView.layer addAnimation:animationGroup forKey:kJumpAnimation];
-</code></pre>
-
-<blockquote>
-<p>CAAnimationGroup的animations中可以放其他任何动画类（包括CAAnimationGroup），需要注意的是animations里的动画设置了duration之后动画可能会有不同，一般里面不设置，在最外层设置group的duration即可。</p>
-</blockquote>
-<h5 id="AnimationWithKeyPath的值"><a href="#AnimationWithKeyPath的值" class="headerlink" title="AnimationWithKeyPath的值"></a>AnimationWithKeyPath的值</h5><p>最开始做动画一般都会对keyPath这个值莫名其妙，因为它不是常量，需要变换的时候找不到对应的需要设置的值，如果你在网上搜索，很可能看到的是这张图:</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_20.png?raw=true" alt="animation"><br></div><br>下面这张图你基本上是找不到的，如下:<br><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_21.png?raw=true" alt="animation"><br></div>
-
-<h4 id="4-CATransition"><a href="#4-CATransition" class="headerlink" title="4.CATransition"></a>4.CATransition</h4><p>CATransition一般来做转场动画。先上gif动画效果</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_22.gif?raw=true" alt="animation"><br></div>
-
-<pre><code>
-//修改视图的背景色
-_someView.backgroundColor = [UIColor greenColor];
-CATransition *animation = [CATransition animation];
-animation.duration = 0.5;
-/* 这里可设置的参数有：kCATransitionFade、kCATransitionPush、kCATransitionReveal、kCATransitionMoveIn、
-"cube"、"suckEffect"、"oglFlip"、"rippleEffect"、"pageCurl"、"pageUnCurl"、"cameraIrisHollowOpen"、
- "cameraIrisHollowClose"，这些都是动画类型
-*/
-animation.type = @"cube";
-// 动画执行的方向，kCATransitionFromRight、kCATransitionFromLeft、kCATransitionFromTop、kCATransitionFromBottom
-animation.subtype = kCATransitionFromRight;
-animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;
-[_someView.layer addAnimation:animation forKey:nil];
-//也可以写这里
-//    _someView.backgroundColor = [UIColor greenColor];
-</code></pre>
-
-<p>只需要在动画开始前或者动画开始后替换掉视图上显示的内容即可。具体可以看我的这篇博客<a href="http://www.guiyongdong.com/2016/09/22/iOS%E5%8A%A8%E7%94%BB%E4%B9%8BCATransition%E5%8A%A8%E7%94%BB/">iOS动画之CATransition动画</a></p>
-<h4 id="附加"><a href="#附加" class="headerlink" title="附加"></a>附加</h4><p>附加的内容是关于CALayer和UIBezierPath。个人觉得理解了UIBezierPath和CALayer,才能更好的理解CoreAnimation动画。</p>
-<h5 id="1-UIBezierPath"><a href="#1-UIBezierPath" class="headerlink" title="1.UIBezierPath"></a>1.UIBezierPath</h5><p>UIBezierPath主要是用来绘制路径的，分为一阶、二阶…..n阶。一阶是直线，二阶以上才是曲线。而最终路径的显示还是得依靠CALayer。用CoreGraphics将路径绘制出来，最终也是绘制到CALayer上。</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_23.png?raw=true" alt="animation"><br></div>
-
-<blockquote>
-<p>方法一：构造bezierPath对象，一般用于自定义路径。<br>方法二：绘制圆弧路径，参数1是中心点位置，参数2是半径，参数3是开始的弧度值，参数4是结束的弧度值，参数5是是否顺时针(YES是顺时针方向，NO逆时针)。<br>方法三：根据某个路径绘制路径。<br>方法四：根据某个CGRect绘制内切圆或椭圆（CGRect是正方形即为圆，为长方形则为椭圆）。<br>方法五：根据某个CGRect绘制路径。<br>方法六：绘制带圆角的矩形路径，参数2哪个角，参数3，横、纵向半径。<br>方法七：绘制每个角都是圆角的矩形，参数2是半径。</p>
-</blockquote>
-<p>自定义路径时常用的API:</p>
-<pre><code>
-- (void)moveToPoint:(CGPoint)point; // 移到某个点
-- (void)addLineToPoint:(CGPoint)point; // 绘制直线
-- (void)addCurveToPoint:(CGPoint)endPoint controlPoint1:(CGPoint)controlPoint1 controlPoint2:(CGPoint)controlPoint2; //绘制贝塞尔曲线
-- (void)addQuadCurveToPoint:(CGPoint)endPoint controlPoint:(CGPoint)controlPoint; // 绘制规则的贝塞尔曲线
-- (void)addArcWithCenter:(CGPoint)center radius:(CGFloat)radius startAngle:(CGFloat)startAngle endAngle:(CGFloat)endAngle clockwise:(BOOL)clockwise
-// 绘制圆形曲线
-- (void)appendPath:(UIBezierPath *)bezierPath; // 拼接曲线
-</code></pre>
-
-<h5 id="如果将路径显示的图案显示到视图上呢？"><a href="#如果将路径显示的图案显示到视图上呢？" class="headerlink" title="如果将路径显示的图案显示到视图上呢？"></a>如果将路径显示的图案显示到视图上呢？</h5><p>有三种方式：1、直接使用UIBezierPath的方法；2、使用CoreGraphics绘制；3、利用CAShapeLayer绘制。<br>示例代码如下，绘制一个右侧为弧型的视图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_24.gif?raw=true" alt="animation"><br></div>
-
-<pre><code>
-- (void)drawRect:(CGRect)rect
-{
-    UIColor *fillColor = [UIColor colorWithRed:0.0 green:0.722 blue:1.0 alpha:1.0];
-
-    UIBezierPath *bezierPath = [UIBezierPath bezierPath];
-    [bezierPath moveToPoint:CGPointMake(0, 0)];
-    [bezierPath addLineToPoint:CGPointMake(rect.size.width - spaceWidth, 0)];
-    [bezierPath addQuadCurveToPoint:CGPointMake(rect.size.width - spaceWidth, rect.size.height) controlPoint:CGPointMake(rect.size.width - spaceWidth + _deltaWith, rect.size.height * 0.5)];
-    [bezierPath addLineToPoint:CGPointMake(0, rect.size.height)];
-    [bezierPath addLineToPoint:CGPointMake(0, 0)];
-    [bezierPath closePath];
-
-    // 1、bezierPath方法
-//    [fillColor setFill];
-//    [bezierPath fill];
-
-    // 2、使用CoreGraphics
-//    CGContextRef ctx = UIGraphicsGetCurrentContext();
-//    CGContextAddPath(ctx, bezierPath.CGPath);
-//    CGContextSetFillColorWithColor(ctx, fillColor.CGColor);
-//    CGContextFillPath(ctx);
-
-    // 3.CAShaperLayer
-    [self.layer.sublayers makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
-    CAShapeLayer *shapeLayer = [CAShapeLayer layer];
-    shapeLayer.path = bezierPath.CGPath;
-    shapeLayer.fillColor = fillColor.CGColor;
-    [self.layer addSublayer:shapeLayer];
-}
-</code></pre>
-
-<p><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_25.gif?raw=true" alt="animation"><br></div><br>上图这样的视图是用UIBezierPath用多个CAShapeLayer制作出来的，而动画效果只需要改变进度的layer的strokeEnd和修改下面代表水面进度的视图位置即可。动画的组合也可以有多种方式组合<br>动画的示例代码：</p>
-<pre><code>
-- (void)setProgress:(CGFloat)progress animated:(BOOL)animated duration:(NSTimeInterval)duration
-{
-    CGFloat tempPro = progress;
-    if (tempPro > 1.0) {
-        tempPro = 1.0;
-    } else if (progress < 0.0){
-        tempPro = 0.0;
-    }
-    _progress = tempPro;
-
-    CABasicAnimation *pathAniamtion = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
-    pathAniamtion.duration = duration;
-    pathAniamtion.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    pathAniamtion.fromValue = [NSNumber numberWithFloat:0.0f];
-    pathAniamtion.toValue = [NSNumber numberWithFloat:_progress];
-    pathAniamtion.autoreverses = NO;
-    [_progressLayer addAnimation:pathAniamtion forKey:nil];
-
-    // 水位上升的动画
-    if (!_showSolidAnimation) {
-        return;
-    }
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        _imageView.transform = CGAffineTransformIdentity;
-        [UIView animateWithDuration:duration animations:^{
-            CGRect rect = _imageView.frame;
-            CGFloat dy = rect.size.height * progress;
-            _imageView.transform = CGAffineTransformMakeTranslation(0, -dy);
-        }];
-    });
-}
-</code></pre>
-
-<p>在用自定义的CAShapeLayer做动画时，建议在动画开始前先将动画属性与最终的属性值一致，再开始动画，不要使用removedOnCompletion控制最终的状态，这在WWDC苹果这么建议。</p>
-<p><strong>具体UIBezierPath可以看这篇文章<a href="http://www.guiyongdong.com/2016/09/22/UIBezierPath%E8%AF%A6%E8%A7%A3/">UIBezierPath详解</a></strong></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。&lt;br&gt;
     
     </summary>
     
