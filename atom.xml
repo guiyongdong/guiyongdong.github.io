@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2017-03-07T03:13:34.000Z</updated>
+  <updated>2017-03-09T07:02:33.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://www.guiyongdong.com/2017/03/06/%E8%BD%AC%E5%9C%BA%E5%8A%A8%E7%94%BB%E8%AF%A6%E8%A7%A3/"/>
     <id>http://www.guiyongdong.com/2017/03/06/转场动画详解/</id>
     <published>2017-03-06T02:02:31.000Z</published>
-    <updated>2017-03-07T03:13:34.000Z</updated>
+    <updated>2017-03-09T07:02:33.000Z</updated>
     
     <content type="html"><![CDATA[<p>iOS开发中，页面之间的跳转无外乎由<code>UINavigationController</code>管理的<code>push</code>或者<code>pop</code>操作、以及由<code>UIViewController</code>管理的<code>present</code>和<code>dismiss</code>操作，无论何种操作，iOS原生系统都为我们提供了页面之间的基础跳转动画。但是往往在开发中，由于各种功能需求，iOS原生系统提供的跳转动画并不能满足我们的需求，好在iOS早就给我们提供了一套自定义转场动画的解决方案，这篇文章就来详细了解一下转场动画。在了解这篇文章之前，先看看iOS提供的整个转场框架</p>
 <div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/transition.png?raw=true"><br></div>
@@ -64,7 +64,7 @@
     
     </summary>
     
-      <category term="动画" scheme="http://www.guiyongdong.com/categories/%E5%8A%A8%E7%94%BB/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="动画" scheme="http://www.guiyongdong.com/tags/%E5%8A%A8%E7%94%BB/"/>
@@ -402,7 +402,7 @@
     <link href="http://www.guiyongdong.com/2017/01/03/Objective-C-Runtime-%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E5%85%AD%EF%BC%9A%E6%8B%BE%E9%81%97/"/>
     <id>http://www.guiyongdong.com/2017/01/03/Objective-C-Runtime-运行时之六：拾遗/</id>
     <published>2017-01-03T07:08:47.000Z</published>
-    <updated>2017-01-03T09:46:33.000Z</updated>
+    <updated>2017-03-09T07:03:33.000Z</updated>
     
     <content type="html"><![CDATA[<p>前面几篇基本介绍了runtime中的大部分功能，包括对类与对象、成员变量与属性、方法与消息、分类与协议的处理。runtime大部分的功能都是围绕这几点来实现的。</p>
 <p>本章的内容并不算重点，主要针对前文中对Objective-C Runtime Reference内容遗漏的地方做些补充。当然这并不能包含所有的内容。runtime还有许多内容。</p>
@@ -458,7 +458,7 @@
     
     </summary>
     
-      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
@@ -470,7 +470,7 @@
     <link href="http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E4%BA%94%EF%BC%9A%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E7%B1%BB/"/>
     <id>http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/</id>
     <published>2016-12-18T06:25:59.000Z</published>
-    <updated>2017-01-03T07:09:39.000Z</updated>
+    <updated>2017-03-09T07:03:56.000Z</updated>
     
     <content type="html"><![CDATA[<p>Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。</p>
 <p>Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过<code>@protocol</code>定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，<code>@protocol</code>声明了可以被其他任何类实现的方法，协议仅仅是定义一个接口，而由其他的类去负责实现。</p>
@@ -506,7 +506,7 @@
     
     </summary>
     
-      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
@@ -518,7 +518,7 @@
     <link href="http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E5%9B%9B%EF%BC%9AMethod-Swizzling/"/>
     <id>http://www.guiyongdong.com/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/</id>
     <published>2016-12-09T05:02:51.000Z</published>
-    <updated>2016-12-09T06:05:26.000Z</updated>
+    <updated>2017-03-09T07:03:43.000Z</updated>
     
     <content type="html"><![CDATA[<p>理解<code>Method Swizzling</code>是学习Runtime机制的一个很好的机会。<code>Method Swizzling</code>是改变一个<code>selector</code>的实际实现的技术。通过这一技术，我们可以在运行时通过修改类的分发表中<code>selector</code>对应的函数，来修改方法的实现。</p>
 <a id="more"></a>
@@ -555,7 +555,7 @@
     
     </summary>
     
-      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
@@ -567,7 +567,7 @@
     <link href="http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E4%B8%89%EF%BC%9A%E6%96%B9%E6%B3%95%E4%B8%8E%E6%B6%88%E6%81%AF/"/>
     <id>http://www.guiyongdong.com/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/</id>
     <published>2016-11-25T06:05:08.000Z</published>
-    <updated>2016-12-09T02:29:03.000Z</updated>
+    <updated>2017-03-09T07:03:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>前面我们讨论了Runtime中对类和对象的处理，及对成员变量与属性的处理。这一章，我们就要开始讨论Runtime中最有意思的一部分：消息处理机制。我们将详细讨论消息的发送及消息的转发。不过在讨论消息之前，我们先来了解一下与方法相关的一些内容。</p>
 <a id="more"></a>
@@ -681,7 +681,7 @@
     
     </summary>
     
-      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
@@ -693,7 +693,7 @@
     <link href="http://www.guiyongdong.com/2016/11/24/Objective-C-Runtime%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E4%BA%8C-%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E4%B8%8E%E5%B1%9E%E6%80%A7/"/>
     <id>http://www.guiyongdong.com/2016/11/24/Objective-C-Runtime运行时之二-成员变量与属性/</id>
     <published>2016-11-24T07:39:47.000Z</published>
-    <updated>2016-11-25T05:27:40.000Z</updated>
+    <updated>2017-03-09T07:03:52.000Z</updated>
     
     <content type="html"><![CDATA[<p>在前面一篇文章中，我们介绍了Runtime中与类和对象相关的内容，从这章开始，我们将讨论类实现细节相关的内容，主要包括类中成员变量，属性，方法，协议与分类的实现。</p>
 <p>本章的主要内容将聚集在Runtime对成员变量与属性的处理。在讨论之前，我们先介绍一个重要的概念：类型编码。</p>
@@ -756,7 +756,7 @@ OBJC_ASSOCIATION_COPY                    //copy
     
     </summary>
     
-      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
@@ -768,7 +768,7 @@ OBJC_ASSOCIATION_COPY                    //copy
     <link href="http://www.guiyongdong.com/2016/11/21/Objective-C-Runtime-%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E4%B8%80%EF%BC%9A%E7%B1%BB%E4%B8%8E%E5%AF%B9%E8%B1%A1/"/>
     <id>http://www.guiyongdong.com/2016/11/21/Objective-C-Runtime-运行时之一：类与对象/</id>
     <published>2016-11-21T09:22:10.000Z</published>
-    <updated>2016-11-24T13:24:00.000Z</updated>
+    <updated>2017-03-09T07:03:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>Objective-C语言是一门动态语言，它将很多静态语言在编译和链接时期做的事放到了运行时来处理。这种动态语言的优势在于：我们写代码时更具有灵活性，如我们可以把消息转发给我们想要的对象，或者随意交换一个方法的实现等。</p>
 <p>这种特性意味着Objective-C不仅需要一个编译器，还需要一个运行时系统来执行编译的代码。对于Objective-C来说，这个运行时系统就像一个操作系统一样，让它所有的工作可以正常运行。这个运行时系统即<code>Objc Runtime</code>。<code>Objc Runtime</code>其实就是一个<code>Runtime</code>库，它基本上是用C和汇编写的，这个库使得C语言有了面向对象的能力。</p>
@@ -928,7 +928,7 @@ OBJC_ASSOCIATION_COPY                    //copy
     
     </summary>
     
-      <category term="Runtime" scheme="http://www.guiyongdong.com/categories/Runtime/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
@@ -940,7 +940,7 @@ OBJC_ASSOCIATION_COPY                    //copy
     <link href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/"/>
     <id>http://www.guiyongdong.com/2016/11/18/NSURLSession与NSURLConnection区别/</id>
     <published>2016-11-18T06:09:19.000Z</published>
-    <updated>2016-11-19T11:46:25.000Z</updated>
+    <updated>2017-03-09T07:03:26.000Z</updated>
     
     <content type="html"><![CDATA[<p>今天去面试，被问了一道AFNetworking2.0和3.0有什么区别，当时心想，这谁不知道啊，随口答到：2.0使用的NSURLConnection,3.0使用的是NSURLSession,人家又问NSURLSesstion和NSURLConnection有什么区别，瞬间傻眼了，支支吾吾只是说出了缓存策略的不同。亡羊补牢，为时未晚，这篇博客就讲解一下它们两者到底有什么区别。</p>
 <a id="more"></a>
@@ -1423,7 +1423,7 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend {
     
     </summary>
     
-      <category term="网络" scheme="http://www.guiyongdong.com/categories/%E7%BD%91%E7%BB%9C/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="NSURLSession" scheme="http://www.guiyongdong.com/tags/NSURLSession/"/>
@@ -2047,7 +2047,7 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend {
     <link href="http://www.guiyongdong.com/2016/11/09/iOS%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E8%AF%A6%E8%A7%A3/"/>
     <id>http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/</id>
     <published>2016-11-09T06:39:39.000Z</published>
-    <updated>2016-11-09T11:08:27.000Z</updated>
+    <updated>2017-03-09T07:02:45.000Z</updated>
     
     <content type="html"><![CDATA[<p>当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。</p>
 <p>当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，该触摸时事件对象是一系列触摸信息包装集。例如手势事件，该事件是一个动态的变量它取决于你使用了什么框架以及你感兴趣的手势事件类型。</p>
@@ -2336,7 +2336,7 @@ typedef NS_ENUM(NSInteger, UITouchPhase) {
     
     </summary>
     
-      <category term="杂类" scheme="http://www.guiyongdong.com/categories/%E6%9D%82%E7%B1%BB/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="响应者链" scheme="http://www.guiyongdong.com/tags/%E5%93%8D%E5%BA%94%E8%80%85%E9%93%BE/"/>
@@ -2348,7 +2348,7 @@ typedef NS_ENUM(NSInteger, UITouchPhase) {
     <link href="http://www.guiyongdong.com/2016/10/22/iOS%E7%85%A7%E7%89%87%E5%BC%80%E5%8F%91%E4%B9%8BPhotoKit/"/>
     <id>http://www.guiyongdong.com/2016/10/22/iOS照片开发之PhotoKit/</id>
     <published>2016-10-22T08:44:37.000Z</published>
-    <updated>2016-11-08T02:32:26.000Z</updated>
+    <updated>2017-03-09T07:03:14.000Z</updated>
     
     <content type="html"><![CDATA[<p>PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。它是iOS8之后出现的框架，在使用框架之前需要导入<code>#import &lt;Photos/Photos.h&gt;</code>库</p>
 <a id="more"></a>
@@ -2498,7 +2498,7 @@ BOOL downloadFinined = ![[info objectForKey:PHImageCancelledKey] boolValue] &amp
     
     </summary>
     
-      <category term="iOS照片" scheme="http://www.guiyongdong.com/categories/iOS%E7%85%A7%E7%89%87/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="iOS照片" scheme="http://www.guiyongdong.com/tags/iOS%E7%85%A7%E7%89%87/"/>
@@ -2510,7 +2510,7 @@ BOOL downloadFinined = ![[info objectForKey:PHImageCancelledKey] boolValue] &amp
     <link href="http://www.guiyongdong.com/2016/10/15/iOS%E7%85%A7%E7%89%87%E5%BC%80%E5%8F%91%E4%B9%8BAssetsLibrary/"/>
     <id>http://www.guiyongdong.com/2016/10/15/iOS照片开发之AssetsLibrary/</id>
     <published>2016-10-15T03:25:30.000Z</published>
-    <updated>2016-11-15T06:33:52.000Z</updated>
+    <updated>2017-03-09T07:03:08.000Z</updated>
     
     <content type="html"><![CDATA[<p>上一篇博客讲解了UIImagePickerController的使用，这篇博客简单说一下AssetsLibrary。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架。这里主要说AssetsLibrary。</p>
 <p>另外值得强调的是，在 iOS 中，照片库并不只是照片的集合，同时也包含了视频。在 AssetsLibrary 中两者都有相同类型的对象去描述，只是类型不同而已。文中为了方便，大部分时候会使用「资源」代表 iOS 中的「照片和视频」。</p>
@@ -2743,7 +2743,7 @@ _currentIndex = 0;
     
     </summary>
     
-      <category term="iOS照片" scheme="http://www.guiyongdong.com/categories/iOS%E7%85%A7%E7%89%87/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="iOS照片" scheme="http://www.guiyongdong.com/tags/iOS%E7%85%A7%E7%89%87/"/>
@@ -2755,7 +2755,7 @@ _currentIndex = 0;
     <link href="http://www.guiyongdong.com/2016/10/12/iOS%E7%85%A7%E7%89%87%E5%BC%80%E5%8F%91%E4%B9%8BUIImagePickerController/"/>
     <id>http://www.guiyongdong.com/2016/10/12/iOS照片开发之UIImagePickerController/</id>
     <published>2016-10-12T02:37:08.000Z</published>
-    <updated>2016-11-03T10:24:14.000Z</updated>
+    <updated>2017-03-09T07:03:21.000Z</updated>
     
     <content type="html"><![CDATA[<p>iOS开发中，通常获取照片的方式有三种，1.直接调用摄像头拍照 2.从相册中选择 3.从图库中选择。 通常使用到的类或框架有UIImagePickerController,AssetsLibrary,PhotoKit(iOS8later)。本篇博客主要讲解UIImagePickerController，其他的后续会讲解到。</p>
 <a id="more"></a>
@@ -2977,7 +2977,7 @@ UIKIT_EXTERN NSString *const UIImagePickerControllerLivePhoto NS_AVAILABLE_IOS(9
     
     </summary>
     
-      <category term="iOS照片" scheme="http://www.guiyongdong.com/categories/iOS%E7%85%A7%E7%89%87/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="iOS照片" scheme="http://www.guiyongdong.com/tags/iOS%E7%85%A7%E7%89%87/"/>
@@ -2989,7 +2989,7 @@ UIKIT_EXTERN NSString *const UIImagePickerControllerLivePhoto NS_AVAILABLE_IOS(9
     <link href="http://www.guiyongdong.com/2016/09/22/UIBezierPath%E8%AF%A6%E8%A7%A3/"/>
     <id>http://www.guiyongdong.com/2016/09/22/UIBezierPath详解/</id>
     <published>2016-09-22T07:51:31.000Z</published>
-    <updated>2016-09-25T00:48:45.000Z</updated>
+    <updated>2017-03-09T07:04:13.000Z</updated>
     
     <content type="html"><![CDATA[<p>我在写本篇文章之前，也没有系统学习过贝塞尔曲线，只是曾经某一次的需求需要使用到，才临时百度看了一看而且使用最基本的功能。现在总算有时间停下来好好研究研究这个神奇而伟大的贝塞尔先生！</p>
 <a id="more"></a>
@@ -3284,7 +3284,7 @@ UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(20, 20, 
     
     </summary>
     
-      <category term="动画" scheme="http://www.guiyongdong.com/categories/%E5%8A%A8%E7%94%BB/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="UIBezierPath" scheme="http://www.guiyongdong.com/tags/UIBezierPath/"/>
@@ -3296,7 +3296,7 @@ UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(20, 20, 
     <link href="http://www.guiyongdong.com/2016/09/22/iOS%E5%8A%A8%E7%94%BB%E4%B9%8BCATransition%E5%8A%A8%E7%94%BB/"/>
     <id>http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/</id>
     <published>2016-09-22T07:35:15.000Z</published>
-    <updated>2016-09-25T01:30:12.000Z</updated>
+    <updated>2017-03-09T07:03:02.000Z</updated>
     
     <content type="html"><![CDATA[<p>今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。</p>
 <a id="more"></a>
@@ -3589,7 +3589,7 @@ case CurlDown:
     
     </summary>
     
-      <category term="动画" scheme="http://www.guiyongdong.com/categories/%E5%8A%A8%E7%94%BB/"/>
+      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
     
     
       <category term="动画" scheme="http://www.guiyongdong.com/tags/%E5%8A%A8%E7%94%BB/"/>

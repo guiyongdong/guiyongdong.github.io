@@ -23,7 +23,7 @@
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/GCD1.png?raw=true">
-<meta property="og:updated_time" content="2016-11-23T08:01:42.000Z">
+<meta property="og:updated_time" content="2017-03-09T07:02:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="聊一聊GCD的那些事">
 <meta name="twitter:description" content="GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。">
@@ -84,7 +84,7 @@
                 </a>
                 <h4 class="sidebar-profile-name">贵永冬</h4>
                 
-                    <h5 class="sidebar-profile-bio"><p>iOS开发者<br>  android业余选手,  十足的海贼迷</p>
+                    <h5 class="sidebar-profile-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
 </h5>
                 
             </div>
@@ -231,7 +231,7 @@
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/categories/GCD/">GCD</a>
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
 
 
     
@@ -671,16 +671,7 @@ dispatch_group_notify(group, queue, ^{
 
 
 <hr>
-<h3 id="7-dispatch-after"><a href="#7-dispatch-after" class="headerlink" title="7.dispatch_after"></a>7.dispatch_after</h3><p>来延迟执行的GCD方法，因为在主线程中我们不能用sleep来延迟方法的调用，所以用它是最合适的，我们做一个简单的例子：</p>
-<pre><code>-(void)dispatchAfter
-{
-    NSLog(@"dispatchAfter_star");
-    int64_t time=2*NSEC_PER_SEC;
-
-    dispatch_queue_t mainQueue=dispatch_get_main_queue();
-
-        for (int i=0; i<5; i++)="" {="" dispatch_time_t="" distime="dispatch_time(DISPATCH_TIME_NOW," time*i);="" dispatch_after(distime,="" mainqueue,="" ^{="" nslog(@"dispatchafter_work");="" });="" }="" }<="" code=""></5;></code></pre>
-
+<h3 id="7-dispatch-after"><a href="#7-dispatch-after" class="headerlink" title="7.dispatch_after"></a>7.dispatch_after</h3><p>来延迟执行的GCD方法，因为在主线程中我们不能用sleep来延迟方法的调用，所以用它是最合适的，我们做一个简单的例子：<br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">-(<span class="keyword">void</span>)dispatchAfter</div><div class="line">&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"dispatchAfter_star"</span>);</div><div class="line">    int64_t time=<span class="number">2</span>*<span class="built_in">NSEC_PER_SEC</span>;</div><div class="line"></div><div class="line">    <span class="built_in">dispatch_queue_t</span> mainQueue=dispatch_get_main_queue();</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;<span class="number">5</span>; i++) &#123;</div><div class="line">        dispatch_time_t disTime=dispatch_time(DISPATCH_TIME_NOW, time*i);</div><div class="line"></div><div class="line">        dispatch_after(disTime, mainQueue, ^&#123;</div><div class="line">            <span class="built_in">NSLog</span>(<span class="string">@"dispatchAfter_work"</span>);</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>执行结果</p>
 <pre><code>2016-07-21 16:12:07.204 GCD_Demo[9439:1237251] dispatchAfter_star
 2016-07-21 16:12:07.211 GCD_Demo[9439:1237251] dispatchAfter_work
@@ -1128,14 +1119,14 @@ return instance;</code></pre>
         
             <h4 id="about-card-name">贵永冬</h4>
         
-            <div id="about-card-bio"><p>iOS开发者<br>  android业余选手,  十足的海贼迷</p>
+            <div id="about-card-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>河南酒运达电子商务有限公司</p>
+                <p>郑州市时空隧道信息技术有限公司</p>
 
             </div>
         

@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>分类: NSOperation - 贵大头的博客</title>
+    <title>分类: Objective-C - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -19,7 +19,7 @@
     <meta name="description" content="iOS开发者">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="贵大头的博客">
-<meta property="og:url" content="http://www.guiyongdong.com/categories/NSOperation/index.html">
+<meta property="og:url" content="http://www.guiyongdong.com/categories/Objective-C/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="iOS开发者">
 <meta name="twitter:card" content="summary">
@@ -81,7 +81,7 @@
                 </a>
                 <h4 class="sidebar-profile-name">贵永冬</h4>
                 
-                    <h5 class="sidebar-profile-bio"><p>iOS开发者<br>  android业余选手,  十足的海贼迷</p>
+                    <h5 class="sidebar-profile-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
 </h5>
                 
             </div>
@@ -219,21 +219,21 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/09/18/聊一聊NSOperation的那些事/">
-                            聊一聊NSOperation的那些事
+                        <a class="link-unstyled" href="/2017/03/06/转场动画详解/">
+                            转场动画详解
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-18T16:23:05+08:00">
+    <time itemprop="datePublished" datetime="2017-03-06T10:02:31+08:00">
 	
-		    9月 18, 2016
+		    3月 06, 2017
     	
     </time>
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/categories/NSOperation/">NSOperation</a>
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
 
 
     
@@ -242,9 +242,403 @@
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br>
+                    <p>iOS开发中，页面之间的跳转无外乎由<code>UINavigationController</code>管理的<code>push</code>或者<code>pop</code>操作、以及由<code>UIViewController</code>管理的<code>present</code>和<code>dismiss</code>操作，无论何种操作，iOS原生系统都为我们提供了页面之间的基础跳转动画。但是往往在开发中，由于各种功能需求，iOS原生系统提供的跳转动画并不能满足我们的需求，好在iOS早就给我们提供了一套自定义转场动画的解决方案，这篇文章就来详细了解一下转场动画。在了解这篇文章之前，先看看iOS提供的整个转场框架</p>
+<div align=center><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/transition.png?raw=true"/><br></div>
                     
-                        <a href="/2016/09/18/聊一聊NSOperation的那些事/" class="postShorten-excerpt_link link">
+                        <a href="/2017/03/06/转场动画详解/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2017/01/03/Objective-C-Runtime-运行时之六：拾遗/">
+                            Objective-C Runtime 运行时之六：拾遗
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2017-01-03T15:08:47+08:00">
+	
+		    1月 03, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>前面几篇基本介绍了runtime中的大部分功能，包括对类与对象、成员变量与属性、方法与消息、分类与协议的处理。runtime大部分的功能都是围绕这几点来实现的。</p>
+<p>本章的内容并不算重点，主要针对前文中对Objective-C Runtime Reference内容遗漏的地方做些补充。当然这并不能包含所有的内容。runtime还有许多内容。</p>
+                    
+                        <a href="/2017/01/03/Objective-C-Runtime-运行时之六：拾遗/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/">
+                            Objective-C-Runtime运行时之五：协议与分类
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-12-18T14:25:59+08:00">
+	
+		    12月 18, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。</p>
+<p>Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过<code>@protocol</code>定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，<code>@protocol</code>声明了可以被其他任何类实现的方法，协议仅仅是定义一个接口，而由其他的类去负责实现。</p>
+<p>在本章中，我们来看看runtime对分类与协议的支持。</p>
+                    
+                        <a href="/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/">
+                            Objective-C Runtime 运行时之四：Method Swizzling
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-12-09T13:02:51+08:00">
+	
+		    12月 09, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>理解<code>Method Swizzling</code>是学习Runtime机制的一个很好的机会。<code>Method Swizzling</code>是改变一个<code>selector</code>的实际实现的技术。通过这一技术，我们可以在运行时通过修改类的分发表中<code>selector</code>对应的函数，来修改方法的实现。</p>
+                    
+                        <a href="/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/">
+                            Objective-C Runtime 运行时之三：方法与消息
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-11-25T14:05:08+08:00">
+	
+		    11月 25, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>前面我们讨论了Runtime中对类和对象的处理，及对成员变量与属性的处理。这一章，我们就要开始讨论Runtime中最有意思的一部分：消息处理机制。我们将详细讨论消息的发送及消息的转发。不过在讨论消息之前，我们先来了解一下与方法相关的一些内容。</p>
+                    
+                        <a href="/2016/11/25/Objective-C-Runtime-运行时之三：方法与消息/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/11/24/Objective-C-Runtime运行时之二-成员变量与属性/">
+                            Objective-C Runtime运行时之二：成员变量与属性
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-11-24T15:39:47+08:00">
+	
+		    11月 24, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>在前面一篇文章中，我们介绍了Runtime中与类和对象相关的内容，从这章开始，我们将讨论类实现细节相关的内容，主要包括类中成员变量，属性，方法，协议与分类的实现。</p>
+<p>本章的主要内容将聚集在Runtime对成员变量与属性的处理。在讨论之前，我们先介绍一个重要的概念：类型编码。</p>
+                    
+                        <a href="/2016/11/24/Objective-C-Runtime运行时之二-成员变量与属性/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/11/21/Objective-C-Runtime-运行时之一：类与对象/">
+                            Objective-C Runtime 运行时之一：类与对象
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-11-21T17:22:10+08:00">
+	
+		    11月 21, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>Objective-C语言是一门动态语言，它将很多静态语言在编译和链接时期做的事放到了运行时来处理。这种动态语言的优势在于：我们写代码时更具有灵活性，如我们可以把消息转发给我们想要的对象，或者随意交换一个方法的实现等。</p>
+<p>这种特性意味着Objective-C不仅需要一个编译器，还需要一个运行时系统来执行编译的代码。对于Objective-C来说，这个运行时系统就像一个操作系统一样，让它所有的工作可以正常运行。这个运行时系统即<code>Objc Runtime</code>。<code>Objc Runtime</code>其实就是一个<code>Runtime</code>库，它基本上是用C和汇编写的，这个库使得C语言有了面向对象的能力。</p>
+                    
+                        <a href="/2016/11/21/Objective-C-Runtime-运行时之一：类与对象/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/11/18/NSURLSession与NSURLConnection区别/">
+                            NSURLSession与NSURLConnection区别
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-11-18T14:09:19+08:00">
+	
+		    11月 18, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>今天去面试，被问了一道AFNetworking2.0和3.0有什么区别，当时心想，这谁不知道啊，随口答到：2.0使用的NSURLConnection,3.0使用的是NSURLSession,人家又问NSURLSesstion和NSURLConnection有什么区别，瞬间傻眼了，支支吾吾只是说出了缓存策略的不同。亡羊补牢，为时未晚，这篇博客就讲解一下它们两者到底有什么区别。</p>
+                    
+                        <a href="/2016/11/18/NSURLSession与NSURLConnection区别/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/11/09/iOS触摸事件处理详解/">
+                            iOS触摸事件处理详解
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-11-09T14:39:39+08:00">
+	
+		    11月 09, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。</p>
+<p>当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，该触摸时事件对象是一系列触摸信息包装集。例如手势事件，该事件是一个动态的变量它取决于你使用了什么框架以及你感兴趣的手势事件类型。</p>
+                    
+                        <a href="/2016/11/09/iOS触摸事件处理详解/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/10/22/iOS照片开发之PhotoKit/">
+                            iOS照片开发之PhotoKit
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-10-22T16:44:37+08:00">
+	
+		    10月 22, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。它是iOS8之后出现的框架，在使用框架之前需要导入<code>#import &lt;Photos/Photos.h&gt;</code>库</p>
+                    
+                        <a href="/2016/10/22/iOS照片开发之PhotoKit/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         
@@ -259,7 +653,14 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">第 1 页 共 1 页</li>
+        <li class="pagination-next">
+            <a class="btn btn--default btn--small" href="/categories/Objective-C/page/2/">
+                    <span>下一页</span>
+                <i class="fa fa-angle-right text-base icon-ml"></i>
+            </a>
+        </li>
+        
+        <li class="pagination-number">第 1 页 共 2 页</li>
     </ul>
 </div>
 
@@ -293,14 +694,14 @@
         
             <h4 id="about-card-name">贵永冬</h4>
         
-            <div id="about-card-bio"><p>iOS开发者<br>  android业余选手,  十足的海贼迷</p>
+            <div id="about-card-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>河南酒运达电子商务有限公司</p>
+                <p>郑州市时空隧道信息技术有限公司</p>
 
             </div>
         
