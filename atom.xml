@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2017-03-09T07:02:33.000Z</updated>
+  <updated>2017-03-18T07:37:00.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,237 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>一天一Android之Activity</title>
+    <link href="http://www.guiyongdong.com/2017/03/17/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BActivity/"/>
+    <id>http://www.guiyongdong.com/2017/03/17/一天一Android之Activity/</id>
+    <published>2017-03-17T09:30:01.000Z</published>
+    <updated>2017-03-18T07:37:00.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天来说一说Android四大组件之一的<code>Activity</code>，类似于iOS的<code>UIViewController</code>。当我们新建一个Android项目时，Android Studio默认会为我们创建一个主活动:<code>MainActivity</code>和一个默认的主布局:<code>activity_main.xml</code>。一个活动想要显示在屏幕上，就必须在<code>AndroidManifest.xml</code>中注册。但是这些工作都有IDE帮我们自动完成了。我们来看<code>AndroidManifest.xml</code>:</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.guiyongdong.activitydemo"</span>&gt;</div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">application</span></span></div><div class="line">        <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">        <span class="attr">android:roundIcon</span>=<span class="string">"@mipmap/ic_launcher_round"</span></div><div class="line">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span>&gt;</div><div class="line">        </div><div class="line">        <span class="comment">&lt;!--MainActivity--&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">".MainActivity"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line">        </div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="Activity声明"><a href="#Activity声明" class="headerlink" title="Activity声明"></a>Activity声明</h3><p>我们首先声明了程序的包名<code>package=&quot;com.guiyongdong.listviewdemo&quot;</code>。</p>
+<h5 id="lt-application-gt"><a href="#lt-application-gt" class="headerlink" title="&lt;application&gt;"></a><code>&lt;application&gt;</code></h5><p>接下来我们又声明了<code>&lt;application&gt;</code>标签，这个标签标示当前程序的配置，例如我们配置了icon（程序的图标）、label（程序的名称）等。</p>
+<h5 id="lt-activity-gt"><a href="#lt-activity-gt" class="headerlink" title="&lt;activity&gt;"></a><code>&lt;activity&gt;</code></h5><p>然后我们又在<code>&lt;application&gt;</code>标签内添加了一个<code>&lt;activity&gt;</code>标签，这个标签就是声明一个活动（Avtivity）。记住，所有的活动都必须声明在<code>&lt;application&gt;</code>标签内。<code>name</code>属性表示声明的是哪个Activity，因为我们之前已经声明过了当前的包名， 所有以后声明的Activity只要在这个包中，我们只需要声明<code>.MainActivity</code>就可以了。其实它的全称还是<code>com.guiyongdong.listviewdemo. MainActivity</code>。 我们又看到在<code>&lt;activity&gt;</code>标签内，我们有声明了一个标签<code>&lt;intent-filter&gt;</code>，来看看它们是什么。</p>
+<h5 id="lt-intent-filter-gt"><a href="#lt-intent-filter-gt" class="headerlink" title="&lt;intent-filter&gt;"></a><code>&lt;intent-filter&gt;</code></h5><p><code>&lt;intent-filter&gt;</code>这个标签表示intent过滤器，至于intent是什么，我们待会再说。先来看看它声明了什么类型的过滤器。<br>在<code>&lt;intent-filter&gt;</code>标签内，我们可以声明三种标签，分别是:<code>&lt;action&gt;</code>、<code>&lt;category&gt;</code>和<code>&lt;data&gt;</code>，这三个标签都是可以作为活动的过滤器。这里我们声明了一个<code>&lt;action&gt;</code>：<code>android.intent.action.MAIN</code>和一个<code>&lt;category&gt;</code>：<code>android.intent.category.LAUNCHER</code>，这两个值都是Android SDK提供给我们的，它表示当前活动为主活动，另一个表示当前活动为启动活动，注意着两种类型的过滤器必须放在一起，不让运行不起来~。当然，我们也可以自定义其他过滤器的值，这个在我们说到隐式Intent时会自定义。</p>
+<h3 id="Intent"><a href="#Intent" class="headerlink" title="Intent"></a>Intent</h3><p>Intent是Android程序中各组件之间进行交互的一种重要方式，它不仅可以指明当前组件想要执行的动作，还可以在不同组件之间传递数据。Intent一般可被用于启动活动，启动服务以及发送广播等场景，当前我们主要讲解Activity,所以我们主要看Intent在活动中的应用。</p>
+<p>Intent大致可以分为两种：<strong>显式Intent</strong>和<strong>隐式Intent</strong>。</p>
+<p>上面我们说到了，如果一个Activity想要作为程序启动时的主Activity，必须声明声明<code>&lt;intent-filter&gt;</code>标签，而且必须在此标签下声明两个值为固定值的<code>&lt;action&gt;</code>和<code>&lt;category&gt;</code>。一般情况下我们的程序不可能只有一个活动，如果我们想要再开启一个活动时，该怎么办呢？</p>
+<h5 id="显式Intent"><a href="#显式Intent" class="headerlink" title="显式Intent"></a>显式Intent</h5><p>开启另一个Activity的最简单的方式就是使用显式Intent，我本人没有开发过Android，也不知道这种方式在项目中的使用率，但我感觉它的使用率应该不低，因为它太简单了。</p>
+<p>例如我又新建了一个Avtivity(SecondActivity)，系统默认为我们在<code>AndroidManifest.xml</code>中注册，如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.guiyongdong.activitydemo"</span>&gt;</div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">application</span></span></div><div class="line">        <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">        <span class="attr">android:roundIcon</span>=<span class="string">"@mipmap/ic_launcher_round"</span></div><div class="line">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span>&gt;</div><div class="line">        </div><div class="line">        <span class="comment">&lt;!--MainActivity--&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">".MainActivity"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line">        </div><div class="line">        <span class="comment">&lt;!--SecondActivity--&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">".SecondActivity"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line">        </div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>当然，这时候我可以在<code>SecondActivity</code>的标签下声明任何的filter标签，不过现在我不需要声明，因为我现在使用的是显式Intent。我们在<code>MainActivity</code>的布局文件中添加一个按钮，并且添加按钮的点击事件，事件是去打开<code>SecondActivity</code>活动，至于如何布局，以后再说。 代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        </div><div class="line">        Button button = (Button) findViewById(R.id.button);</div><div class="line">        button.setOnClickListener(<span class="keyword">new</span> View.OnClickListener()&#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">            		<span class="comment">//显式启动SecondActivity</span></div><div class="line">                Intent intent = <span class="keyword">new</span> Intent(MainActivity.<span class="keyword">this</span>,SecondActivity.class);</div><div class="line">                startActivity(intent);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>至于为何这么写，刚开始我也不明白，好在我有一点java基础，这里奉劝想学习Android的同学，必须打好java基础。</p>
+<p>大家可以看到，我在Intent的构造函数中传了两个值，一个是<code>MainActivity.this</code>，一个是<code>SecondActivity.class</code>，它的构造函数为:<code>Intent(Context context, Class&lt;?&gt; cls)</code>，第一个参数是表示启动活动的上下文，第二个参数Class表示指定想要启动的目标活动，通过这个构造函数，我们就能构建出Intent的<code>意图</code>（就是我要去干什么）。然后我们调用<code>startActivity</code>方法，把这个明显的意图传递过去就行了。</p>
+<h5 id="隐式Intent"><a href="#隐式Intent" class="headerlink" title="隐式Intent"></a>隐式Intent</h5><p>相比于显式Intent，隐式Intent则含蓄很多了，它并不明确指出我们想要启动哪一个活动，而是指定了一系列更为抽象的<code>action</code>和<code>category</code>等信息，让系统去分析这个Intent，并找出合适的活动去启动。</p>
+<p>什么叫合适的活动？我们来想一个问题，系统为什么会启动<code>MainActivity</code>作为程序的主界面，是因为我们声明了如下代码:<br><figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">".MainActivity"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>在<code>&lt;action&gt;</code>标签中我们指明了当前活动可以响应<code>android.intent.action.MAIN</code>这个action,而<code>&lt;category&gt;</code>标签则包含了一些附加信息，指明当前活动可以响应<code>android.intent.category.LAUNCHER</code>这个category，只有这两个配置同时匹配，这个活动才是合适的活动。</p>
+<p>例如我们为<code>SecondActivity</code>添加如下filter：<br><figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">".SecondActivity"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"com.guiyongdong.activitydemo.second"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.DEFAULT"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>然后我修改MainActivity中按钮的点击方法：<br><figure class="highlight java"><table><tr><td class="code"><pre><div class="line">Button button = (Button) findViewById(R.id.button);</div><div class="line">button.setOnClickListener(<span class="keyword">new</span> View.OnClickListener()&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">    		<span class="comment">//隐式启动Intent</span></div><div class="line">        Intent intent = <span class="keyword">new</span> Intent(<span class="string">"com.guiyongdong.activitydemo.second"</span>);</div><div class="line">        startActivity(intent);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>我们看到，我直接将action的字符串传了过去，表明想要启动能响应<code>com.guiyongdong.activitydemo.second</code>这个action的活动，我们之前说过，只有action和category同时匹配才能响应，但是这里我们并没有指定category，那是因为<code>android.intent.category.DEFAULT</code>是一种默认的category，在我们调用<code>startActivity</code>方法的时候，会自动的添加这个默认的category到Intent中。</p>
+<p>当然，现在我们也可以添加任意自定义的category：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">".SecondActivity"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"com.guiyongdong.activitydemo.second"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.DEFAULT"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"com.guiyongdong.category.my_second"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>然后在MainActivity中添加如下代码：<br><figure class="highlight java"><table><tr><td class="code"><pre><div class="line">Button button = (Button) findViewById(R.id.button);</div><div class="line">button.setOnClickListener(<span class="keyword">new</span> View.OnClickListener()&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">        Intent intent = <span class="keyword">new</span> Intent(<span class="string">"com.guiyongdong.activitydemo.second"</span>);</div><div class="line">        intent.addCategory(<span class="string">"com.guiyongdong.category.my_second"</span>);</div><div class="line">        startActivity(intent);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>我们依然能够启动<code>SecondActivity</code>。</p>
+<p>当然，我们前面也说到了<code>&lt;data&gt;</code>这个标签，它用于更精确地指定当前活动能响应什么类型的数据，<code>&lt;data&gt;</code>标签中主要可以匹配一下内容：</p>
+<ul>
+<li>android:scheme 用于指定数据协议部分，如http</li>
+<li>android:host 用于指定数据的主机名部分，如www.baidu.com</li>
+<li>android:port 用于指定数据的端口部分</li>
+<li>android:path 用于指定主机名和端口之后的部分</li>
+<li>android:mimeType 用于指定可以处理的数据类型</li>
+</ul>
+<p>至于详细的该怎么用，大家可以去试试。这里列一下打电话的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">Button button = (Button) findViewById(R.id.button);</div><div class="line">button.setOnClickListener(<span class="keyword">new</span> View.OnClickListener()&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">        Intent intent = <span class="keyword">new</span> Intent(Intent.ACTION_CALL);</div><div class="line">        intent.setData(Uri.parse(<span class="string">"tel:10086"</span>));</div><div class="line">        startActivity(intent);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>当然，前提是我们在<code>AndroidManifest.xml</code>添加打电话的权限<br><code>&lt;uses-permission android:name=&quot;android.permission.CALL_PHONE&quot;/&gt;</code></p>
+<h3 id="Activity生命周期"><a href="#Activity生命周期" class="headerlink" title="Activity生命周期"></a>Activity生命周期</h3><p>当我们启动一个新的Activity的时候，它覆盖在了原来的Activity上，我们想一想，Android是通过上面来管理这些Activity的呢？</p>
+<p>这里要说明一种数据结构：栈，栈是一种先进后出的数据结构。我们发现，当我们点击返回键时，最先消失的活动是我们最新添加显示的活动。</p>
+<p>Android是使用任务（Task）来管理活动的，一个任务就是一组存放在栈里的活动的集合，这个栈也被称为返回栈(Back Stack)。</p>
+<h5 id="活动状态"><a href="#活动状态" class="headerlink" title="活动状态"></a>活动状态</h5><ul>
+<li><p>运行状态<br>  当一个活动位于返回栈的栈顶时，这时活动就处于运行状态。系统最不愿意回收的就是处于运行状态的活动。</p>
+</li>
+<li><p>暂停状态<br>  当一个活动不再处于栈顶位置，但仍是可见的，这时活动就进入了暂停状态，因为有时候开启一个新的活动，这个活动并不是占满整个屏幕的。处于暂停状态的活动仍然是完全活着的，系统也不愿意去回收这种活动，只有在内存极低的情况下，系统才会去考虑回收这种活动。</p>
+</li>
+<li><p>停止状态<br>  当一个活动不再处于栈顶位置，并且完全不可见时，活动就进入了暂停状态，系统仍然会为此活动保存相应的状态和成员变量，但是，这并不是完全可靠，当内存不足，处于停止状态的活动有可能被系统回收。</p>
+</li>
+<li><p>销毁状态<br>  当一个活动从返回栈中移除后就成了销毁状态。系统最倾向于回收处于这种状态的活动。</p>
+</li>
+</ul>
+<h5 id="活动的生存期"><a href="#活动的生存期" class="headerlink" title="活动的生存期"></a>活动的生存期</h5><p>Activity类中定义了7个回调方法，覆盖了活动生命周期的每一个环节。</p>
+<ul>
+<li><p>onCreate()<br>  这个方法我们已经见过很多次了，每个活动中我们都重写了这个方法，它会在活动第一次被创建的时候调用。我们应该在这个方法中完成活动的初始化操作，比如加载布局，绑定事件等。</p>
+</li>
+<li><p>onStart()<br>  这个方法在活动由不可见变为可见的时候调用。</p>
+</li>
+<li><p>onResume()<br>  这个方法在活动准备好喝用户交互的时候调用。此时活动一定位于返回栈的栈顶，并且处于运行状态。</p>
+</li>
+<li><p>onPause()<br>  这个方法在系统准备去启动或者恢复另外一个活动的时候调用。通常会在这个方法中奖一些消耗CPU的资源释放掉，但是这个方法的执行速度一定要快，不然会影响到新的活动的使用。</p>
+</li>
+<li><p>onStop()<br>  这个方法在活动完全不可见的时候调用。它和onPause()方法的区别主要在于，如果启动的新活动是一个对话框式的活动，那么OnPause()方法会得到执行，而onStop()方法并不会执行。</p>
+</li>
+<li><p>onDestory()<br>  这个方法在活动被销毁之前调用，之后活动的状态将变为销毁状态。</p>
+</li>
+<li><p>onRestart()<br>  这个方法在活动由停止状态变为运行状态之前调用，也就是活动被重新启动了。</p>
+</li>
+</ul>
+<p>看完以上的7个方法（发现这些方法和iOS好相似啊），可以将活动分为3种生存期。</p>
+<ul>
+<li><p>完整生存期。活动在onCreate()方法和onDestroy()方法之间所经历的，就是完整生存期。一般情况下，都是在onCreate()中完成各种初始化，在onDestroy()中完成释放内存的操作。</p>
+</li>
+<li><p>可见生存期。活动在onStart()方法和onStop()方法之间所经历的，就是可见生存期。我们可以通过这两个方法，合理的管理那些对用户可见的资源。</p>
+</li>
+<li><p>前台生存期。活动在onResume()方法和onPause()方法之间所经历的就是前台生存期。</p>
+</li>
+</ul>
+<p>如图，完整的描述了Activity的整个生命周期：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android5.jpg?raw=true"><br></div>
+
+<h3 id="活动的启动模式"><a href="#活动的启动模式" class="headerlink" title="活动的启动模式"></a>活动的启动模式</h3><p>活动的启动模式一共有4种，分别是standard、singleTop、singleTask和singleInstance。可以在<code>AndroidManifest.xml</code>通过给<code>&lt;activity&gt;</code>标签指定<code>android:launchMode</code>属性来选择启动模式。</p>
+<h5 id="standard"><a href="#standard" class="headerlink" title="standard"></a>standard</h5><p>standard是活动的默认启动模式，每当启动一个新的活动，它都会在返回栈中如栈，每次启动都会创建该活动的一个新的实例。</p>
+<h5 id="singleTop"><a href="#singleTop" class="headerlink" title="singleTop"></a>singleTop</h5><p>加入我们在<code>SecondActivity</code>活动中再启动一个<code>SecondActivity</code>，这时候系统是不会再去创建一个新的<code>SecondActivity</code>活动的。singleTop模式下，当启动活动时如果发现返回栈的栈顶已经是该类型的活动，则认为可以直接使用它，不会再去创建新的活动实例。</p>
+<h5 id="singleTask"><a href="#singleTask" class="headerlink" title="singleTask"></a>singleTask</h5><p>使用singleTask可以很好的解决重复创建栈顶活动的问题，每次启动该活动时系统首先会在返回栈中检查是否有存在该活动的实例，如果发现已经存在则直接使用该实例，并把这个活动之上的所有活动统统出栈，如果没有发现，就会创建一个新的活动实例。</p>
+<h5 id="singleInstance"><a href="#singleInstance" class="headerlink" title="singleInstance"></a>singleInstance</h5><p>singleInstance不同于上面的三种模式，它表示活动会启用一个新的返回栈来管理这个活动，因为程序中可以存在多个返回栈。一般情况下，我们希望几个程序共享某个活动时会使用到此模式。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>关于Activity的知识还有很多，只有在开发中才能遇到各种问题，继续吧，骚年~</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;今天来说一说Android四大组件之一的&lt;code&gt;Activity&lt;/code&gt;，类似于iOS的&lt;code&gt;UIViewController&lt;/code&gt;。当我们新建一个Android项目时，Android Studio默认会为我们创建一个主活动:&lt;code&gt;MainActivity&lt;/code&gt;和一个默认的主布局:&lt;code&gt;activity_main.xml&lt;/code&gt;。一个活动想要显示在屏幕上，就必须在&lt;code&gt;AndroidManifest.xml&lt;/code&gt;中注册。但是这些工作都有IDE帮我们自动完成了。我们来看&lt;code&gt;AndroidManifest.xml&lt;/code&gt;:&lt;/p&gt;
+&lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;&amp;lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&amp;gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;manifest&lt;/span&gt; &lt;span class=&quot;attr&quot;&gt;xmlns:android&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;http://schemas.android.com/apk/res/android&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;          &lt;span class=&quot;attr&quot;&gt;package&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;com.guiyongdong.activitydemo&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;application&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:allowBackup&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;true&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:icon&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;@mipmap/ic_launcher&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:label&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;@string/app_name&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:roundIcon&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;@mipmap/ic_launcher_round&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:supportsRtl&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;true&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:theme&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;@style/AppTheme&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;comment&quot;&gt;&amp;lt;!--MainActivity--&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;activity&lt;/span&gt; &lt;span class=&quot;attr&quot;&gt;android:name&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;.MainActivity&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;            &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;intent-filter&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;                &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;action&lt;/span&gt; &lt;span class=&quot;attr&quot;&gt;android:name&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;android.intent.action.MAIN&quot;&lt;/span&gt;/&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;                &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;category&lt;/span&gt; &lt;span class=&quot;attr&quot;&gt;android:name&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;android.intent.category.LAUNCHER&quot;&lt;/span&gt;/&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;            &lt;span class=&quot;tag&quot;&gt;&amp;lt;/&lt;span class=&quot;name&quot;&gt;intent-filter&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;tag&quot;&gt;&amp;lt;/&lt;span class=&quot;name&quot;&gt;activity&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;tag&quot;&gt;&amp;lt;/&lt;span class=&quot;name&quot;&gt;application&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;/&lt;span class=&quot;name&quot;&gt;manifest&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+    
+    
+      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>一天一Android之Android系统初窥</title>
+    <link href="http://www.guiyongdong.com/2017/03/15/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BAndroid%E7%B3%BB%E7%BB%9F%E5%88%9D%E7%AA%A5/"/>
+    <id>http://www.guiyongdong.com/2017/03/15/一天一Android之Android系统初窥/</id>
+    <published>2017-03-15T09:08:17.000Z</published>
+    <updated>2017-03-17T09:35:58.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>由于前段时间使用ReactNative开发过一个项目，在开发的过程中，会使用到大量的非ReactNative提供的组件和功能。这时候就必须写原生桥接，iOS还好说，毕竟是靠这个吃饭的，可是android就捉襟见肘了。为了向大前端的目标更进一步，我计划开始学习android，为期6个月，我的目标是6个月内起码自己公司的android项目可以上手，当然，如果想成为真正的android开发者，光靠这6个月是不行。还需要大量的实际项目才能锻炼。</p>
+<p>值得庆幸的是我在大学主攻的就是java(哈哈，现在也基本上忘的差不多了)。为了打好基础，我买了两本书，一本是《java编程思想》，一本是京东上销量很好的《第二行代码Android》，希望这两本书能够帮到我。另外我也会专门开一个专栏，讲解我学习java的过程。可能在接下来的博客中，我总结的都是基础知识，大神莫嘲笑。</p>
+<a id="more"></a>
+<h3 id="Android系统架构"><a href="#Android系统架构" class="headerlink" title="Android系统架构"></a>Android系统架构</h3><p>Android大概可以分为四层架构：Linux内核层、系统运行库层、应用框架层和应用层。</p>
+<p><strong>Linux内核层</strong></p>
+<p>Android系统是基于Linux内核的，这一层为Android设备的各种硬件提供了底层的驱动，如显示驱动、音频驱动、照相机驱动、蓝牙驱动、Wi-Fi驱动、电源管理等。</p>
+<p><strong>系统运行时库层</strong></p>
+<p>这一层通过一些C/C++库来为Android系统提供了主要的特性支持。如SQLite库提供了数据库的支持，OpenGL|ES库提供了3D绘图的支持，Webkit库提供了浏览器内核的支持等。</p>
+<p>同样在这一层还要Android运行时库，主要提供了一些核心库，能是开发者可以使用java来编写Android应用。另外，Android运行时库还包含了Dalvik虚拟机（5.0系统之后改为ART运行环境），它能让每一个Android应用都能运行在独立的进程中，并且拥有一个自己的Dalvik虚拟机实例。</p>
+<p><strong>应用框架层</strong></p>
+<p>这一层主要提供了构建应用程序时可能用到的各种API，Android自带的一些核心应用就是使用这些API完成的，我们也是通过这些API来完成我们的应用。</p>
+<p><strong>应用层</strong></p>
+<p>普通用户主要就是和这一层打交道，我们自己开发的应用都是属于这一层的，当然，系统自带的应用也是这一层的。</p>
+<p>系统架构图：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android1.jpg?raw=true"><br></div>
+
+
+<h3 id="Android版本"><a href="#Android版本" class="headerlink" title="Android版本"></a>Android版本</h3><p>可能现在应用最低的适配都是从4.0版本开始，目前最高版本是7.1.1，而且谷歌对Android版本的命名都是以甜点命名的。什么牛轧糖、棒棒糖。</p>
+<h3 id="IDE"><a href="#IDE" class="headerlink" title="IDE"></a>IDE</h3><p>在我没接触Android之前，我的同学都是使用MyEclipse开发的，至于是如何开发的，我不知道，因为当我开始学Android的时候，已经普及了另一个开发工具：<strong>Android Studio</strong>。当然，只有IDE是不行的，还得有<strong>JDK</strong>、<strong>Android SDK</strong>。</p>
+<p>如果使用Android Studio，你也可以使用studio自带的工具进行下载各个版本的SDK。如图：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android2.png?raw=true"><br></div>
+
+<p>当然，SDK的目录你可以随便选。</p>
+<h3 id="项目目录"><a href="#项目目录" class="headerlink" title="项目目录"></a>项目目录</h3><p>至于该如何创建项目，我就不说了。创建完项目以后切换到Project模式下，就是项目的真实目录了。</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android3.png?raw=true"><br></div>
+
+<p>下面来看看这些目录或者文件都是干什么的：</p>
+<p><strong>.gradle和.idea</strong> </p>
+<p>这两个目录下放置的都是Android Studio自动生成的一些文件，我们无须关心，也不要去编辑。</p>
+<p><strong>app</strong></p>
+<p>这个目录才是我们以后经常使用和编辑的，一会再说它。</p>
+<p><strong>build</strong></p>
+<p>这个目录也不需要关心，它主要包含了一些在编译时自动生成的文件。</p>
+<p><strong>gradle</strong></p>
+<p>这个目录下包含了gradle wrapper的配置文件，使用gradle wrapper的方式不需要提前将gradle下载好，而是会自动根据本地的缓存情况决定是否需要联网下载gradle。Android Studio默认没有启动gradle wrapper的方式，如果需要打开，可以点击 File-&gt;Other Settings-&gt;Build,Execution,Deployment-&gt;Build Tools-&gt;Gradle 进行配置。</p>
+<p><strong>.gitignore</strong></p>
+<p>设置git忽略哪些文件</p>
+<p><strong>build.gradle</strong></p>
+<p>这个文件时全局的gradle构建脚本，通常这个文件中的内容是不需要修改的，我只知道gradle是构建工具，至于gradle更多的信息，我还得再研究一下。</p>
+<p><strong>gradle.properties</strong></p>
+<p>这个文件时全局的gradle配置文件，在这里配置的属性将会影响到项目中所有的gradle编译脚本。</p>
+<p><strong>gradlew和gradlew.bat</strong></p>
+<p>这两个文件时用来在命令行界面中执行gradle命令的，其中gradlew是在Linux或Mac系统中使用，gradlew.bat是在Windows系统中使用的。</p>
+<p><strong>ListViewDemo.iml</strong></p>
+<p>这个文件的名字和我们的项目名字是一样的，不固定。一般不用动。</p>
+<p><strong>local.properties</strong></p>
+<p>这个文件用于指定Android SDK路径，一般我们不动，除非你的SDK本地路径改变了。</p>
+<p><strong>settings.gradle</strong></p>
+<p>这个文件用于指定项目中所引入的模块，因为当前项目就一个模块：app，在以后可能我们还会引入其他模块，一般IDE帮我们自动导入。</p>
+<h4 id="app"><a href="#app" class="headerlink" title="app"></a>app</h4><p>看了整个工程的目录，感觉有用的不是很多，好多都是和gradle或者配置有关。其实，真正需要我们关心的只有app这个目录。</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android4.png?raw=true"><br></div>
+
+<p><strong>build</strong></p>
+<p>这个目录和外层的build目录类似，主要也是包含了一些在编译时生成的文件，不过它里面的内容更复杂，也不需要管。</p>
+<p><strong>libs</strong></p>
+<p>如果项目中使用到了第三方的jar包，就需要把这些jar包都放在libs录下，放在这个目录下的jar包都会被自动添加到构建路径中去。</p>
+<p><strong>androidTest</strong></p>
+<p>这个一看就是用来编写测试用例的，一些小公司可能也不写测试代码的。</p>
+<p><strong>java</strong></p>
+<p>毫无疑问，java目录是放置我们所有java代码的地方，以后所有的代码都在里面。</p>
+<p><strong>res</strong></p>
+<p>这个目录下的内容比较多，简单所，就是放各种资源的，图片，布局，字符串等资源。图片放到drawable文件下，布局放置layout下，字符串放在values下。</p>
+<p><strong>AndroidMainfest.xml</strong></p>
+<p>这个文件很重要，是整个Android的配置文件，包括程序中使用到的所有四大组件都需要在这个文件注册，另外还有权限声明等。</p>
+<p><strong>test</strong></p>
+<p>它是用来编写Unit Test测试用例的，是对项目进行自动化测试的另一种方式。</p>
+<p><strong>.gitignore</strong></p>
+<p>忽略文件</p>
+<p><strong>app.iml</strong></p>
+<p>不需要关心</p>
+<p><strong>build.gradle</strong></p>
+<p>这个文件也很重要，是app模块的gradle构建脚本，里面会有好多的配置，以后研究到了再说。</p>
+<p><strong>proguard-rules.pro</strong></p>
+<p>代码混淆规则，主要混淆代码，放在人家破解你的项目。</p>
+<p>好了， android项目的大概工程目录就是这样，其实我们会发现，重要的没几个，而且重要的好多都和gradle有关，看来真得好好研究下gradle是什么了。</p>
+<h3 id="build-gradle文件"><a href="#build-gradle文件" class="headerlink" title="build.gradle文件"></a>build.gradle文件</h3><p>在整个项目中，一共有连个build.gradle文件。我们先来看看最外层的build.gradle文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">buildscript &#123;</div><div class="line">    repositories &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line">    dependencies &#123;</div><div class="line">        classpath <span class="string">'com.android.tools.build:gradle:2.3.0'</span></div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">allprojects &#123;</div><div class="line">    repositories &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这些代码都是自动生成的，我们发现在两个闭包中都声明了<code>jcenter()</code>，它是一个代码托管仓库，很多android开源项目都会托管到jcenter上。只要声明它，就可以引用jcenter上的托管的项目。</p>
+<p>在<code>dependencies</code>闭包中，还声明了<code>classpath</code>，这个主要是声明gradle插件的，因为gradle不仅仅为android工作，还为java等项目工作，所有我们要声明使用哪个包中的gradle工具。例如我们声明了<code>com.android.tools.build:gradle:2.3.0</code>，2.3.0是此插件的版本号。</p>
+<p>再来看看app下的<code>build.gradle</code>文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">apply plugin: <span class="string">'com.android.application'</span></div><div class="line"></div><div class="line">android &#123;</div><div class="line">    compileSdkVersion <span class="number">25</span></div><div class="line">    buildToolsVersion <span class="string">"25.0.1"</span></div><div class="line">    defaultConfig &#123;</div><div class="line">        applicationId <span class="string">"com.guiyongdong.listviewdemo"</span></div><div class="line">        minSdkVersion <span class="number">15</span></div><div class="line">        targetSdkVersion <span class="number">25</span></div><div class="line">        versionCode <span class="number">1</span></div><div class="line">        versionName <span class="string">"1.0"</span></div><div class="line">        testInstrumentationRunner <span class="string">"android.support.test.runner.AndroidJUnitRunner"</span></div><div class="line">    &#125;</div><div class="line">    buildTypes &#123;</div><div class="line">        release &#123;</div><div class="line">            <span class="function">minifyEnabled <span class="keyword">false</span></span></div><div class="line">            proguardFiles <span class="title">getDefaultProguardFile</span><span class="params">(<span class="string">'proguard-android.txt'</span>)</span>, 'proguard-rules.pro'</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">dependencies &#123;</div><div class="line">    <span class="function">compile <span class="title">fileTree</span><span class="params">(dir: <span class="string">'libs'</span>, include: [<span class="string">'*.jar'</span>])</span></span></div><div class="line">    <span class="title">androidTestCompile</span><span class="params">(<span class="string">'com.android.support.test.espresso:espresso-core:2.2.2'</span>, &#123;</span></div><div class="line">        exclude group: <span class="string">'com.android.support'</span>, <span class="keyword">module</span>: <span class="string">'support-annotations'</span></div><div class="line">    &#125;)</div><div class="line">    compile 'com.android.support:appcompat-v7:25.0.1'</div><div class="line">    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'</div><div class="line">    compile 'com.android.support:recyclerview-v7:25.0.1'</div><div class="line">    testCompile 'junit:junit:4.12'</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>咋一看，这个文件好复杂啊，别急，我们一行一行的看。</p>
+<p><code>com.android.application</code> 表示这是一个应用程序模块，<code>com.android.library</code> 表示这是一个库模块，他俩最大的区别就是，一个可以直接运行，一个只能作为代码库依附于别的应用程序模块来运行。</p>
+<p>接下来是一个大的android闭包，我们看看它都代表什么。</p>
+<p><code>compileSdkVersion</code>: 用于指定项目的编译版本，我们这里指定25，表示使用Android 7.1.1来编译，如果你不知道具体使用哪个版本来编译，你可以直接看此文章的第一张图，或者你也可以在Android Studio-&gt;Preferences 直接搜索Android SDK 来查看版本情况。</p>
+<p><code>buildToolsVersion</code>: 用来指定项目构建工具的版本，如果有新版本时，Android Studio会进行提升。</p>
+<p><code>applicationId</code>: 当前项目的包名</p>
+<p><code>minSdkVersion</code>: 最低支持的Android系统版本</p>
+<p><code>targetSdkVersion</code>: 这个表示你在该目标版本上已经做过充分的测试，系统将会为你的应用程序启用一些最新的功能和特性，比如你设置成23或者更高，系统会为你的应用程序启用运行时权限，如果你设置成22，那么Android 6.0的功能你就用不了。</p>
+<p><code>versionCode</code>: 当前版本号</p>
+<p><code>versionName</code>: 当前项目的版本名 </p>
+<p><code>testInstrumentationRunner</code>: 测试的一些东西</p>
+<p>我们再来看看<code>buildTypes</code>闭包，buildTypes闭包用于指定生成安装文件的相关配置，通常他包含两个子包：<code>release</code>和<code>debug</code>。一个表示生成环境，一个表示测试环境，debug默认可以不写。我们看看<code>release</code>包下的具体内容</p>
+<p><code>minifyEnabled</code>: 用于指定是否对代码进行混淆<br><code>proguardFiles</code>: 混淆时使用的文件</p>
+<p>我们再来看看<code>dependencies</code>包，它表示当前项目所有的依赖关系，通常Android Studio项目一共有3种依赖方式：<strong>本地依赖</strong>、<strong>库依赖</strong>、<strong>远程依赖</strong>。本地依赖就是jar包依赖，库依赖是在项目中添加模块，远程依赖是对jcenter库上开源项目的依赖。</p>
+<p><code>compile fileTree</code>: 它就是一个本地依赖声明，表示将libs目录下的所有的.jar后缀的文件都添加到构建路径中去。</p>
+<p><code>compile</code>: 这个则是远程依赖，</p>
+<p>还有一种库依赖，写法为<code>compile project(&#39;:helper&#39;)</code>，它表示添加一个名叫helper库的依赖，当然，前提是这个库已经添加到你的项目中。</p>
+<p>关于build.gradle的配置还有很多，我想在以后项目复杂了，会遇到的。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;由于前段时间使用ReactNative开发过一个项目，在开发的过程中，会使用到大量的非ReactNative提供的组件和功能。这时候就必须写原生桥接，iOS还好说，毕竟是靠这个吃饭的，可是android就捉襟见肘了。为了向大前端的目标更进一步，我计划开始学习android，为期6个月，我的目标是6个月内起码自己公司的android项目可以上手，当然，如果想成为真正的android开发者，光靠这6个月是不行。还需要大量的实际项目才能锻炼。&lt;/p&gt;
+&lt;p&gt;值得庆幸的是我在大学主攻的就是java(哈哈，现在也基本上忘的差不多了)。为了打好基础，我买了两本书，一本是《java编程思想》，一本是京东上销量很好的《第二行代码Android》，希望这两本书能够帮到我。另外我也会专门开一个专栏，讲解我学习java的过程。可能在接下来的博客中，我总结的都是基础知识，大神莫嘲笑。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+    
+    
+      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+    
+  </entry>
   
   <entry>
     <title>转场动画详解</title>
@@ -2981,618 +3212,6 @@ UIKIT_EXTERN NSString *const UIImagePickerControllerLivePhoto NS_AVAILABLE_IOS(9
     
     
       <category term="iOS照片" scheme="http://www.guiyongdong.com/tags/iOS%E7%85%A7%E7%89%87/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>UIBezierPath详解</title>
-    <link href="http://www.guiyongdong.com/2016/09/22/UIBezierPath%E8%AF%A6%E8%A7%A3/"/>
-    <id>http://www.guiyongdong.com/2016/09/22/UIBezierPath详解/</id>
-    <published>2016-09-22T07:51:31.000Z</published>
-    <updated>2017-03-09T07:04:13.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>我在写本篇文章之前，也没有系统学习过贝塞尔曲线，只是曾经某一次的需求需要使用到，才临时百度看了一看而且使用最基本的功能。现在总算有时间停下来好好研究研究这个神奇而伟大的贝塞尔先生！</p>
-<a id="more"></a>
-<h4 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h4><hr>
-<p>使用<code>UIBezierPath</code>可以创建基于矢量的路径，此类是<code>Core Graphics</code>框架关于路径的封装。使用此类可以定义简单的形状，如椭圆、矩形或者有多个直线和曲线段组成的形状等。</p>
-<p><code>UIBezierPath</code>是<code>CGPathRef</code>数据类型的封装。如果是基于矢量形状的路径，都用直线和曲线去创建。我们使用直线段去创建矩形和多边形，使用曲线去创建圆弧（arc）、圆或者其他复杂的曲线形状。</p>
-<p>使用<code>UIBezierPath</code>画图步骤：</p>
-<ol>
-<li>创建一个UIBezierPath对象</li>
-<li>调用-moveToPoint:设置初始线段的起点</li>
-<li>添加线或者曲线去定义一个或者多个子路径</li>
-<li>改变UIBezierPath对象跟绘图相关的属性。如，我们可以设置画笔的属性、填充样式等</li>
-</ol>
-<h4 id="UIBezierPath创建方法介绍"><a href="#UIBezierPath创建方法介绍" class="headerlink" title="UIBezierPath创建方法介绍"></a>UIBezierPath创建方法介绍</h4><hr>
-<p>我们先看看<code>UIBezierPath</code>类提供了哪些创建方式，这些都是工厂方法，直接使用即可。</p>
-<pre><code>
-+ (instancetype)bezierPath;
-+ (instancetype)bezierPathWithRect:(CGRect)rect;
-+ (instancetype)bezierPathWithOvalInRect:(CGRect)rect;
-+ (instancetype)bezierPathWithRoundedRect:(CGRect)rect
-                            cornerRadius:(CGFloat)cornerRadius;
-+ (instancetype)bezierPathWithRoundedRect:(CGRect)rect
-                        byRoundingCorners:(UIRectCorner)corners 
-                              cornerRadii:(CGSize)cornerRadii;
-+ (instancetype)bezierPathWithArcCenter:(CGPoint)center 
-                                 radius:(CGFloat)radius 
-                             startAngle:(CGFloat)startAngle 
-                               endAngle:(CGFloat)endAngle 
-                              clockwise:(BOOL)clockwise;
-+ (instancetype)bezierPathWithCGPath:(CGPathRef)CGPath;
-</code></pre>
-
-<p>下面我们一个一个地介绍其用途。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+ (instancetype)bezierPath;</div></pre></td></tr></table></figure>
-<p>这个使用比较多，因为这个工厂方法创建的对象，我们可以根据我们的需要任意定制样式，可以画任何我们想画的图形。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+ (instancetype)bezierPathWithRect:(CGRect)rect;</div></pre></td></tr></table></figure>
-<p>这个工厂方法根据一个矩形画贝塞尔曲线。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+ (instancetype)bezierPathWithOvalInRect:(CGRect)rect;</div></pre></td></tr></table></figure>
-<p>这个工厂方法根据一个矩形画内切曲线。通常用它来画圆或者椭圆。</p>
-<pre><code>
-+ (instancetype)bezierPathWithRoundedRect:(CGRect)rect
-                            cornerRadius:(CGFloat)cornerRadius;
-+ (instancetype)bezierPathWithRoundedRect:(CGRect)rect
-                        byRoundingCorners:(UIRectCorner)corners 
-                              cornerRadii:(CGSize)cornerRadii;
-</code></pre>
-
-<p>第一个工厂方法是画矩形，但是这个矩形是可以画圆角的。第一个参数是矩形，第二个参数是圆角大小。<br>第二个工厂方法功能是一样的，但是可以指定某一个角画成圆角。像这种我们就可以很容易地给UIView扩展添加圆角的方法了。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+ (instancetype)bezierPathWithArcCenter:(CGPoint)center </div><div class="line">                                 radius:(CGFloat)radius </div><div class="line">                             startAngle:(CGFloat)startAngle </div><div class="line">                               endAngle:(CGFloat)endAngle </div><div class="line">                              clockwise:(BOOL)clockwise;</div></pre></td></tr></table></figure>
-<p>这个工厂方法用于画弧，参数说明如下：<br><code>center</code>: 弧线中心点的坐标<br><code>radius</code>: 弧线所在圆的半径<br><code>startAngle</code>: 弧线开始的角度值<br><code>endAngle</code>: 弧线结束的角度值<br><code>clockwise</code>: 是否顺时针画弧线</p>
-<blockquote>
-<p>温馨提示：我们下面的代码都是在自定义的BezierPathView类中的<code>- (void)drawRect:(CGRect)rect</code>方法中调用</p>
-</blockquote>
-<h5 id="画三角形"><a href="#画三角形" class="headerlink" title="画三角形"></a>画三角形</h5><hr>
-<p>先看效果图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_1.jpg?raw=true" alt="image"><br></div>
-
-<pre><code>
-// 画三角形
-- (void)drawTrianglePath {
-
-  UIBezierPath *path = [UIBezierPath bezierPath];
-  [path moveToPoint:CGPointMake(20, 20)];
-  [path addLineToPoint:CGPointMake(self.frame.size.width - 40, 20)];
-  [path addLineToPoint:CGPointMake(self.frame.size.width / 2, self.frame.size.height - 20)];
-
-  // 最后的闭合线是可以通过调用closePath方法来自动生成的，也可以调用-addLineToPoint:方法来添加
-  //  [path addLineToPoint:CGPointMake(20, 20)];
-
-  [path closePath];
-
-  // 设置线宽
-  path.lineWidth = 1.5;
-
-  // 设置填充颜色
-  UIColor *fillColor = [UIColor greenColor];
-  [fillColor set];
-  [path fill];
-
-  // 设置画笔颜色
-  UIColor *strokeColor = [UIColor blueColor];
-  [strokeColor set];
-
-  // 根据我们设置的各个点连线
-  [path stroke];
-}
-</code></pre>
-
-<p>我们设置画笔颜色通过set方法：<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">UIColor *strokeColor = [UIColor blueColor];</div><div class="line">[strokeColor set];</div></pre></td></tr></table></figure></p>
-<p>如果我们需要设置填充颜色，比如这里设置为绿色，那么我们需要在设置画笔颜色之前先设置填充颜色，否则画笔颜色就被填充颜色替代了。也就是说，如果要让填充颜色与画笔颜色不一样，那么我们的顺序必须是先设置填充颜色再设置画笔颜色。如下，这两者顺序不能改变。因为我们设置填充颜色也是跟设置画笔颜色一样调用UIColor的-set方法。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// 设置填充颜色</div><div class="line">UIColor *fillColor = [UIColor greenColor];</div><div class="line">[fillColor set];</div><div class="line">[path fill];</div><div class="line"></div><div class="line">// 设置画笔颜色</div><div class="line">UIColor *strokeColor = [UIColor blueColor];</div><div class="line">[strokeColor set];</div></pre></td></tr></table></figure>
-<h5 id="画矩形"><a href="#画矩形" class="headerlink" title="画矩形"></a>画矩形</h5><hr>
-<p>先看效果图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_2.jpg?raw=true" alt="image"><br></div>
-
-<pre><code>
-// 画矩形
-- (void)drawRectPath {
-  UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(20, 20, self.frame.size.width - 40, self.frame.size.height - 40)];
-
-  path.lineWidth = 1.5;
-  path.lineCapStyle = kCGLineCapRound;
-  path.lineJoinStyle = kCGLineJoinBevel;
-
-  // 设置填充颜色
-  UIColor *fillColor = [UIColor greenColor];
-  [fillColor set];
-  [path fill];
-
-  // 设置画笔颜色
-  UIColor *strokeColor = [UIColor blueColor];
-  [strokeColor set];
-
-  // 根据我们设置的各个点连线
-  [path stroke];
-}
-</code></pre>
-
-<p>lineCapStyle属性是用来设置线条拐角帽的样式的，其中有三个选择：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">/* Line cap styles. */</div><div class="line"></div><div class="line">typedef CF_ENUM(int32_t, CGLineCap) &#123;</div><div class="line">    kCGLineCapButt,</div><div class="line">    kCGLineCapRound,</div><div class="line">    kCGLineCapSquare</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
-<p>其中，第一个是默认的，第二个是轻微圆角，第三个正方形。</p>
-<p>lineJoinStyle属性是用来设置两条线连结点的样式，其中也有三个选择：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">/* Line join styles. */</div><div class="line"></div><div class="line">typedef CF_ENUM(int32_t, CGLineJoin) &#123;</div><div class="line">    kCGLineJoinMiter,</div><div class="line">    kCGLineJoinRound,</div><div class="line">    kCGLineJoinBevel</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
-<p>其中，第一个是默认的表示斜接，第二个是圆滑衔接，第三个是斜角连接。</p>
-<h5 id="画圆"><a href="#画圆" class="headerlink" title="画圆"></a>画圆</h5><hr>
-<p>我们可以使用+ bezierPathWithOvalInRect:方法来画圆，当我们传的rect参数是一下正方形时，画出来的就是圆。</p>
-<p>先看效果图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_3.jpg?raw=true" alt="image"><br></div>
-
-<pre><code>
-- (void)drawCiclePath {
-  // 传的是正方形，因此就可以绘制出圆了
-  UIBezierPath *path = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(20, 20, self.frame.size.width - 40, self.frame.size.width - 40)];
-
-  // 设置填充颜色
-  UIColor *fillColor = [UIColor greenColor];
-  [fillColor set];
-  [path fill];
-
-  // 设置画笔颜色
-  UIColor *strokeColor = [UIColor blueColor];
-  [strokeColor set];
-
-  // 根据我们设置的各个点连线
-  [path stroke];
-}
-</code></pre>
-
-<blockquote>
-<p>注意：要画圆，我们需要传的rect参数必须是正方形哦！</p>
-</blockquote>
-<h5 id="画椭圆"><a href="#画椭圆" class="headerlink" title="画椭圆"></a>画椭圆</h5><hr>
-<p>先看效果图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_4.jpg?raw=true" alt="image"><br></div><br>前面我们已经画圆了，我们可以使用+ bezierPathWithOvalInRect:方法来画圆，当我们传的rect参数是一下正方形时，画出来的就是圆。那么我们要是不传正方形，那么绘制出来的就是椭圆了。<br><br><pre><code><br>// 画椭圆<br>- (void)drawOvalPath {<br>  // 传的是不是正方形，因此就可以绘制出椭圆圆了<br>  UIBezierPath <em>path = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(20, 20, self.frame.size.width - 80, self.frame.size.height - 40)];<br><br>  // 设置填充颜色<br>  UIColor </em>fillColor = [UIColor greenColor];<br>  [fillColor set];<br>  [path fill];<br><br>  // 设置画笔颜色<br>  UIColor <em>strokeColor = [UIColor blueColor];<br>  [strokeColor set];<br><br>  // 根据我们设置的各个点连线<br>  [path stroke];<br>}<br></em></code></pre><br><br>##### 画带圆角的矩形<br>**<br><br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+ (instancetype)bezierPathWithRoundedRect:(CGRect)rect</div><div class="line">                            cornerRadius:(CGFloat)cornerRadius;</div><div class="line">+ (instancetype)bezierPathWithRoundedRect:(CGRect)rect</div><div class="line">                        byRoundingCorners:(UIRectCorner)corners </div><div class="line">                              cornerRadii:(CGSize)cornerRadii;</div></pre></td></tr></table></figure><br><br>第一个工厂方法是画矩形，但是这个矩形是可以画圆角的。第一个参数是矩形，第二个参数是圆角大小。<br>第二个工厂方法功能是一样的，但是可以指定某一个角画成圆角。像这种我们就可以很容易地给UIView扩展添加圆角的方法了。<br><br>四个都是圆角10：<br><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_5.jpg?raw=true" alt="image"><br></div>
-
-<pre><code>
-- (void)drawRoundedRectPath {
-  UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(20, 20, self.frame.size.width - 40, self.frame.size.height - 40) cornerRadius:10];
-
-  // 设置填充颜色
-  UIColor *fillColor = [UIColor greenColor];
-  [fillColor set];
-  [path fill];
-
-  // 设置画笔颜色
-  UIColor *strokeColor = [UIColor blueColor];
-  [strokeColor set];
-
-  // 根据我们设置的各个点连线
-  [path stroke];
-}
-</code></pre>
-
-<p>如果要画只有一个角是圆角，那么我们就修改创建方法：</p>
-<pre><code>
-UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(20, 20, self.frame.size.width - 40, self.frame.size.height - 40) byRoundingCorners:UIRectCornerTopRight cornerRadii:CGSizeMake(20, 20)];
-</code></pre>
-
-<p>其中第一个参数一样是传了个矩形，第二个参数是指定在哪个方向画圆角，第三个参数是一个CGSize类型，用来指定水平和垂直方向的半径的大小。看下效果图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_6.jpg?raw=true" alt="image"><br></div>
-
-<h5 id="画弧"><a href="#画弧" class="headerlink" title="画弧"></a>画弧</h5><hr>
-<p>画弧前，我们需要了解其参考系，如下图（图片来自网络）：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_7.jpg?raw=true" alt="image"><br></div>
-
-<pre><code>
-#define   kDegreesToRadians(degrees)  ((pi * degrees)/ 180)
-- (void)drawARCPath {
-  const CGFloat pi = 3.14159265359;
-
-  CGPoint center = CGPointMake(self.frame.size.width / 2, self.frame.size.height / 2);
-  UIBezierPath *path = [UIBezierPath bezierPathWithArcCenter:center
-                                                      radius:100
-                                                  startAngle:0
-                                                    endAngle:kDegreesToRadians(135)
-                                                   clockwise:YES];
-
-  path.lineCapStyle = kCGLineCapRound;
-  path.lineJoinStyle = kCGLineJoinRound;
-  path.lineWidth = 5.0;
-
-  UIColor *strokeColor = [UIColor redColor];
-  [strokeColor set];
-
-  [path stroke];
-}
-</code></pre>
-
-<p>效果图如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_8.jpg?raw=true" alt="image"><br></div>
-
-<p>我们要明确一点，画弧参数startAngle和endAngle使用的是弧度，而不是角度，因此我们需要将常用的角度转换成弧度。对于效果图中，我们设置弧的中心为控件的中心，起点弧度为0，也就是正东方向，而终点是135度角的位置。如果设置的clockwise:YES是逆时针方向绘制，如果设置为NO，效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_9.jpg?raw=true" alt="image"><br></div>
-
-<p>这两者正好是相反的。</p>
-<h5 id="画二次贝塞尔曲线"><a href="#画二次贝塞尔曲线" class="headerlink" title="画二次贝塞尔曲线"></a>画二次贝塞尔曲线</h5><hr>
-<p>先来学习一下关于控制点，如下图（图片来自网络）：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_10.jpeg?raw=true" alt="image"><br></div><br>画二次贝塞尔曲线，是通过调用此方法来实现的：<br><br><pre><code>- (void)addQuadCurveToPoint:(CGPoint)endPoint controlPoint:(CGPoint)controlPoint<br></code></pre><br><br>参数说明：<br><br>endPoint：终端点<br><br>controlPoint：控制点，对于二次贝塞尔曲线，只有一个控制点<br><br>看效果图：<br><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_11.jpg?raw=true" alt="image"><br></div>
-
-<pre><code>
-- (void)drawSecondBezierPath {
-  UIBezierPath *path = [UIBezierPath bezierPath];
-
-  // 首先设置一个起始点
-  [path moveToPoint:CGPointMake(20, self.frame.size.height - 100)];
-
-  // 添加二次曲线
-  [path addQuadCurveToPoint:CGPointMake(self.frame.size.width - 20, self.frame.size.height - 100)
-               controlPoint:CGPointMake(self.frame.size.width / 2, 0)];
-
-  path.lineCapStyle = kCGLineCapRound;
-  path.lineJoinStyle = kCGLineJoinRound;
-  path.lineWidth = 5.0;
-
-  UIColor *strokeColor = [UIColor redColor];
-  [strokeColor set];
-
-  [path stroke];
-}
-</code></pre>
-
-<p>画二次贝塞尔曲线的步骤：</p>
-<ol>
-<li>先设置一个起始点，也就是通过-moveToPoint:设置</li>
-<li>调用-addQuadCurveToPoint:controlPoint:方法设置终端点和控制点，以画二次曲线</li>
-</ol>
-<p>在效果图中，拱桥左边的起始点就是我们设置的起始点，最右边的终点，就是我们设置的终端点，而我们设置的控制点为（width / 2, 0）对应于红色矩形中水平方向在正中央，而垂直方向在最顶部。</p>
-<blockquote>
-<p>这个样式看起来很像sin或者cos函数吧？这两个只是特例而已，其实可以画任意图形，只是想不到，没有做不到的。</p>
-</blockquote>
-<h5 id="画三次贝塞尔曲线"><a href="#画三次贝塞尔曲线" class="headerlink" title="画三次贝塞尔曲线"></a>画三次贝塞尔曲线</h5><hr>
-<p>贝塞尔曲线必定通过首尾两个点，称为端点；中间两个点虽然未必要通过，但却起到牵制曲线形状路径的作用，称作控制点。关于三次贝塞尔曲线的控制器，看下图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_12.jpeg?raw=true" alt="image"><br></div>
-
-<blockquote>
-<p>提示：其组成是起始端点+控制点1+控制点2+终止端点</p>
-</blockquote>
-<p>如下方法就是画三次贝塞尔曲线的关键方法，以三个点画一段曲线，一般和-moveToPoint:配合使用。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">- (void)addCurveToPoint:(CGPoint)endPoint </div><div class="line">          controlPoint1:(CGPoint)controlPoint1 </div><div class="line">          controlPoint2:(CGPoint)controlPoint2</div></pre></td></tr></table></figure>
-<p>看下效果图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/UIBezierPath/UIBezierPath_13.jpg?raw=true" alt="image"><br></div>
-
-<p>实现代码是这样的：</p>
-<pre><code>
-- (void)drawThirdBezierPath {
-  UIBezierPath *path = [UIBezierPath bezierPath];
-
-  // 设置起始端点
-  [path moveToPoint:CGPointMake(20, 150)];
-
-  [path addCurveToPoint:CGPointMake(300, 150)
-          controlPoint1:CGPointMake(160, 0)
-          controlPoint2:CGPointMake(160, 250)];
-
-  path.lineCapStyle = kCGLineCapRound;
-  path.lineJoinStyle = kCGLineJoinRound;
-  path.lineWidth = 5.0;
-
-  UIColor *strokeColor = [UIColor redColor];
-  [strokeColor set];
-
-  [path stroke];
-}
-</code></pre>
-
-<p>我们需要注意，这里确定的起始端点为(20,150)，终止端点为(300, 150)，基水平方向是一致的。控制点1的坐标是（160，0），水平方向相当于在中间附近，这个参数可以调整。控制点2的坐标是（160，250），如果以两个端点的连线为水平线，那么就是250-150=100，也就是在水平线下100。这样看起来就像一个sin函数了。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;我在写本篇文章之前，也没有系统学习过贝塞尔曲线，只是曾经某一次的需求需要使用到，才临时百度看了一看而且使用最基本的功能。现在总算有时间停下来好好研究研究这个神奇而伟大的贝塞尔先生！&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
-    
-    
-      <category term="UIBezierPath" scheme="http://www.guiyongdong.com/tags/UIBezierPath/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>iOS动画之CATransition动画</title>
-    <link href="http://www.guiyongdong.com/2016/09/22/iOS%E5%8A%A8%E7%94%BB%E4%B9%8BCATransition%E5%8A%A8%E7%94%BB/"/>
-    <id>http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/</id>
-    <published>2016-09-22T07:35:15.000Z</published>
-    <updated>2017-03-09T07:03:02.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。</p>
-<a id="more"></a>
-<h3 id="一-封装动画方法"><a href="#一-封装动画方法" class="headerlink" title="一.封装动画方法"></a>一.封装动画方法</h3><h5 id="1-用CATransition实现动画的封装方法如下，每句代码是何意思，请看注释之。"><a href="#1-用CATransition实现动画的封装方法如下，每句代码是何意思，请看注释之。" class="headerlink" title="1.用CATransition实现动画的封装方法如下，每句代码是何意思，请看注释之。"></a>1.用CATransition实现动画的封装方法如下，每句代码是何意思，请看注释之。</h5><pre><code>
- #pragma CATransition动画实现
- - (void) transitionWithType:(NSString *) type WithSubtype:(NSString *) subtype ForView : (UIView *) view
- {
-     //创建CATransition对象
-     CATransition *animation = [CATransition animation];
-
-     //设置运动时间
-     animation.duration = DURATION;
-
-     //设置运动type
-     animation.type = type;
-     if (subtype != nil) {
-
-         //设置子类
-         animation.subtype = subtype;
-     }
-
-     //设置运动速度
-     animation.timingFunction = UIViewAnimationOptionCurveEaseInOut;
-
-     [view.layer addAnimation:animation forKey:@"animation"];
- }
-</code></pre>
-
-<p><strong>代码说明：</strong><br><strong>CATransition</strong>常用的属性如下：</p>
-<ul>
-<li><strong>duration</strong>:设置动画时间</li>
-<li><strong>type</strong>:稍后下面会详细的介绍运动类型</li>
-<li><strong>subtype</strong>:和type匹配使用，指定运动的方向，下面也会详细介绍</li>
-<li><strong>timingFunction</strong> ：<ul>
-<li>动画的运动轨迹，用于变化起点和终点之间的插值计算,形象点说它决定了动画运行的节奏,比如是均匀变化(相同时间变化量相同)还是先快后慢,先慢后快还是先慢再快再慢.</li>
-<li>动画的开始与结束的快慢,有五个预置分别为(下同):<ul>
-<li>kCAMediaTimingFunctionLinear            线性,即匀速</li>
-<li>kCAMediaTimingFunctionEaseIn            先慢后快</li>
-<li>kCAMediaTimingFunctionEaseOut           先快后慢</li>
-<li>kCAMediaTimingFunctionEaseInEaseOut     先慢后快再慢</li>
-<li>kCAMediaTimingFunctionDefault           实际效果是动画中间比较快.</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h5 id="2-用UIView的block回调实现动画的代码封装"><a href="#2-用UIView的block回调实现动画的代码封装" class="headerlink" title="2.用UIView的block回调实现动画的代码封装　"></a>2.用UIView的block回调实现动画的代码封装　</h5><pre><code>
- #pragma UIView实现动画
- - (void) animationWithView : (UIView *)view WithAnimationTransition : (UIViewAnimationTransition) transition
- {
-     [UIView animateWithDuration:DURATION animations:^{
-         [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-         [UIView setAnimationTransition:transition forView:view cache:YES];
-     }];
- }
-</code></pre>
-
-<h5 id="3-改变View的背景图，便于切换时观察"><a href="#3-改变View的背景图，便于切换时观察" class="headerlink" title="3.改变View的背景图，便于切换时观察"></a>3.改变View的背景图，便于切换时观察</h5><pre><code>
- #pragma 给View添加背景图
- -(void)addBgImageWithImageName:(NSString *) imageName
- {
-     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:imageName]];
- }
-</code></pre>
-
-<h3 id="二-调用上面的方法实现我们想要的动画"><a href="#二-调用上面的方法实现我们想要的动画" class="headerlink" title="二.调用上面的方法实现我们想要的动画"></a>二.调用上面的方法实现我们想要的动画</h3><h5 id="1-我们在View上添加多个Button-给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示："><a href="#1-我们在View上添加多个Button-给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示：" class="headerlink" title="1.我们在View上添加多个Button,给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示："></a>1.我们在View上添加多个Button,给不同的Button设置不同的Tag值，然后再ViewController中绑定同一个方法，点击不同的button实现不同的页面切换效果。storyBoard上的控件效果如下图所示：</h5><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_1.png?raw=true" alt="image" width="375" height="667/"><br></div>
-
-<h5 id="2-下面我们就开始编写点击button要回调的方法"><a href="#2-下面我们就开始编写点击button要回调的方法" class="headerlink" title="2.下面我们就开始编写点击button要回调的方法"></a>2.下面我们就开始编写点击button要回调的方法</h5><ul>
-<li>定义枚举来标示按钮所对应的动画类型，代码如下：</li>
-</ul>
-<pre><code>
-typedef enum : NSUInteger {
-    Fade = 1,                   //淡入淡出
-    Push,                       //推挤
-    Reveal,                     //揭开
-    MoveIn,                     //覆盖
-    Cube,                       //立方体
-    SuckEffect,                 //吮吸
-    OglFlip,                    //翻转
-    RippleEffect,               //波纹
-    PageCurl,                   //翻页
-    PageUnCurl,                 //反翻页
-    CameraIrisHollowOpen,       //开镜头
-    CameraIrisHollowClose,      //关镜头
-    CurlDown,                   //下翻页
-    CurlUp,                     //上翻页
-    FlipFromLeft,               //左翻转
-    FlipFromRight,              //右翻转
-
-} AnimationType;
-</code></pre>
-
-<ul>
-<li>获取Button的Tag值：</li>
-</ul>
-<pre><code>
-     UIButton *button = sender;
-     AnimationType animationType = button.tag;
-</code></pre>
-
-<ul>
-<li>每次点击button都改变subtype的值，包括上,左,下,右</li>
-</ul>
-<pre><code>
-NSString *subtypeString;
-
-    switch (_subtype) {
-        case 0:
-            subtypeString = kCATransitionFromLeft;
-            break;
-        case 1:
-            subtypeString = kCATransitionFromBottom;
-            break;
-        case 2:
-            subtypeString = kCATransitionFromRight;
-            break;
-        case 3:
-            subtypeString = kCATransitionFromTop;
-            break;
-        default:
-            break;
-    }
-    _subtype += 1;
-    if (_subtype > 3) {
-        _subtype = 0;
-    }
-</code></pre>
-
-<ul>
-<li>通过switch结合上边的枚举来判断是那个按钮点击的</li>
-</ul>
-<pre><code>
- switch (animationType)
- {
-     //各种Case,此处代码下面会给出  
- }
-</code></pre>
-
-<h5 id="3-调用我们封装的运动方法，来实现动画效果"><a href="#3-调用我们封装的运动方法，来实现动画效果" class="headerlink" title="3.调用我们封装的运动方法，来实现动画效果"></a>3.调用我们封装的运动方法，来实现动画效果</h5><ul>
-<li>淡化效果</li>
-</ul>
-<pre><code>
-case Fade:
-     [self transitionWithType:kCATransitionFade WithSubtype:subtypeString ForView:self.view];
-     break;
-</code></pre>
-
-<ul>
-<li>Push效果</li>
-</ul>
-<pre><code>
-case Push: 
-     [self transitionWithType:kCATransitionPush WithSubtype:subtypeString ForView:self.view];
-     break;
-</code></pre>
-
-<p>效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_2.png?raw=true" alt="image" width="375" height="667"><br></div>
-
-<ul>
-<li>揭开效果：</li>
-</ul>
-<pre><code>
-case Reveal:
-    [self transitionWithType:kCATransitionReveal WithSubtype:subtypeString ForView:self.view];
-    break;
-</code></pre>
-
-<p>效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_3.png?raw=true" alt="image" width="375" height="667"><br></div>
-
-<ul>
-<li>覆盖效果：</li>
-</ul>
-<pre><code>
-case MoveIn:
-    [self transitionWithType:kCATransitionMoveIn WithSubtype:subtypeString ForView:self.view];
-    break;
-</code></pre>
-
-<p>效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_4.png?raw=true" alt="image" width="375" height="667"><br></div>
-
-<ul>
-<li>立方体效果：</li>
-</ul>
-<pre><code>
-case Cube:
-    [self transitionWithType:@"cube" WithSubtype:subtypeString ForView:self.view];
-    break;
-</code></pre>
-
-<p>效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_5.png?raw=true" alt="image" width="375" height="667"><br></div>
-
-<ul>
-<li>吮吸效果：</li>
-</ul>
-<pre><code>
-case SuckEffect:
-    [self transitionWithType:@"suckEffect" WithSubtype:subtypeString ForView:self.view];
-    break;
-</code></pre>
-
-<p>效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_6.png?raw=true" alt="image" width="375" height="667"><br></div>
-
-<ul>
-<li>翻转效果：</li>
-</ul>
-<pre><code>
-case OglFlip:
-    [self transitionWithType:@"oglFlip" WithSubtype:subtypeString ForView:self.view];
-    break;
-</code></pre>
-
-<p>效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_7.png?raw=true" alt="image" width="375" height="667"><br></div> 
-
-<ul>
-<li>波纹效果：</li>
-</ul>
-<pre><code>
-case RippleEffect:
-    [self transitionWithType:@"rippleEffect" WithSubtype:subtypeString ForView:self.view];
-    break;
-</code></pre>
-
-<p>效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_8.png?raw=true" alt="image" width="375" height="667"><br></div> 
-
-<ul>
-<li>翻页和反翻页效果：</li>
-</ul>
-<pre><code>
-case PageCurl:
-            [self transitionWithType:@"pageCurl" WithSubtype:subtypeString ForView:self.view];
-            break;
-
-        case PageUnCurl:
-            [self transitionWithType:@"pageUnCurl" WithSubtype:subtypeString ForView:self.view];
-            break;
-</code></pre>
-
-<p>效果如下：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_9.png?raw=true" alt="image" width="375" height="667"><br></div><br><div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_10.png?raw=true" alt="image" width="375" height="667"><br></div> 
-
-<ul>
-<li>相机打开效果：</li>
-</ul>
-<pre><code>
-case CameraIrisHollowOpen:
-            [self transitionWithType:@"cameraIrisHollowOpen" WithSubtype:subtypeString ForView:self.view];
-            break;
-
-        case CameraIrisHollowClose:
-            [self transitionWithType:@"cameraIrisHollowClose" WithSubtype:subtypeString ForView:self.view];
-            break;
-</code></pre>
-
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Animation/Animation_11.png?raw=true" alt="image" width="375" height="667"><br></div> 
-
-<ul>
-<li>调用上面封装的第二个动画方法</li>
-</ul>
-<pre><code>
-case CurlDown:
-            [self animationWithView:self.view WithAnimationTransition:UIViewAnimationTransitionCurlDown];
-            break;
-
-        case CurlUp:
-            [self animationWithView:self.view WithAnimationTransition:UIViewAnimationTransitionCurlUp];
-            break;
-
-        case FlipFromLeft:
-            [self animationWithView:self.view WithAnimationTransition:UIViewAnimationTransitionFlipFromLeft];
-            break;
-
-        case FlipFromRight:
-            [self animationWithView:self.view WithAnimationTransition:UIViewAnimationTransitionFlipFromRight];
-            break;
-</code></pre>
-
-<p><a href="https://github.com/guiyongdong/Resource/tree/master/demo/CATransitionDemo" target="_blank" rel="external">Demo传送门</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
-    
-    
-      <category term="动画" scheme="http://www.guiyongdong.com/tags/%E5%8A%A8%E7%94%BB/"/>
     
   </entry>
   
