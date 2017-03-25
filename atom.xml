@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2017-03-23T03:41:24.000Z</updated>
+  <updated>2017-03-25T07:39:45.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,155 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>一天一Android之数据持久化技术</title>
+    <link href="http://www.guiyongdong.com/2017/03/24/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E6%95%B0%E6%8D%AE%E6%8C%81%E4%B9%85%E5%8C%96%E6%8A%80%E6%9C%AF/"/>
+    <id>http://www.guiyongdong.com/2017/03/24/一天一Android之数据持久化技术/</id>
+    <published>2017-03-24T03:21:30.000Z</published>
+    <updated>2017-03-25T07:39:45.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>任何一个应用程序，说白了都是在不停的和数据打交道，通过网络获取的数据，一般为瞬时数据，当我们关闭APP的时候，这些数据就会消失。但有时候我们却希望在APP关闭的时候，保存这些数据，以期待在下次APP启动的时候能用到这些数据。那么，这里我们就需要用到数据持久化技术了。</p>
+<p>其实数据持久化已经被广泛应用于各种程序设计的领域了，后台就不说了，iOS有<code>plist</code>、<code>归档</code>、<code>数据库</code>等。当然，Android也有类似与iOS的存储方式：<code>文件存储</code>、<code>SharedPreference</code>以及<code>数据库</code>等，对了，Android还有SD卡。</p>
+<a id="more"></a>
+<h3 id="文件存储"><a href="#文件存储" class="headerlink" title="文件存储"></a>文件存储</h3><h5 id="写数据"><a href="#写数据" class="headerlink" title="写数据"></a>写数据</h5><p>文件存储是Android中最基本的存储方式，它不对存储的内容进行格式化处理，所有的数据原封不动地保存到文件中，因而它适合存储一些简单的文本数据或者二进制数据。其实问价存储是最简单的，你只需要了解java流的使用就可以了。Android提供了一个<code>openFileOutput()</code>方法，可以将数据存储到指定的文件中。这个方法接收两个参数，第一个参数是文件名，注意这里的文件不需要包含路径，因为所有的文件都是默认存储到<code>/data/data/&lt;packagename&gt;/files</code>目录下的，第二个参数是文件的操作模式，主要有两种，一种是<code>MODE_PTIVATE</code>，它也是默认的模式，表示当我们写入的数据会覆盖之前的数据。另一种是<code>MODE_APPEND</code>，表示会追加数据。而且<code>openFileOutput()</code>方法会返回一个<code>FileOutputStream</code>对象，然后就可以以java流的方式写数据了。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span>  <span class="title">saveData</span><span class="params">(String data)</span> </span>&#123;</div><div class="line">    <span class="comment">//直接使用文件存储</span></div><div class="line">    FileOutputStream fileOutputStream = <span class="keyword">null</span>;</div><div class="line">    BufferedWriter bufferedWriter = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        fileOutputStream = openFileOutput(<span class="string">"str.txt"</span>,MODE_APPEND);</div><div class="line">        bufferedWriter = <span class="keyword">new</span> BufferedWriter(<span class="keyword">new</span> OutputStreamWriter(fileOutputStream));</div><div class="line">        bufferedWriter.write(data);</div><div class="line">    &#125;<span class="keyword">catch</span> (IOException e)&#123;</div><div class="line">        e.printStackTrace();</div><div class="line">    &#125;<span class="keyword">finally</span> &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">if</span> (bufferedWriter != <span class="keyword">null</span>)&#123;</div><div class="line">                bufferedWriter.close();</div><div class="line">            &#125;</div><div class="line">        &#125;<span class="keyword">catch</span> (IOException e)&#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="读数据"><a href="#读数据" class="headerlink" title="读数据"></a>读数据</h5><p>有写就有读，<code>Context</code>类还提供了一个<code>openFileInput()</code>方法，用于读取数据，这个方法只接收一个参数文件名，系统会自动到<code>/data/data/&lt;packagename&gt;/files</code>目录下读取这个文件的数据，并返回一个FileInputStream对象，然后通过java流的方式读取数据。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">read</span><span class="params">()</span> </span>&#123;</div><div class="line">    FileInputStream inputStream = <span class="keyword">null</span>;</div><div class="line">    BufferedReader bufferedReader = <span class="keyword">null</span>;</div><div class="line">    StringBuffer stringBuffer = <span class="keyword">new</span> StringBuffer();</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        inputStream = openFileInput(<span class="string">"str.txt"</span>);</div><div class="line">        bufferedReader = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(inputStream));</div><div class="line">        String line = <span class="string">""</span>;</div><div class="line">        <span class="keyword">while</span> ((line = bufferedReader.readLine()) != <span class="keyword">null</span>)&#123;</div><div class="line">            stringBuffer.append(line);</div><div class="line">        &#125;</div><div class="line">    &#125;<span class="keyword">catch</span> (IOException e)&#123;</div><div class="line">        e.printStackTrace();</div><div class="line">    &#125;<span class="keyword">finally</span> &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">if</span> (bufferedReader != <span class="keyword">null</span>)&#123;</div><div class="line">                bufferedReader.close();</div><div class="line">            &#125;</div><div class="line">        &#125;<span class="keyword">catch</span> (IOException e)&#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> bufferedReader.toString();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="SharedPreferences"><a href="#SharedPreferences" class="headerlink" title="SharedPreferences"></a>SharedPreferences</h3><p>说起这个，我想到了iOS的偏好设置，它也是一种轻量级的数据存储方式，和iOS不同的是，SharedPreferences却可以创建任意的偏好设置。iOS中的偏好设置本质是plist，Android中的偏好设置本质是XML。</p>
+<h5 id="写数据-1"><a href="#写数据-1" class="headerlink" title="写数据"></a>写数据</h5><p>要想写数据，首先需要获取<code>SharedPreferences</code>对象，Android提供了三种方式获取。</p>
+<p><strong>Context类中的getSharedPreferences()方法</strong><br>此方法接收两个参数，第一个参数用于指定<code>SharedPreferences</code>文件的名称，如果指定的文件不存在则会创建，<code>SharedPreferences</code>文件都是存放在<code>/data/data/&lt;package name&gt;/shared</code>目录下的。第二个参数用于指定操作模式，目前只有MODE_PRIVATE这一种模式可选，表示只有本应用程序才可以对这个<code>SharedPreferences</code>文件进行读写。</p>
+<p><strong>Activity类中的getPreferences()方法</strong><br>这个方法直接收一个操作参数，因为使用这个方法时会自动将当前活动的类名作为文件名。</p>
+<p><strong>PreferenceManager类中的getDefaultSharedPreferences()方法</strong><br>这是一个静态方法，它接收一个Context参数，并自动使用当前应用程序的包名作为前缀来命名<code>SharedPreferences</code>文件，得到<code>SharedPreferences</code>对象后，就可以实现数据的存储了，主要有3步：</p>
+<ul>
+<li>调用<code>SharedPreferences</code>对象的edit()方法获取一个<code>SharedPreferences.Editor</code>对象</li>
+<li>向<code>SharedPreferences.Editor</code>对象中添加数据</li>
+<li>调用<code>apply()</code>方法将数据提交</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="comment">//使用SharedPreferences 存储数据</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span>  <span class="title">saveData</span><span class="params">(String data)</span> </span>&#123;</div><div class="line">	SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(<span class="keyword">this</span>);</div><div class="line">	<span class="comment">//sharedPreferences = getSharedPreferences("share",MODE_PRIVATE);</span></div><div class="line">	<span class="comment">//sharedPreferences = getPreferences(MODE_PRIVATE);</span></div><div class="line">	SharedPreferences.Editor editor = sharedPreferences.edit();</div><div class="line">	editor.putString(data,<span class="string">"aaa"</span>);<span class="comment">//以key-value的形式存储</span></div><div class="line">	editor.apply();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="读数据-1"><a href="#读数据-1" class="headerlink" title="读数据"></a>读数据</h5><p>使用<code>SharedPreferences</code>读数据更加的简单，<code>SharedPreferences</code>有一系列的get方法来读取不同类型的数据。get方法的第一个参数是key，第二个参数是如果取不到这个key对应的值，返回的默认值。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">read</span><span class="params">(String key)</span> </span>&#123;</div><div class="line">	SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(<span class="keyword">this</span>);</div><div class="line">	<span class="comment">//sharedPreferences = getSharedPreferences("share",MODE_PRIVATE);</span></div><div class="line">	<span class="comment">//sharedPreferences = getPreferences(MODE_PRIVATE);</span></div><div class="line">	String string = sharedPreferences.getString(key, <span class="string">"default"</span>);</div><div class="line">	Toast.makeText(<span class="keyword">this</span>,string,Toast.LENGTH_SHORT).show();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="数据库存储"><a href="#数据库存储" class="headerlink" title="数据库存储"></a>数据库存储</h3><p>说到数据库存储，不得不了解的就是SQL语句，其实我的数据库了解的很少，SQL语句也只会一些简单的，如果想存储一些有复杂依赖关系的数据是需要数据库功底的。</p>
+<p>无论Android还是iOS，系统都内置了名为sqlite数据库，我们可以使用标准的SQL语句来操作它。</p>
+<h5 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h5><p>Android专门提供一个叫<code>SQLiteOpenHelper</code>的抽象类，它有两个抽象方法<code>onCreate</code>和<code>onUpgrade</code>，顾名思义，一个创建，一个更新。</p>
+<p><code>SQLiteOpenHelper</code>中还有两个方法，<code>getReadableDatabase()</code>和<code>getWritableDatabase()</code>。这两个方法都可以创建或打开一个数据库，并返回一个数据库操作对象。不同的是当数据库不可写入时（如磁盘空间已满），<code>getReadableDatabase()</code>方法返回的对象将以只读的方式去打开数据库，而<code>getWritableDatabase()</code>方法则抛异常。</p>
+<p><code>SQLiteOpenHelper</code>中有两个构造方法可供重写，一般使用参数少的，第一个参数是Context，第二个参数是数据库名，第三个参数允许我们在查询数据的时候返回一个自定义的Cursor，一般都传null，第四个参数表示当前数据库的版本号，可用于对数据库升级操作。数据库存放的位置在<code>/data/data/&lt;package name&gt;/database/</code>目录下。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyDataBaseHelper</span> <span class="keyword">extends</span> <span class="title">SQLiteOpenHelper</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CREATE_BOOK = <span class="string">"create table Book ("</span></div><div class="line">            +<span class="string">"id integer primary key autoincrement,"</span></div><div class="line">            +<span class="string">"author text,"</span></div><div class="line">            +<span class="string">"price real,"</span></div><div class="line">            +<span class="string">"pages integer,"</span></div><div class="line">            +<span class="string">"name text)"</span>;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CREATE_CATEGORY = <span class="string">"create table Category ("</span></div><div class="line">            +<span class="string">"id integer primary key autoincrement,"</span></div><div class="line">            +<span class="string">"author text,"</span></div><div class="line">            +<span class="string">"price real,"</span></div><div class="line">            +<span class="string">"pages integer,"</span></div><div class="line">            +<span class="string">"name text)"</span>;</div><div class="line"></div><div class="line">    <span class="keyword">private</span>  Context mContext;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyDataBaseHelper</span><span class="params">(Context context, String name, SQLiteDatabase.CursorFactory factory, <span class="keyword">int</span> version)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>(context, name, factory, version);</div><div class="line">        mContext = context;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(SQLiteDatabase db)</span> </span>&#123;</div><div class="line">        <span class="comment">//在此方法中创建数据库</span></div><div class="line">        db.execSQL(CREATE_BOOK);</div><div class="line">        Toast.makeText(mContext,<span class="string">"创建数据库"</span>,Toast.LENGTH_SHORT).show();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onUpgrade</span><span class="params">(SQLiteDatabase db, <span class="keyword">int</span> oldVersion, <span class="keyword">int</span> newVersion)</span> </span>&#123;</div><div class="line">        <span class="comment">//如果版本号升级 则在此方法中对数据库进行升级</span></div><div class="line">        Toast.makeText(mContext,<span class="string">"更新数据库"</span>,Toast.LENGTH_SHORT).show();</div><div class="line">        <span class="keyword">if</span> (newVersion == <span class="number">2</span>)&#123;</div><div class="line">            db.execSQL(CREATE_CATEGORY);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DataBaseActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> MyDataBaseHelper mMyDataBaseHelper;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_data_base);</div><div class="line">        </div><div class="line">        <span class="comment">//等到下次需要升级数据库时，需要修改这里的版本号</span></div><div class="line">        mMyDataBaseHelper = <span class="keyword">new</span> MyDataBaseHelper(<span class="keyword">this</span>,<span class="string">"BookStore.db"</span>,<span class="keyword">null</span>,<span class="number">1</span>);</div><div class="line"></div><div class="line">        Button button = (Button) findViewById(R.id.button2);</div><div class="line">        button.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                <span class="comment">//会创建数据库</span></div><div class="line">                mMyDataBaseHelper.getWritableDatabase();</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>有数据库的地方就有增删改查</p>
+<h5 id="增"><a href="#增" class="headerlink" title="增"></a>增</h5><p><code>SQLiteOpenHelper</code>提供了一个<code>insert()</code>方法，它接收三个参数，第一个是表名，第二个参数用于在未指定添加数据的情况下给某些可为空的列自动赋值为NULL，一般我们直接传null，第三个是ContentValues对象，它提供了一系列的put（）方法，用于添加数据。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">()</span> </span>&#123;</div><div class="line">	Button addButton = (Button) findViewById(R.id.addButton);</div><div class="line">	addButton.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">	    <span class="meta">@Override</span></div><div class="line">	    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">	        SQLiteDatabase database = mMyDataBaseHelper.getWritableDatabase();</div><div class="line">	        ContentValues contentValues = <span class="keyword">new</span> ContentValues();</div><div class="line">	        contentValues.put(<span class="string">"name"</span>,<span class="string">"android"</span>);</div><div class="line">	        contentValues.put(<span class="string">"author"</span>,<span class="string">"125"</span>);</div><div class="line">	        contentValues.put(<span class="string">"pages"</span>,<span class="number">40</span>);</div><div class="line">	        contentValues.put(<span class="string">"price"</span>,<span class="number">16.50</span>);</div><div class="line">	        database.insert(<span class="string">"Book"</span>,<span class="keyword">null</span>,contentValues);</div><div class="line">	    &#125;</div><div class="line">	&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="删"><a href="#删" class="headerlink" title="删"></a>删</h5><p><code>SQLiteOpenHelper</code>提供一个<code>delete()</code>方法，第一个参数表名，第二，三个参用于约束删除某一行或某几行的数据，不指定的话默认删除所有行。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">()</span> </span>&#123;</div><div class="line">	Button deleteButton = (Button) findViewById(R.id.deleteButton);</div><div class="line">	deleteButton.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">	    <span class="meta">@Override</span></div><div class="line">	    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">	        SQLiteDatabase database = mMyDataBaseHelper.getWritableDatabase();</div><div class="line">	        database.delete(<span class="string">"Book"</span>,<span class="string">"name = ?"</span>,<span class="keyword">new</span> String[]&#123;<span class="string">"android"</span>&#125;);</div><div class="line">	    &#125;</div><div class="line">	&#125;);	</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="改"><a href="#改" class="headerlink" title="改"></a>改</h5><p><code>SQLiteOpenHelper</code>提供了一个<code>update()</code>方法，用于对数据的更新。这个方法接收4个参数，第一个为表名，第二个为ContentValues对象，把要更新数据在这里组装，第三，四个用于约束更新某一行或某几行中的数据，不指定的话更新所有行。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">()</span> </span>&#123;</div><div class="line">	Button updateButton = (Button) findViewById(R.id.updateButton);</div><div class="line">    updateButton.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">            SQLiteDatabase database = mMyDataBaseHelper.getWritableDatabase();</div><div class="line">            ContentValues contentValues = <span class="keyword">new</span> ContentValues();</div><div class="line">            contentValues.put(<span class="string">"price"</span>,<span class="number">4545.9</span>);</div><div class="line">            database.update(<span class="string">"Book"</span>,contentValues,<span class="string">"name = ?"</span>,<span class="keyword">new</span> String[]&#123;<span class="string">"android"</span>&#125;);</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="查"><a href="#查" class="headerlink" title="查"></a>查</h5><p>通常情况下，数据库中的查是最复杂的。<code>SQLiteOpenHelper</code>提供了一系列<code>query()</code>方法，最短的方法也有7个参数。第一个参数是表名。第二个参数用于指定去查询哪几行，如果不指定默认查询所有行。第三，四个用于约束查询某一行或某几行的数据，不指定则默认查询所有行。第五个参数参数表示指定需要group by的列，不指定则表示不对查询结果进行group by操作。第六个参数用于对group by的进一步过滤。第七个参数用于对查询的结果排序。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function">pubic <span class="keyword">void</span> <span class="title">query</span><span class="params">()</span> </span>&#123;</div><div class="line">	Button checkButton = (Button) findViewById(R.id.checkButton);</div><div class="line">	checkButton.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">	    <span class="meta">@Override</span></div><div class="line">	    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">	        SQLiteDatabase database = mMyDataBaseHelper.getWritableDatabase();</div><div class="line">	        Cursor cursor = database.query(<span class="string">"Book"</span>,<span class="keyword">null</span>,<span class="keyword">null</span>,<span class="keyword">null</span>,<span class="keyword">null</span>,<span class="keyword">null</span>,<span class="keyword">null</span>);</div><div class="line">	        <span class="keyword">if</span> (cursor.moveToFirst())&#123;</div><div class="line">	            do &#123;</div><div class="line">	                String name = cursor.getString(cursor.getColumnIndex(<span class="string">"name"</span>));</div><div class="line">                        <span class="keyword">double</span> price = cursor.getDouble(cursor.getColumnIndex(<span class="string">"price"</span>))</div><div class="line">                        Toast.makeText(DataBaseActivity.<span class="keyword">this</span>,name+price,Toast.LENGTH_SHORT).show();</div><div class="line">	        &#125;</div><div class="line">	        cursor.close();</div><div class="line">	    &#125;</div><div class="line">	&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里我们看到，调用<code>query()</code>方法会返回一个<code>Cursor</code>对象，调用<code>moveToFirst()</code>可将查询指针指向第一行的位置，调用<code>moveToNext()</code>可将查询指针向下一行移动，如果没有下一行返回false，结束查询。然后我们就可以循环遍历查询数据。通过<code>Cursor</code>的<code>getColumnIndex()</code>方法获取到某一列在表中对应的位置索引，通过这个索引就可以得到索引对应的数据，</p>
+<p>当然，关于数据库的操作你完全可以不适用以上方法，如果你对SQL语句足够数量，你可以直接使用SQL语句进行操作，添加、更新、删除等操作都可以直接使用<code>SQLiteDatabase</code>的<code>execSQL()</code>方法操作，第一个参数为SQL语句，第二个参数为值。查询操作可以使用<code>SQLiteDatabase</code>的<code>rawQuery()</code>方法，第一个参数为SQL语句，第二个参数为值。</p>
+<p>这里推荐一个库，<strong>LitePal</strong>，简化了数据库的操作，可以直接对JavaBean进行操作。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;任何一个应用程序，说白了都是在不停的和数据打交道，通过网络获取的数据，一般为瞬时数据，当我们关闭APP的时候，这些数据就会消失。但有时候我们却希望在APP关闭的时候，保存这些数据，以期待在下次APP启动的时候能用到这些数据。那么，这里我们就需要用到数据持久化技术了。&lt;/p&gt;
+&lt;p&gt;其实数据持久化已经被广泛应用于各种程序设计的领域了，后台就不说了，iOS有&lt;code&gt;plist&lt;/code&gt;、&lt;code&gt;归档&lt;/code&gt;、&lt;code&gt;数据库&lt;/code&gt;等。当然，Android也有类似与iOS的存储方式：&lt;code&gt;文件存储&lt;/code&gt;、&lt;code&gt;SharedPreference&lt;/code&gt;以及&lt;code&gt;数据库&lt;/code&gt;等，对了，Android还有SD卡。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+    
+    
+      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>一天一Android之广播</title>
+    <link href="http://www.guiyongdong.com/2017/03/23/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E5%B9%BF%E6%92%AD/"/>
+    <id>http://www.guiyongdong.com/2017/03/23/一天一Android之广播/</id>
+    <published>2017-03-23T06:06:15.000Z</published>
+    <updated>2017-03-23T09:08:25.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>提到广播，因为我是农村的，首先想到的就是我们村大队的喇叭，如果平常有交电费，或者重要的事情，这个喇叭就会响起，全村的都能听见，可能有时候邻村的也能听见，足见广播的推送面积之大。</p>
+<p>提到广播这种机制，学过iOS的都知道通知，我想这两种机制应该都是类似的。在iOS中，我们如果想监听系统的某些事件，比如APP退到后台，我们只需要在把监听对象添加到系统的通知中心中，并且关注APP退到后台的事件，就可以随时监听了。通知还有个好处就是，我们可以夸线程，夸界面的处理事件。</p>
+<p>那么，在Android中，广播又是怎么回事呢，这篇文章就来详细分析一下广播在Android中的应用。(ps:广播还有另外一个名字——全局大喇叭~~)</p>
+<a id="more"></a>
+<h3 id="广播机制简介"><a href="#广播机制简介" class="headerlink" title="广播机制简介"></a>广播机制简介</h3><p>在广播机制中，存在两种角色：<strong>广播发送者</strong>和<strong>广播接收者</strong>。</p>
+<p>我们来看看广播的使用场景：</p>
+<ul>
+<li>同一APP内部的同一组件内部的消息通信（单个或多个线程之间）</li>
+<li>同一APP内部的不同组件之间的消息通信（单个进程）</li>
+<li>同一APP具有多个进程的不同组件之间的消息通信</li>
+<li>不同APP之间的组件之间消息通信</li>
+<li>Android系统在特定情况下与APP之间的消息通信</li>
+</ul>
+<p>另外，Android中的广播主要可以分为两种类型：<strong>标准广播</strong>和<strong>有序广播</strong>。</p>
+<h5 id="标准广播"><a href="#标准广播" class="headerlink" title="标准广播"></a>标准广播</h5><p>标准广播是一种完全异步执行的广播，在广播发出之后，所有的广播接收器几乎会在同一时刻接收到这条广播消息，因此它们之间没有任何先后顺序可言。这种广播的效率会比较高，但是却不能被截断。标准广播的工作流程是：</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1917079-00a6b9ddd0a874a8.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"><br></div>
+
+
+<h5 id="有序广播"><a href="#有序广播" class="headerlink" title="有序广播"></a>有序广播</h5><p>有序广播是一种同步执行的广播，在广播发出之后，同一时刻只会有一个广播接收器能够收到这条广播消息，当这个广播接收器中的逻辑处理执行完毕后，广播才会继续传播，而且优先级高的广播接收器可以优先接收到广播。并且前面的广播接收器还可以截断正在传递的广播，这样后面的广播接收器就无法收到广播消息了。有序广播的工作流程是：</p>
+<div align="center"><br><img src="http://upload-images.jianshu.io/upload_images/1917079-31f3a8f2a27d905f.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"><br></div>
+
+<h3 id="接收系统广播"><a href="#接收系统广播" class="headerlink" title="接收系统广播"></a>接收系统广播</h3><p>Android内置了很多系统级别的广播，如果我们想要监听系统的这些广播，就需要用到广播接收器（BroadcastReceiver）。注册广播的方式一般有两种，在代码中注册和在AndroidManifest.xml中注册，其中前者也被称为动态注册，后者也被称为静态注册。</p>
+<h5 id="动态注册监听网络变化"><a href="#动态注册监听网络变化" class="headerlink" title="动态注册监听网络变化"></a>动态注册监听网络变化</h5><p>凡是广播接收者都必须继承自<code>BroadcastReceiver</code>，并重写抽象方法<code>onReceive()</code>，当有广播到来时，<code>onReceive()</code>方法就会得到执行。</p>
+<p>我们使用动态注册的方式去监听网络的变化。代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> NetworkChangeReceiver mNetworkChangeReceiver;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        <span class="comment">//添加网络状态的监听</span></div><div class="line">        IntentFilter intentFilter = <span class="keyword">new</span> IntentFilter();</div><div class="line">        intentFilter.addAction(<span class="string">"android.net.conn.CONNECTIVITY_CHANGE"</span>);</div><div class="line">        mNetworkChangeReceiver = <span class="keyword">new</span> NetworkChangeReceiver();</div><div class="line">        registerReceiver(mNetworkChangeReceiver,intentFilter);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onDestroy();</div><div class="line">        unregisterReceiver(mNetworkChangeReceiver);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">NetworkChangeReceiver</span> <span class="keyword">extends</span> <span class="title">BroadcastReceiver</span> </span>&#123;</div><div class="line">        <span class="comment">//实现接收的方法</span></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</div><div class="line">            ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);</div><div class="line">            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();</div><div class="line">            <span class="keyword">if</span> (networkInfo != <span class="keyword">null</span> &amp;&amp; networkInfo.isAvailable())&#123;</div><div class="line">                Toast.makeText(context,<span class="string">"有网了！"</span>,Toast.LENGTH_SHORT).show();</div><div class="line">            &#125;<span class="keyword">else</span> &#123;</div><div class="line">                Toast.makeText(context,<span class="string">"没网了！"</span>,Toast.LENGTH_SHORT).show();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>不要忘了，要在AndroidManifest.xml中添加网络权限<br><code>&lt;uses-permission android:name=&quot;android.permission.ACCESS_NETWORK_STATE&quot; /&gt;</code></p>
+<p>可以看到，我在MainActivity中定义了一个内部类<code>NetworkChangeReceiver</code>并继承<code>BroadcastReceiver</code>，重写了父类的<code>onReceive()</code>方法。每当网络发生变化的时候，<code>onReceive()</code>方法就会得到执行。</p>
+<p>在<code>onCreate()</code>方法中，我创建了一个IntentFilter的实例，并给它添加了一个值为<code>android.net.conn.CONNECTIVITY_CHANGE</code>的action，因外当网络状态发生变化时，系统会发出一条值为<code>android.net.conn.CONNECTIVITY_CHANGE</code>的广播。因为我们是动态注册广播，所以一定要在<code>onDestroy()</code>方法中调用<code>unregisterReceiver()</code>注销广播的监听。</p>
+<h5 id="静态注册实现开机启动"><a href="#静态注册实现开机启动" class="headerlink" title="静态注册实现开机启动"></a>静态注册实现开机启动</h5><p>动态注册的广播接收器可以自由的控制注册与注销，在灵活性方面有很大的优势，但是它存在着一个缺点，即必须要在程序启动之后才能接收到广播，因为注册的逻辑是写在<code>onCreate()</code>方法里的。如果我们想在程序未启动的时候，就能接收到广播，那就要用到静态注册了。</p>
+<p>首先我们需要创建一个广播接收器类，创建方式为：选择新建-&gt;Other-&gt;Broadcast Receiver。Android Studio会让我们选择谢谢东西，<code>Exported</code>表示是否允许这个广播接收器接收本程序以外的广播，<code>Enabled</code>表示是否启用这个广播接收器，这里我们都勾选。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BootCompleteReceiver</span> <span class="keyword">extends</span> <span class="title">BroadcastReceiver</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</div><div class="line">        Toast.makeText(context,<span class="string">"手机开机了"</span>,Toast.LENGTH_SHORT).show();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到，<code>BootCompleteReceiver</code>类里面的代码很简单。</p>
+<p>另外，静态的广播接收器一定要在AndroidManifest.xml文件中注册才可以使用，但是注册这一步已经被Android Studio自动完成了。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.guiyongdong.broadreceiverdemo"</span>&gt;</div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.ACCESS_NETWORK_STATE"</span>/&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">application</span></span></div><div class="line">        <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">        <span class="attr">android:roundIcon</span>=<span class="string">"@mipmap/ic_launcher_round"</span></div><div class="line">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span>&gt;</div><div class="line">        <span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">".MainActivity"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span>/&gt;</span></div><div class="line"></div><div class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line">        <span class="comment">&lt;!--广播接收者--&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">receiver</span></span></div><div class="line">            <span class="attr">android:name</span>=<span class="string">".BootCompleteReceiver"</span></div><div class="line">            <span class="attr">android:enabled</span>=<span class="string">"true"</span></div><div class="line">            <span class="attr">android:exported</span>=<span class="string">"true"</span>&gt;</div><div class="line">        <span class="tag">&lt;/<span class="name">receiver</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>目前，我们还不能接收到开机广播，因为我们还没有为它添加响应的action。添加代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.guiyongdong.broadreceiverdemo"</span>&gt;</div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.ACCESS_NETWORK_STATE"</span>/&gt;</span></div><div class="line">    <span class="comment">&lt;!--添加权限--&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.RECEIVE_BOOT_COMPLETED"</span>/&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">application</span></span></div><div class="line">        <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">        <span class="attr">android:roundIcon</span>=<span class="string">"@mipmap/ic_launcher_round"</span></div><div class="line">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span>&gt;</div><div class="line">        <span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">".MainActivity"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span>/&gt;</span></div><div class="line"></div><div class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line">        <span class="comment">&lt;!--广播接收者--&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">receiver</span></span></div><div class="line">            <span class="attr">android:name</span>=<span class="string">".BootCompleteReceiver"</span></div><div class="line">            <span class="attr">android:enabled</span>=<span class="string">"true"</span></div><div class="line">            <span class="attr">android:exported</span>=<span class="string">"true"</span>&gt;</div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="comment">&lt;!--添加开机广播的监听--&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.BOOT_COMPLETED"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">receiver</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>由于Android系统自动完成后会发送一条值为<code>android.intent.action.BOOT_COMPLETED</code>的广播，因此需要在<code>&lt;intent-filter&gt;</code>标签中添加相应的action，当然，监听系统开机广播的权限也是需要声明的。如此，我们的APP便可监听手机的开机了。</p>
+<h3 id="发送自定义广播"><a href="#发送自定义广播" class="headerlink" title="发送自定义广播"></a>发送自定义广播</h3><p>说了这么多，一直都是系统在发广播，但是有时候我们根据业务需求要想发送自己的广播该这么办呢？前面说了，发广播的形式有两种，标准广播和有序广播，那就来看看这两种广播如何发送。</p>
+<h5 id="发送标准广播"><a href="#发送标准广播" class="headerlink" title="发送标准广播"></a>发送标准广播</h5><p>在发送广播之前，我先定义一个广播接收器，这里约定action为<code>com.guiyongdong.MY_BROADCAST</code>，代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.guiyongdong.broadreceiverdemo"</span>&gt;</div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.ACCESS_NETWORK_STATE"</span>/&gt;</span></div><div class="line">    <span class="comment">&lt;!-- 添加权限 --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.RECEIVE_BOOT_COMPLETED"</span>/&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">application</span></span></div><div class="line">        <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">        <span class="attr">android:roundIcon</span>=<span class="string">"@mipmap/ic_launcher_round"</span></div><div class="line">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span>&gt;</div><div class="line">        ...</div><div class="line">        </div><div class="line">        <span class="tag">&lt;<span class="name">receiver</span></span></div><div class="line">            <span class="attr">android:name</span>=<span class="string">".MyBroadcastReceiver"</span></div><div class="line">            <span class="attr">android:enabled</span>=<span class="string">"true"</span></div><div class="line">            <span class="attr">android:exported</span>=<span class="string">"true"</span>&gt;</div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="comment">&lt;!--添加自定义的广播接收器--&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"com.guiyongdong.MY_BROADCAST"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">receiver</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<p><code>MyBroadcastReceiver</code>广播接收器的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyBroadcastReceiver</span> <span class="keyword">extends</span> <span class="title">BroadcastReceiver</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</div><div class="line">        Toast.makeText(context,<span class="string">"接收到自定义的广播"</span>,Toast.LENGTH_SHORT).show();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我在MainActivity中添加了一个按钮，按钮添加点击事件，会发送名为<code>com.guiyongdong.MY_BROADCAST</code>的广播，代码如下：<br><figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> NetworkChangeReceiver mNetworkChangeReceiver;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line"></div><div class="line">        Button button = (Button) findViewById(R.id.sendButton);</div><div class="line">        button.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                Intent intent = <span class="keyword">new</span> Intent(<span class="string">"com.guiyongdong.MY_BROADCAST"</span>);</div><div class="line">                sendBroadcast(intent);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>重新运行，并点击按钮，效果图如下：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android15.png?raw=true" width="375"><br></div>
+
+<h5 id="发送有序广播"><a href="#发送有序广播" class="headerlink" title="发送有序广播"></a>发送有序广播</h5><figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> NetworkChangeReceiver mNetworkChangeReceiver;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line"></div><div class="line">        Button button = (Button) findViewById(R.id.sendButton);</div><div class="line">        button.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                Intent intent = <span class="keyword">new</span> Intent(<span class="string">"com.guiyongdong.MY_BROADCAST"</span>);</div><div class="line">                sendOrderedBroadcast(intent,<span class="keyword">null</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到，发送有序广播只需要改动一行代码，即<code>sendBroadcast()</code>方法改成<code>sendOrderedBroadcast()</code>方法。<code>sendOrderedBroadcast()</code>方法接收两个参数，第一个参数任然是Intent，第二个参数是一个与权限相关的字符串，这里传null就行了。</p>
+<p>如何定义有序广播的接收者的优先级呢？通过<code>android:priority</code>可以设置优先级。需要修改AndroidManifest.xml</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.guiyongdong.broadreceiverdemo"</span>&gt;</div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.ACCESS_NETWORK_STATE"</span>/&gt;</span></div><div class="line">    <span class="comment">&lt;!-- 添加权限 --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.RECEIVE_BOOT_COMPLETED"</span>/&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">application</span></span></div><div class="line">        <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">        <span class="attr">android:roundIcon</span>=<span class="string">"@mipmap/ic_launcher_round"</span></div><div class="line">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span>&gt;</div><div class="line">        ...</div><div class="line">        </div><div class="line">        <span class="tag">&lt;<span class="name">receiver</span></span></div><div class="line">            <span class="attr">android:name</span>=<span class="string">".MyBroadcastReceiver"</span></div><div class="line">            <span class="attr">android:enabled</span>=<span class="string">"true"</span></div><div class="line">            <span class="attr">android:exported</span>=<span class="string">"true"</span>&gt;</div><div class="line">            <span class="comment">&lt;!--修改优先级--&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span> <span class="attr">android:priority</span>=<span class="string">"100"</span>&gt;</span></div><div class="line">                <span class="comment">&lt;!--添加自定义的广播接收器--&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"com.guiyongdong.MY_BROADCAST"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">receiver</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>那么，当接收者接到广播，也已经处理好逻辑后，如果接收者不想让广播继续传递了呢？这时候，需要调用<code>abdortBroadcast()</code>方法，来中断传播。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyBroadcastReceiver</span> <span class="keyword">extends</span> <span class="title">BroadcastReceiver</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</div><div class="line">        Toast.makeText(context,<span class="string">"接收到自定义的广播"</span>,Toast.LENGTH_SHORT).show();</div><div class="line">        <span class="comment">//中断传输</span></div><div class="line">        abortBroadcast();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="本地广播"><a href="#本地广播" class="headerlink" title="本地广播"></a>本地广播</h3><p>前面我所说的发送的广播都是全局广播，这些广播可以被其他任何应用程序接收到，并且我们也可以接收来自其他应用的广播，这样容易引起安全问题。</p>
+<p>当然，Android已经为我们想到了这点，利用本地广播就可以解决广播的安全问题，而且这类广播只能在应用程序内部进行传递，并且广播接收者只能接收来自本应用程序发出的广播。</p>
+<p>本地广播并不复杂，它主要使用<code>LocalBroadcastManager</code>来管理广播，并且提供了发送广播和注册广播接收器的方法，我们来看如何使用:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> LocalBroadcastManager mLocalBroadcastManager;</div><div class="line">    <span class="keyword">private</span> LocalReceiver mLocalReceiver;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line"></div><div class="line">        <span class="comment">//创建本地广播管理实例</span></div><div class="line">        mLocalBroadcastManager = LocalBroadcastManager.getInstance(<span class="keyword">this</span>);</div><div class="line">        Button sendLocalButton = (Button) findViewById(R.id.sendLocalButton);</div><div class="line">        sendLocalButton.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                Intent intent = <span class="keyword">new</span> Intent(<span class="string">"com.guiyongdong.LOCAL_BROADCAST"</span>);</div><div class="line">                <span class="comment">//发送本地广播</span></div><div class="line">                mLocalBroadcastManager.sendBroadcast(intent);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">        <span class="comment">//注册广播</span></div><div class="line">        IntentFilter intentFilter1 = <span class="keyword">new</span> IntentFilter();</div><div class="line">        intentFilter.addAction(<span class="string">"com.guiyongdong.LOCAL_BROADCAST"</span>);</div><div class="line">        mLocalReceiver = <span class="keyword">new</span> LocalReceiver();</div><div class="line">        mLocalBroadcastManager.registerReceiver(mLocalReceiver,intentFilter);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">LocalReceiver</span> <span class="keyword">extends</span> <span class="title">BroadcastReceiver</span> </span>&#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</div><div class="line">            Toast.makeText(context,<span class="string">"接收到本地广播"</span>,Toast.LENGTH_SHORT).show();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onDestroy();</div><div class="line">        mLocalBroadcastManager.unregisterReceiver(mLocalReceiver);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>注意：本地广播是无法通过静态注册的方式来接收的。</p>
+<p>总结一下本地广播的几点优势：</p>
+<ul>
+<li>可以明确知道正在发送的广播不会离开我们的程序，因此不用担心数据泄露。</li>
+<li>其他的程序无法将广播发送到我们程序内部，因此不用担心会有安全漏洞的隐患。</li>
+<li>发送本地广播比全局广播更加高效。</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;提到广播，因为我是农村的，首先想到的就是我们村大队的喇叭，如果平常有交电费，或者重要的事情，这个喇叭就会响起，全村的都能听见，可能有时候邻村的也能听见，足见广播的推送面积之大。&lt;/p&gt;
+&lt;p&gt;提到广播这种机制，学过iOS的都知道通知，我想这两种机制应该都是类似的。在iOS中，我们如果想监听系统的某些事件，比如APP退到后台，我们只需要在把监听对象添加到系统的通知中心中，并且关注APP退到后台的事件，就可以随时监听了。通知还有个好处就是，我们可以夸线程，夸界面的处理事件。&lt;/p&gt;
+&lt;p&gt;那么，在Android中，广播又是怎么回事呢，这篇文章就来详细分析一下广播在Android中的应用。(ps:广播还有另外一个名字——全局大喇叭~~)&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+    
+    
+      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+    
+  </entry>
   
   <entry>
     <title>一天一Android之RecyclerView</title>
@@ -2619,343 +2768,6 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend {
     
     
       <category term="查找" scheme="http://www.guiyongdong.com/tags/%E6%9F%A5%E6%89%BE/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>查找算法之顺序表查找</title>
-    <link href="http://www.guiyongdong.com/2016/11/10/%E6%9F%A5%E6%89%BE%E7%AE%97%E6%B3%95%E4%B9%8B%E9%A1%BA%E5%BA%8F%E8%A1%A8%E6%9F%A5%E6%89%BE%E6%B3%95/"/>
-    <id>http://www.guiyongdong.com/2016/11/10/查找算法之顺序表查找法/</id>
-    <published>2016-11-10T07:45:23.000Z</published>
-    <updated>2016-11-15T03:42:20.000Z</updated>
-    
-    <content type="html"><![CDATA[<h3 id="顺序查找法"><a href="#顺序查找法" class="headerlink" title="顺序查找法"></a>顺序查找法</h3><p><strong>顺序查找法（Sequential Search）又叫线性查找，是最基本的查找技术，它的查找过程是：从表中第一个（或者最后一个）记录开始，逐个进行记录的关键字和给定值比较，若某个记录的关键字和给定值相等，查找成功，找到查找的记录；如果知道最后一个（或第一个）记录，其关键字和给定值比较都不相等时，则表中没有所查的记录，查找不成功。</strong></p>
-<p>顺序查找的算法实现如下：</p>
-<pre><code>- (NSInteger)sequential_search:(NSArray *)targetArray key:(id)key {
-    NSInteger n = targetArray.count;
-    for (int i = 0; i &lt; n; i++) {
-        if (targetArray[i] == key) {
-            return i;
-        }
-    }
-    return -1;
-}
-</code></pre><p>这段代码非常简单，就是在数组targetArray中查看有没有关键字（key），当你需要查找复杂表结构的记录时，只需要把数组targetArray和关键字key定义成你需要的表结构和数据类型即可。</p>
-<p>对于这种顺序查找算法来说，查找成功最好的情况就是在第一个位置就找到了，算法的时间复杂度为O(1)，最坏的情况是在最后一个位置才找到，需要比较n次，时间复杂度为O(n)，由于关键字在任何一位置的概率相同，所以平均查找次数为(n+1)/2，所以最终时间复杂度还是O(n)。</p>
-<p>很显然，顺序查找技术是由很大缺点的，n很大时，查找效率极为地下，不过优点也是有的，这个算法非常简单，对静态查找表的记录没有任何的要求，在一些小型数据的查找时，是可以使用的。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h3 id=&quot;顺序查找法&quot;&gt;&lt;a href=&quot;#顺序查找法&quot; class=&quot;headerlink&quot; title=&quot;顺序查找法&quot;&gt;&lt;/a&gt;顺序查找法&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;顺序查找法（Sequential Search）又叫线性查找，是最基本的查找技术，它的查找过程是：从
-    
-    </summary>
-    
-      <category term="算法" scheme="http://www.guiyongdong.com/categories/%E7%AE%97%E6%B3%95/"/>
-    
-    
-      <category term="查找" scheme="http://www.guiyongdong.com/tags/%E6%9F%A5%E6%89%BE/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>iOS触摸事件处理详解</title>
-    <link href="http://www.guiyongdong.com/2016/11/09/iOS%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E8%AF%A6%E8%A7%A3/"/>
-    <id>http://www.guiyongdong.com/2016/11/09/iOS触摸事件处理详解/</id>
-    <published>2016-11-09T06:39:39.000Z</published>
-    <updated>2017-03-09T07:02:45.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。</p>
-<p>当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，该触摸时事件对象是一系列触摸信息包装集。例如手势事件，该事件是一个动态的变量它取决于你使用了什么框架以及你感兴趣的手势事件类型。</p>
-<a id="more"></a>
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>iOS 事件分为三大类</p>
-<ul>
-<li>触摸事件</li>
-<li>加速器事件</li>
-<li>远程控制事件</li>
-</ul>
-<p>这篇博客主要讲解触摸事件<br>触摸事件是我们平时遇到最多的事件，例如单击、长按、滑动等等。当用户点击按钮，到按钮处理回调。整个过程是如何发生，需要什么样的原则，这些都是问题。为了使系统能更加鲜明符合用户的操作逻辑，iOS系统将事件相应过程拆分成两部分：</p>
-<ol>
-<li>寻找响应链；</li>
-<li>事件响应，先将事件通过某种规则来分发，找到处理事件的控件，其次是将事件传递分发，响应。</li>
-</ol>
-<h3 id="触摸事件"><a href="#触摸事件" class="headerlink" title="触摸事件"></a>触摸事件</h3><p><strong>UIEvent</strong><br>iOS将触摸事件定义为第一个手指开始触摸屏幕到最后一个手指离开屏幕定义为一个触摸事件。用类UIEvent表示。</p>
-<p><strong>UITouch</strong><br>一个手指第一次点击屏，会形成一个UITouch对象，直到离开销毁。表示触碰。UITouch对象能表明了当前手指触碰的屏幕位置，状态。状态分为开始触碰、移动、离开。</p>
-<p>根据定义，UIEvent实际包括了多个UITouch对象。有几个手指触碰，就会有几个UITouch对象。<br>定义代码如下:</p>
-<pre><code>@interface UIEvent : NSObject
-@property(nonatomic,readonly) UIEventType     type NS_AVAILABLE_IOS(3_0);
-@property(nonatomic,readonly) UIEventSubtype  subtype NS_AVAILABLE_IOS(3_0);
-@property(nonatomic,readonly) NSTimeInterval  timestamp;
-#if UIKIT_DEFINE_AS_PROPERTIES
-//UITouch SET
-@property(nonatomic, readonly, nullable) NSSet &lt;UITouch *&gt; *allTouches;
-//省略部分代码
-@end
-</code></pre><p>UIEventType表明了事件类型，UIEvent表示了三大事件。allTouches是该事件的所有UITouch对象的集合。</p>
-<pre><code>//UITouch
-@interface UITouch : NSObject
-@property(nonatomic,readonly) NSTimeInterval      timestamp;
-@property(nonatomic,readonly) UITouchPhase        phase;
-@property(nonatomic,readonly) NSUInteger          tapCount;   // touch down within a certain point within a certain amount of time
-@property(nonatomic,readonly) UITouchType         type NS_AVAILABLE_IOS(9_0);
-
-@property(ullable,nonatomic,readonly,strong) UIWindow                        *window;
-@property(nullable,nonatomic,readonly,strong) UIView                          *view;
-@property(nullable,nonatomic,readonly,copy)   NSArray &lt;UIGestureRecognizer *&gt; *gestureRecognizers 
-NS_AVAILABLE_IOS(3_2);
-//省略部分代码
-@end
-//Touch 状态枚举
-typedef NS_ENUM(NSInteger, UITouchPhase) {
-    UITouchPhaseBegan,             // whenever a finger touches the surface.
-    UITouchPhaseMoved,             // whenever a finger moves on the surface.
-    UITouchPhaseStationary,        // whenever a finger is touching the surface but hasn&apos;t moved since the previous event.
-    UITouchPhaseEnded,             // whenever a finger leaves the surface.
-    UITouchPhaseCancelled,         // whenever a touch doesn&apos;t end but we need to stop tracking (e.g. putting device to face)
-};
-</code></pre><p>UITouch中phase表明了手指移动的状态，包括1.开始点击；2.移动；3.保持; 4.离开；5.被取消（手指没有离开屏幕，但是系统不再跟踪它了）</p>
-<p>综上，UIEvent就是一组UITouch。每当该组中任何一个UITouch对象的phase发生变化，系统都会产生一条TouchMessage。也就是说每次用户手指的移动和变化，UITouch都会形成状态改变，系统变回会形成Touch message进行传递和派发。那么 一次触摸事件是由一组UITouch对象状态变化引起的一组Touch message的转发和派送。那么事件派发的原则是什么？</p>
-<h3 id="响应者"><a href="#响应者" class="headerlink" title="响应者"></a>响应者</h3><p>我们先来了解一下什么是响应者。<br>只要继承了UIResponder的对象就可以作为事件的响应者，下面看一下 UIResponder及其子类的继承关系：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responder1.png?raw=true"><br></div>
-
-<p>平常开发中所使用到的控件例如：UIButton,UiView,UIViController,APPDelegate，UIApplication等都能响应事件。与用户交互的控件就是第一响应者，它将作为响应者链的开始，事件首先发送给第一响应者，然后再依次传递下去，直到该事件被某个响应者处理。</p>
-<h3 id="响应链"><a href="#响应链" class="headerlink" title="响应链"></a>响应链</h3><p>响应链是“事件派发”的原则和规定，那么响应链是什么？顾名思义事件链是一个链条，详细的定义如下:</p>
-<ul>
-<li>每条链是一个 链表状结构，整个是一棵树</li>
-<li>链表的每一个node是一个 UIResponser对象</li>
-</ul>
-<p>UIResponser,响应链中的响应者，用来接收和处理事件的类，先抛开iOS中的具体传递细节，系统发送UIEvent的Touch message给UIResponser类。UIResponser提供了一下几个函数来做事件处理</p>
-<pre><code>//触摸事件
-- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-- (void)touchesMoved:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-- (void)touchesEnded:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-- (void)touchesCancelled:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-- (void)touchesEstimatedPropertiesUpdated:(NSSet&lt;UITouch *&gt; *)touches NS_AVAILABLE_IOS(9_1);
-
-//物理按钮，遥控器上面的按钮在按压状态等状态下的回调
-- (void)pressesBegan:(NSSet&lt;UIPress *&gt; *)presses withEvent:(nullable UIPressesEvent *)event NS_AVAILABLE_IOS(9_0);
-- (void)pressesChanged:(NSSet&lt;UIPress *&gt; *)presses withEvent:(nullable UIPressesEvent *)event NS_AVAILABLE_IOS(9_0);
-- (void)pressesEnded:(NSSet&lt;UIPress *&gt; *)presses withEvent:(nullable UIPressesEvent *)event NS_AVAILABLE_IOS(9_0);
-- (void)pressesCancelled:(NSSet&lt;UIPress *&gt; *)presses withEvent:(nullable UIPressesEvent *)event NS_AVAILABLE_IOS(9_0);
-
-//设备的陀螺仪和加速传感器使用
-- (void)motionBegan:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event NS_AVAILABLE_IOS(3_0);
-- (void)motionEnded:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event NS_AVAILABLE_IOS(3_0);
-- (void)motionCancelled:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event NS_AVAILABLE_IOS(3_0);
-</code></pre><p>UIResponser包括了各种Touch message 的处理，比如开始，移动，停止等等。</p>
-<p>回到响应链，响应链是由UIResponser组成的，那么是按照哪种规则形成的。</p>
-<ol>
-<li>程序启动<ul>
-<li>UIApplication会生成一个单例，并会关联一个APPDelegate。APPDelegate作为整个响应链的根建立起来，而UIApplication会将自己与这个单例链接，即UIApplication的nextResponser(下一个事件处理者)为APPDelegate。</li>
-</ul>
-</li>
-<li>创建UIWindow<ul>
-<li>程序启动后，任何的UIWindow被创建时，UIWindow内部都会把nextResponser设置为UIApplication单例。</li>
-<li>UIWindow初始化rootViewController, rootViewController的nextResponser会设置为UIWindow</li>
-</ul>
-</li>
-<li>UIViewController初始化<ul>
-<li>loadView, VC的view的nextResponser会被设置为VC。</li>
-</ul>
-</li>
-<li>addSubView<ul>
-<li>addSubView操作过程中，如果子subView不是VC的View,那么subView的nextResponser会被设置为superView。如果是VC的View,那就是 subView -&gt; subView.VC -&gt;superView</li>
-<li>如果在中途，subView.VC被释放，就会变成subView.nextResponser = superView</li>
-</ul>
-</li>
-</ol>
-<p>最终形成类似这样一张图</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responser2.png?raw=true"><br></div>
-
-<p>其中应该是由箭头的，箭头的方向是朝上，也就是subView指向superView.</p>
-<h3 id="事件传递"><a href="#事件传递" class="headerlink" title="事件传递"></a>事件传递</h3><p>有了响应网为基础，事件的传递就比较简单，只需要选择其中一条响应链，但是选择那一条响应链来传递呢？为了弄清真个过程，我们先来查看一下从触摸硬件事件转化为UIEvent消息。</p>
-<ol>
-<li>首先用户触摸屏幕，系统的硬件进程会获取到这个点击事件，将事件简单处理封装后存到系统中，由于硬件检测进程和当前运行的APP是两个进程，所以进程两者之间传递事件用的是端口通信。硬件检测进程会将事件放入到APP检测的那个端口。</li>
-<li>其次，APP启动主线程RunLoop会注册一个端口事件，来检测触摸事件的发生。当时事件到达，系统会唤起当前APP主线程的Runloop。唤起原因就是端口触摸事件，主线程会分析这个事件。</li>
-<li>最后，系统判断该次触摸是否导致了一个新的事件, 也就是说是否是第一个手指开始触碰，如果是，系统会先从响应网中 寻找响应链。如果不是，说明该事件是当前正在进行中的事件产生的一个Touch message， 也就是说已经有保存好的响应链。</li>
-</ol>
-<p>如果是新事件，系统会寻找响应链，为了符合用户的操作习惯，系统会根据用户的点击位置，在当前的整个APP的显示层级中寻找。过程如下：</p>
-<ol>
-<li>将所有的显示在屏幕上的 “合格的”UIWindow对象 按照层级结构从上到下排列成一个数组。</li>
-<li>从第一个UIWindow对象开始，先判断UIWindow是否合格，其次判断 点击位置在不在这个Window内，如果不在 ，返回nil, 就换下一个UIWindow;如果在的话，并且UIWindow没有subView就返回自己，整个过程结束。如果UIWindow有subViews,就从后往前遍历整个subViews,做和UIWindow类似的事情，直到找到一个View。如果没有找到到就不做传递。</li>
-<li><strong>合格的UIWindow，UIView。意思是控件被允许接受事件。符合三个条件：1.不能被隐藏；2.alpha值大于0.01(不是backgroundColor为clearColor)；3.isUserInteractionEnabled为YES，打开状态。一般UILabel,UIImageView纯显示的控件默认是关闭状态，也就是不处理事件。</strong></li>
-</ol>
-<p>显示控件有了两个方法来做上面这件事，就是常说的hitTest</p>
-<pre><code> // 先判断点是否在View内部，然后遍历subViews
-- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event;  
-//判断点是否在这个View内部
-- (BOOL)pointInside:(CGPoint)point withEvent:(nullable UIEvent *)event;   // default returns YES if point is in bounds
-</code></pre><p>整个过程的系统实现大致如下</p>
-<pre><code>- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {
-  //判断是否合格
-    if (!self.hidden &amp;&amp; self.alpha &gt; 0.01 &amp;&amp; self.isUserInteractionEnabled) {
-        //判断点击位置是否在自己区域内部
-        if ([self pointInside: point withEvent:event]) {
-            UIView *attachedView;
-            for (int i = self.subviews.count - 1; i &gt;= 0; i--) {
-                UIView *view  = self.subviews[i];
-                //对子view进行hitTest
-                attachedView =  [view hitTest:point withEvent:event];
-                if (attachedView)
-                    break;
-            }
-            if (attachedView)  {
-                return attachedView;
-            } else {
-                return self;
-            }
-        }
-    }
-    return nil;
-}
-</code></pre><h4 id="技巧"><a href="#技巧" class="headerlink" title="技巧"></a>技巧</h4><p>以上可知默认情况下，用户点击哪个View,系统就会在寻找过程中返回哪个view，但是我们可以重载上面两个方法做如下事情：</p>
-<ul>
-<li>将控件外部点规整到控件内部。 例如控件较小，点击位置在控件边缘外部，可以重载- (BOOL)pointInside:(CGPoint)point withEvent:(nullable UIEvent *)event; 将外部的点也判断为内部点，这样hitTest就会遍历自己。</li>
-<li>重载HitTest更改默认行为。 有时候点击subView的某些特殊位置需要superView处理，我们可以在superView的hitTest，返回superView。这样superView变成首部响应者</li>
-</ul>
-<blockquote>
-<p>hitTest的逻辑代码中会把隐藏，透明（alpha&lt;0.01,不是backgroundColor为clearColor），不交互的view滤过，但不代表hitTest不会被调用，我们可以重载hitTest去让 已经隐藏、透明、不交互的view响应事件。不过最正规的方法是打开控件交互属性。</p>
-</blockquote>
-<p>以上过程返回的View被称作hitTestView，顺着hitTestView的nextResponser,可以形成一个链，即响应链。 最后指向appDelegate. 并且返回hitTestView之后，系统会持有hitTestView。事件不结束，这个hitTestView不会发生变化，即使用户点击之后将手指移动到其他控件上面，该点击都会绑定开始的hitTestView。当所有手指离开屏幕，事件结束。再次点击，事件重新开始。以上过程再来一次。</p>
-<h3 id="事件响应"><a href="#事件响应" class="headerlink" title="事件响应"></a>事件响应</h3><p>形成响应链之后，UIWindow会把事件目标锁定为hitTestView(响应链头的控件)，当手指状态发生变化， 会不停的发送UITouch Message 给这个hitTestView。 下面这几个方法会被调用。<br>然后控件的以下方法会陆续被调用</p>
-<pre><code>//点击刚开始，回调这个方法
-- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-//点击之后移动，回调这个方法
-- (void)touchesMoved:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-//手指移开，点击结束
-- (void)touchesEnded:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-//点击过程中，事件被手势识别，会回调这个方法，关于手势后面会讲解
-- (void)touchesCancelled:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-- (void)touchesEstimatedPropertiesUpdated:(NSSet&lt;UITouch *&gt; *)touches NS_AVAILABLE_IOS(9_1);
-</code></pre><h4 id="技巧-1"><a href="#技巧-1" class="headerlink" title="技巧"></a>技巧</h4><p>由于系统只会把事件发送给 hitTestView，如果你想让hitTestView之后的其他响应者处理该Touch Mesage ，需要自己实现以上几个方法做派发，例如</p>
-<pre><code>- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event
-{
-    //do someThiing
-  [self.nextResponser touchesBegan: touches withEvent:event];
-}
-</code></pre><p>事件转发可以做很多事情。大家可以尽可能的想象</p>
-<h3 id="手势处理"><a href="#手势处理" class="headerlink" title="手势处理"></a>手势处理</h3><p>以上看来所有的事情都很平稳，无非就是寻找响应链，传递事件等等。但是接下来大家可能需要蒙圈。先来道题目</p>
-<ul>
-<li>AView 有子view BView，AView上面有一个<strong>单击手势</strong>，这个时候点击BView。默认情况下，Bview的四个Touch方法中，那些方法会被调用？</li>
-</ul>
-<p>可能很多人会说没有任何影响，基本都会调用，答案是整个过程会调用这两个方法。</p>
-<pre><code>- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-- (void)touchesCancelled:(NSSet&lt;UITouch *&gt; *)touches withEvent:(nullable UIEvent *)event;
-</code></pre><p>touchEnd不会被调用。<br>为什么？因为有手势的存在，我们先看一下手势。</p>
-<h4 id="手势"><a href="#手势" class="headerlink" title="手势"></a>手势</h4><p>手势是苹果为处理常用的用户交互所推出了一个优先级更高的处理技术。为了让用户完成对多种控件的基本操作，苹果实现了以下几个手势</p>
-<blockquote>
-<p><strong>UITapGestureRecognizer</strong><br><strong>UIPinchGestureRecognizer</strong><br><strong>UIRotationGestureRecognizer</strong><br><strong>UISwipeGestureRecognizer</strong><br><strong>UIPanGestureRecognizer</strong><br><strong>UIScreenEdgePanGestureRecognizer</strong><br><strong>UILongPressGestureRecognizer</strong></p>
-</blockquote>
-<p>上面包括点击，长按，旋转，滑动等等手势。这样开发者就可以随便将其关联到某个控件上完成交互。<br>先抛开刚才的问题，先看单纯的手势如何识别用户操作。</p>
-<p>系统会将用户触摸屏幕的点事件 发送给手势，手势会根据具体的点击位置和序列，判断是否是某种特定行为。具体的判断方法如下</p>
-<pre><code>- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
-- (void)touchesMoved:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
-- (void)touchesEnded:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
-- (void)touchesCancelled:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
-</code></pre><p>和UIResponser一样，手势也有这几个方法，点击的每个阶段手势都会响应不同的方法，手势会在以上四个方法中去对手势的State做更改，手势的State表明当前手势是识别还是失败等等。比如单击手势会在touchesBegan 时记录点击位置，然后在touchesEnded判断点击次数、时间、是否移动过，最后得出是否识别该手势。这几个方法一般在自定义手势里面使用。</p>
-<h4 id="手势状态"><a href="#手势状态" class="headerlink" title="手势状态"></a>手势状态</h4><pre><code>typedef NS_ENUM(NSInteger, UIGestureRecognizerState) {
-    //未知状态
-    UIGestureRecognizerStatePossible,   // the recognizer has not yet recognized its gesture, but may be evaluating touch events. this is the default state
-    //首次识别状态，对于连续手势，例如长按，有这种状态
-    UIGestureRecognizerStateBegan,      // the recognizer has received touches recognized as the gesture. the action method will be called at the next turn of the run loop
-    //再次识别，当手连续手势识别之后，再次受到touch事件
-    UIGestureRecognizerStateChanged,    // the recognizer has received touches recognized as a change to the gesture. the action method will be called at the next turn of the run loop
-    //识别完成，受到touchend 消息之后
-    UIGestureRecognizerStateEnded,      // the recognizer has received touches recognized as the end of the gesture. the action method will be called at the next turn of the run loop and the recognizer will be reset to UIGestureRecognizerStatePossible
-    //取消识别
-    UIGestureRecognizerStateCancelled,  // the recognizer has received touches resulting in the cancellation of the gesture. the action method will be called at the next turn of the run loop. the recognizer will be reset to UIGestureRecognizerStatePossible
-    //识别失败
-    UIGestureRecognizerStateFailed,     // the recognizer has received a touch sequence that can not be recognized as the gesture. the action method will not be called and the recognizer will be reset to UIGestureRecognizerStatePossible
-    // Discrete Gestures – gesture recognizers that recognize a discrete event but do not report changes (for example, a tap) do not transition through the Began and Changed states and can not fail or be cancelled
-    //识别状态，与识别结束一个意思
-    UIGestureRecognizerStateRecognized = UIGestureRecognizerStateEnded // the recognizer has received touches recognized as the gesture. the action method will be called at the next turn of the run loop and the recognizer will be reset to UIGestureRecognizerStatePossible
-};
-</code></pre><p>手势的状态有以上几种,我们来看手势的整个迁移过程，先明确几个信息</p>
-<ol>
-<li>手势的状态迁移只有在它们收到Touch message的时候，才能做状态变化处理代码。</li>
-<li>手势分为连续状态手势和不连续状态手势。连续手势有长按，慢滑等。不连续手势有单击，双击等等。</li>
-<li>当用户没有点击屏幕，所有手势都处于Possiable状态。</li>
-</ol>
-<p>当用户点击屏幕，手势会收到Touch Began Message， 手势的touchBegan方法会被调用。手势开始记录点击位置和时间。仍处于Possiable状态。如果用户按住不放，间隔超过一定时间，单击手势会变化为失败状态，并在下个一runloop变为possiable。如果时间大于长按手势设定时间，长按手势就会变化为Began状态，当用户移动手指，长按手势的touch move方法被调用，长按手势将自己状态设置为Change，并且也会回调处理方法。最后手指离开，系统调用长按手势touchEnd方法，手势状态回归为Recognized状态。</p>
-<h4 id="手势混合处理"><a href="#手势混合处理" class="headerlink" title="手势混合处理"></a>手势混合处理</h4><p>如果一个View上既有单击，又有双击，用户点击该view两次， 默认情况下，单击被处理，双击不管用。因为默认情况下，一旦事件被某个手势处理，第二个手势会识别失败 幸运的是苹果提供了方法让我们修改这种默认行为，具体的方法如下</p>
-<pre><code>@protocol UIGestureRecognizerDelegate &lt;NSObject&gt;
-@optional
-// called when a gesture recognizer attempts to transition out of UIGestureRecognizerStatePossible. returning NO causes it to transition to UIGestureRecognizerStateFailed
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer;
-
-// called when the recognition of one of gestureRecognizer or otherGestureRecognizer would be blocked by the other
-// return YES to allow both to recognize simultaneously. the default implementation returns NO (by default no two gestures can be recognized simultaneously)
-//
-// note: returning YES is guaranteed to allow simultaneous recognition. returning NO is not guaranteed to prevent simultaneous recognition, as the other gesture&apos;s delegate may return YES
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
-
-// called once per attempt to recognize, so failure requirements can be determined lazily and may be set up between recognizers across view hierarchies
-// return YES to set up a dynamic failure requirement between gestureRecognizer and otherGestureRecognizer
-//
-// note: returning YES is guaranteed to set up the failure requirement. returning NO does not guarantee that there will not be a failure requirement as the other gesture&apos;s counterpart delegate or subclass methods may return YES
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer NS_AVAILABLE_IOS(7_0);
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer NS_AVAILABLE_IOS(7_0);
-
-// called before touchesBegan:withEvent: is called on the gesture recognizer for a new touch. return NO to prevent the gesture recognizer from seeing this touch
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch;
-
-// called before pressesBegan:withEvent: is called on the gesture recognizer for a new press. return NO to prevent the gesture recognizer from seeing this press
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceivePress:(UIPress *)press;
-
-@end
-</code></pre><p>上面是手势的代理方法，你可以实现手势的这几个代理方法，更改默认行为。</p>
-<ul>
-<li>(BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer;<br>手势已经应分析出该事件可以响应，再对自己的状态进行更改之前，会询问代理的这个方法是否允许更改。默认为YES，如果你实现并设置为NO,那么手势会变为失败状态，这个可以用在手势只识别View的某几个区域的相应。</li>
-<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer )otherGestureRecognizer;<br>当两个手势都对该事件进行识别，但只有一个能响应，另外一个会失败。比如一个View上绑定两个单击事件。为了让两个手势都响应，我们可以实现此方法，让两个手势都响应。</li>
-<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer )otherGestureRecognizer NS_AVAILABLE_IOS(7_0);</li>
-<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer )otherGestureRecognizer NS_AVAILABLE_IOS(7_0);<br>这两个方法是iOS 7引入的，目的是让两个手势之间增加依赖，比如单击和双击，如果需要单击在双击失败的情况下识别，那么可以实现这两个方法。</li>
-<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldReceiveTouch:(UITouch )touch;</li>
-<li>(BOOL)gestureRecognizer:(UIGestureRecognizer )gestureRecognizer shouldReceivePress:(UIPress )press;<br>这两个方法是判断手势在新的Touch和Press Began阶段是否关注该UITouch和UIPress对象，默认为YES，如果设置为NO,手势不会关注该Touch的任何状态变化。</li>
-</ul>
-<h4 id="手势与事件响应"><a href="#手势与事件响应" class="headerlink" title="手势与事件响应"></a>手势与事件响应</h4><p>回到我们上面问过的问题，BView只有touchBegan， touchesCancelle 的原因是什么？答案在于整个触摸事件全过程</p>
-<ol>
-<li>系统会通过hitTest的方法寻找响应链，完成之后会形成下图模型。</li>
-</ol>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/Responder/Responser3.png?raw=true"><br></div>
-
-<blockquote>
-<p>图中最右边是响应链，中间是关联在相应链在视图上的手势</p>
-</blockquote>
-<ol>
-<li>有了模型之后就会发生图上的三个步骤</li>
-</ol>
-<p>第一步：系统会将所有的 Touch message 优先发送给 关联在响应链上的全部手势。手势根据Touch序列消息和手势基本规则更改自己的状态（有的可能失败，有的可能识别等等）。如果没有一个手势对Touch message 进行拦截（拦截:系统不会将Touch message 发送给响应链顶部响应者)，系统会进入第二步</p>
-<p>第二步：系统将Touch message 发送给响应链 顶部的 视图控件，顶部视图控件这个时候就会调用Touch相关的四个方法中的某一个。之后进入自定义Touch message转发</p>
-<p>第三步：自定义Touch message转发可以继承UIResponser的四个Touch函数做转发。</p>
-<p>解释一下第一步中说的拦截，手势会表明是否拦截该Touch Message,主要由下面三个属性控制。</p>
-<p>再回到那道题目，如果我们想hitTestView的toucheEnd函数依然能得到调用，怎么办？其实UIGestureRecognizer有三个属性</p>
-<pre><code>@property(nonatomic) BOOL cancelsTouchesInView;       // default is YES. causes touchesCancelled:withEvent: or pressesCancelled:withEvent: to be sent to the view for all touches or presses recognized as part of this gesture immediately before the action method is called.
-@property(nonatomic) BOOL delaysTouchesBegan;         // default is NO.  causes all touch or press events to be delivered to the target view only after this gesture has failed recognition. set to YES to prevent views from processing any touches or presses that may be recognized as part of this gesture
-@property(nonatomic) BOOL delaysTouchesEnded;         // default is YES. causes touchesEnded or pressesEnded events to be delivered to the target view only after this gesture has failed recognition. this ensures that a touch or press that is part of the gesture can be cancelled if the gesture is recognized
-</code></pre><ul>
-<li>cancelsTouchesInView<br>  默认为YES,表明当手势识别了该事件，系统会将Touch cancel消息发送给hitTestView ，并调用hitTestView的TouchCancel。设置为NO，不会再收到TouchCancel</li>
-<li>delaysTouchesBegan<br>  默认为NO, 表明无论什么情况下，不会拦截Touch began消息。如果设置为YES，只要有一个手势不识别失败，都不会发送Touch began到响应链的第一响应者。</li>
-<li>delaysTouchesEnded<br>  默认为NO, 和delaysTouchesBegan类似，不过它是用来控制TouchEnd message的拦截</li>
-</ul>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>iOS整个事件处理的过程就是这样，系统为完成整个交互做了很多东西，核心点如下：</p>
-<ul>
-<li>事件分发过程分为：1.寻找响应链；2.事件消息分发</li>
-<li>响应网是事件响应的基础，响应链是事件响应的具体路径。</li>
-<li>事件消息分发优先发送给手势集合，手势内部会做冲突处理，过滤消息。不被过滤的消息会传递给响应链对象。</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;当你设计一个app的时候，可能会有这样的场景，你想动态的去响应一个事件。例如，在屏幕上的一个触摸事件可能在不同的对象中都发生，并且你不得不决定由哪一个对象来响应这个事件并且尝试去理解怎么样的一个对象接收了到这个事件。&lt;/p&gt;
-&lt;p&gt;当一个常见的用户事件发生的时候，UIKit会创建一个事件对象Event Object,该对象包含了事件处理所必须得一些信息。然后它会将事件对象置于激活的app事件队列。例如触摸事件，该触摸时事件对象是一系列触摸信息包装集。例如手势事件，该事件是一个动态的变量它取决于你使用了什么框架以及你感兴趣的手势事件类型。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
-    
-    
-      <category term="响应者链" scheme="http://www.guiyongdong.com/tags/%E5%93%8D%E5%BA%94%E8%80%85%E9%93%BE/"/>
     
   </entry>
   
