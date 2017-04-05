@@ -206,6 +206,126 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
+                        <a class="link-unstyled" href="/2016/11/15/排序算法总结/">
+                            排序算法总结
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-11-15T11:40:05+08:00">
+	
+		    11月 15, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/算法/">算法</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <h3 id="十大排序算法比较图"><a href="#十大排序算法比较图" class="headerlink" title="十大排序算法比较图"></a>十大排序算法比较图</h3><hr>
+<div align=center><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/miscellaneous/15.png?raw=true" /><br></div>
+
+
+
+<h3 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h3><hr>
+<p><strong>算法描述</strong><br><strong>冒冒泡排序是一种简单的排序算法。它重复地走访过要排序的数列，一次比较两个元素，如果它们的顺序错误就把它们交换过来。走访数列的工作是重复地进行直到没有再需要交换，也就是说该数列已经排序完成。这个算法的名字由来是因为越小的元素会经由交换慢慢“浮”到数列的顶端。</strong></p>
+<p><strong>算法实现</strong></p>
+<ol>
+<li>比较相邻的元素。如果第一个比第二个大，就交换它们两个；</li>
+<li>对每一对相邻元素作同样的工作，从开始第一对到结尾的最后一对，这样在最后的元素应该会是最大的数；</li>
+<li>针对所有的元素重复以上的步骤，除了最后一个；</li>
+<li>重复步骤1~3，直到排序完成。</li>
+</ol>
+<p><strong>代码：</strong></p>
+<pre><code>- (void)sortBubble:(NSMutableArray *)targetArray {
+    BOOL flag = true;  //flag 用来做标记
+    NSInteger num = 0; //标记总比较次数
+    for (NSInteger i = 0; i &lt; targetArray.count&amp;&amp;flag; i++) { //若flag为true  则退出循环
+        flag = false;   //初始是false
+        for (NSInteger j = 0; j &lt; targetArray.count - i-1; j++) {
+            num++;
+            NSLog(@&quot;---%ld&quot;,num);
+            if ([targetArray[j] integerValue] &gt; [targetArray[j+1] integerValue]) {
+                id temp = targetArray[j];
+                targetArray[j] = targetArray[j+1];
+                targetArray[j+1] = temp;
+                flag = true;
+            }
+        }
+    }
+    NSLog(@&quot;%@&quot;,targetArray);
+}
+</code></pre>
+                    
+                        <a href="/2016/11/15/排序算法总结/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2016/11/14/查找算法之线性索引查找法/">
+                            查找算法之线性索引查找法
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2016-11-14T15:28:07+08:00">
+	
+		    11月 14, 2016
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/算法/">算法</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>数据结构的最终目的是提高数据的处理速度，索引是为了加快查找速度而设计的一种数据结构，<strong>索引就是把一个关键字与它对应的记录相关联的过程，</strong>一个索引由若干个索引项构成，每个索引项至少包含关键字和其对应的记录在存储器中的位置等信息。索引技术是组织大型数据库以及磁盘文件的一种重要技术。</p>
+<p>索引按照结构可以分为线性索引、树形索引和多级索引。这里只介绍线性索引技术。<strong>所谓线性索引就是将索引项集合组织为线性结构，也称为索引表。</strong>这里介绍三种线性索引：<strong>稠密索引、分块索引、倒排索引。</strong></p>
+                    
+                        <a href="/2016/11/14/查找算法之线性索引查找法/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
                         <a class="link-unstyled" href="/2016/11/10/查找算法之有序表查找/">
                             查找算法之有序表查找
                         </a>
@@ -563,92 +683,6 @@
         
     </article>
     
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/22/iOS动画篇之CoreAnimation动画/">
-                            iOS动画篇之CoreAnimation动画
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-22T14:08:56+08:00">
-	
-		    9月 22, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br>
-                    
-                        <a href="/2016/09/22/iOS动画篇之CoreAnimation动画/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/21/iOS动画篇-transfrom/">
-                            iOS动画篇之UIView动画
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-21T11:38:37+08:00">
-	
-		    9月 21, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br>
-                    
-                        <a href="/2016/09/21/iOS动画篇-transfrom/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
     <div class="pagination-bar">
     <ul class="pagination">
         
@@ -939,7 +973,7 @@
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 37 篇文章
+                找到 39 篇文章
             </p>
         </div>
     </div>
