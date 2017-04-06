@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2017-04-05T02:51:42.000Z</updated>
+  <updated>2017-04-06T08:27:54.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,102 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>一天一Android之AsyncTask</title>
+    <link href="http://www.guiyongdong.com/2017/04/05/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BAsyncTask/"/>
+    <id>http://www.guiyongdong.com/2017/04/05/一天一Android之AsyncTask/</id>
+    <published>2017-04-05T09:54:27.000Z</published>
+    <updated>2017-04-06T08:27:54.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>前段时间我有说过<code>Handler</code>、<code>Message</code>、<code>Looper</code>三者之间的关系，它们可以解决线程间通信，可以用作子线程处理耗时操作，主线程刷新UI等。今天我要说的是另外一种解决方案：<code>AsyncTask</code>。它的内部还是使用异步消息处理机制，只是<code>Android</code>对这三者进行了高度的封装。如果你对异步消息处理机制还不是很清楚的话，你可以看看这篇文章:<a href="http://www.guiyongdong.com/2017/03/27/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E5%BC%82%E6%AD%A5%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6/">一天一Android之异步消息处理机制</a>。来看看<code>AsyncTask</code>到底如何使用。</p>
+<a id="more"></a>
+<h3 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h3><p>首先看一下<code>AsyncTask</code>的基本用法，因为<code>AsyncTask</code>是一个抽象类，所以如果我们想使用它，就必须要创建一个子类去继承它，在继承时，我们可以为<code>AsyncTask</code>类来指定3个泛型参数，这3个参数的用途如下：</p>
+<ul>
+<li>Params 在执行<code>AsyncTask</code>时需要传入的参数，可以在后台任务中使用</li>
+<li>Progress 后台任务执行时，如果需要在界面上显示当前的进度，则使用这里指定的泛型作为返回值类型</li>
+<li>Result 当任务执行完毕后，如果需要对结果进行返回，则使用这里指定的泛型作为返回值类型。</li>
+</ul>
+<p>所以，我们定义一个<code>AsyncTask</code>就可以写成如下方式：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DownloadTask</span> <span class="keyword">extends</span> <span class="title">AsyncTask</span>&lt;<span class="title">Void</span>,<span class="title">Integer</span>,<span class="title">Void</span>&gt; </span>&#123;</div><div class="line">	...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里，我们指定第一个泛型参数为<code>Void</code>，表示在执行<code>AsyncTask</code>的时候不需要传入参数给后台任务，第二个泛型参数我们指定为<code>Integer</code>，表示使用整型数据来作为进度显示单位，第三个泛型参数指定为<code>Void</code>，表示不指定反馈执行结果。</p>
+<p>一般情况下，我们需要重写<code>AsyncTask</code>中的几个方法才能完成对任务的定制。经常需要重写的方法有四个：</p>
+<p><strong>onPreExecute()</strong></p>
+<p>这个方法会在后台任务开始执行之前调用，一般我们会在这里进行一些初始化，比如显示一个进度条对话框等。此方法执行在主线程中。</p>
+<p><strong>doInBackground(Void… params)</strong></p>
+<p>这个方法中的所有代码都在子线程中执行，应当在这里进行耗时的操作，一旦完成操作，可以使用<code>return</code>语句来将执行的结果返回，因为我们这里定义的返回类型是<code>Void</code>，所以我们这里可以不返回或者返回<code>null</code>。另外特别注意，在这个方法中是不能进行UI操作的，如果需要更新UI，比如更新下载进度等，需要调用<code>publishProgress(Progress... values)</code>来完成。</p>
+<p><strong>onProgressUpdate(Integer… values)</strong></p>
+<p>当我们在后台任务中调用了<code>publishProgress(Progress... values)</code>方法后，这个方法就会被执行，并且执行在主线程中，而且此方法所带的参数正是在后台任务方法中传多来的，我们一般再这个方法中更新UI，比如更新下载进度等。</p>
+<p><strong>onPostExecute(Void aVoid)</strong></p>
+<p>当后台任务执行完成并且通过<code>return</code>语句返回时，这个方法就会被调用，返回的数据会作为参数传递到此方法中，可以利用返回的数据来进行一些操作，比如关闭进度条对话框等。当然，此方法执行在主线程中。</p>
+<p>我们模拟一个下载任务：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String TAG = <span class="string">"MainActivity"</span>;</div><div class="line">    <span class="keyword">private</span> ProgressDialog mProgressDialog;</div><div class="line">    <span class="keyword">private</span> TextView mTextView;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line"></div><div class="line">        mTextView = (TextView) findViewById(R.id.textView);</div><div class="line">        mProgressDialog = <span class="keyword">new</span> ProgressDialog(<span class="keyword">this</span>);</div><div class="line">        mProgressDialog.setMax(<span class="number">100</span>);</div><div class="line">        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);</div><div class="line">        mProgressDialog.setCancelable(<span class="keyword">false</span>);</div><div class="line">        <span class="comment">//启动任务</span></div><div class="line">        <span class="keyword">new</span> DownloadTask().execute();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DownloadTask</span> <span class="keyword">extends</span> <span class="title">AsyncTask</span>&lt;<span class="title">Void</span>,<span class="title">Integer</span>,<span class="title">Void</span>&gt; </span>&#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onPreExecute</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="comment">//显示进度条对话框</span></div><div class="line">            mProgressDialog.show();</div><div class="line">            Log.d(TAG, <span class="string">"onPreExecute: "</span>+Thread.currentThread().getName());</div><div class="line">        &#125;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> Void <span class="title">doInBackground</span><span class="params">(Void... params)</span> </span>&#123;</div><div class="line">            <span class="comment">//模拟耗时操作</span></div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">100</span>;i++) &#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    Thread.sleep(<span class="number">80</span>);</div><div class="line">                &#125;<span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line">                <span class="comment">//更新下载进度</span></div><div class="line">                publishProgress(i);</div><div class="line">            &#125;</div><div class="line">            Log.d(TAG, <span class="string">"doInBackground: "</span>+Thread.currentThread().getName());</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onProgressUpdate</span><span class="params">(Integer... values)</span> </span>&#123;</div><div class="line">            <span class="comment">//主线程更新进度对话框</span></div><div class="line">            mProgressDialog.setProgress(values[<span class="number">0</span>]);</div><div class="line">            Log.d(TAG, <span class="string">"onProgressUpdate: "</span>+Thread.currentThread().getName());</div><div class="line">        &#125;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onPostExecute</span><span class="params">(Void aVoid)</span> </span>&#123;</div><div class="line">            <span class="comment">//主线程隐藏进度对话框</span></div><div class="line">            mProgressDialog.dismiss();</div><div class="line">            mTextView.setText(<span class="string">"加载完毕"</span>);</div><div class="line">            Log.d(TAG, <span class="string">"onPostExecute: "</span>+Thread.currentThread().getName());</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果想启动一个任务，只需要调用如下代码即可：<code>new DownloadTask().execute();</code></p>
+<p>运行结果如下：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android21.gif?raw=true" width="375"><br></div>
+
+
+<h3 id="内部实现"><a href="#内部实现" class="headerlink" title="内部实现"></a>内部实现</h3><p>那么，<code>AsyncTask</code>内部是如何实现的呢？那么，就从我们的执行异步任务的起点开始，看看<code>execute</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> AsyncTask&lt;Params, Progress, Result&gt; <span class="title">execute</span><span class="params">(Params... params)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> executeOnExecutor(sDefaultExecutor, params);</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> AsyncTask&lt;Params, Progress, Result&gt; <span class="title">executeOnExecutor</span><span class="params">(Executor exec,</span></span></div><div class="line">        Params... params) &#123;</div><div class="line">    <span class="comment">//一个任务同一时间只能开启一次,即当前任务只有在结束以后才能再次开启</span></div><div class="line">    <span class="keyword">if</span> (mStatus != Status.PENDING) &#123;</div><div class="line">        <span class="keyword">switch</span> (mStatus) &#123;</div><div class="line">            <span class="keyword">case</span> RUNNING:</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Cannot execute task:"</span></div><div class="line">                        + <span class="string">" the task is already running."</span>);</div><div class="line">            <span class="keyword">case</span> FINISHED:</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Cannot execute task:"</span></div><div class="line">                        + <span class="string">" the task has already been executed "</span></div><div class="line">                        + <span class="string">"(a task can be executed only once)"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//设置当前任务的状态是正在进行</span></div><div class="line">    mStatus = Status.RUNNING;</div><div class="line">    <span class="comment">// 执行准备工作，我们一般都会重写这个方法</span></div><div class="line">    onPreExecute();</div><div class="line">    <span class="comment">//保存参数，并设置Handler回调</span></div><div class="line">    mWorker.mParams = params;</div><div class="line">    <span class="comment">//将mFuture添加到线程队列中</span></div><div class="line">    exec.execute(mFuture);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这段代码的意思是：首先会判断当前任务是否已经在执行，如果已经在执行则抛出异常，然后设置当前任务的状态为运行状态，调用<code>onPreExecute()</code>方法，一般我们都会重写此方法，会进行一些初始化操作，当前方法还是在主线程中。然后保存参数，执行<code>exec.execute(mFuture)</code>，下面我们来看看<code>mWorker</code>和<code>mFuture</code>。</p>
+<p>先来看看<code>mWorker</code>这个成员变量所属的类<code>WorkerRunnable</code>：<br><figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">WorkerRunnable</span>&lt;<span class="title">Params</span>, <span class="title">Result</span>&gt; <span class="keyword">implements</span> <span class="title">Callable</span>&lt;<span class="title">Result</span>&gt; </span>&#123;</div><div class="line">    Params[] mParams;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到，它只有一个成员变量，就是存储我们传入的参数的，并且它还是一个抽象类，并没有实现<code>Callable</code>接口的方法。我们再来看看<code>AsyncTask</code>的构造方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">AsyncTask</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="comment">//创建mWorker 并实现call方法，在合适的时间会调用call方法</span></div><div class="line">    mWorker = <span class="keyword">new</span> WorkerRunnable&lt;Params, Result&gt;() &#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> Result <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">            mTaskInvoked.set(<span class="keyword">true</span>);</div><div class="line">            Result result = <span class="keyword">null</span>;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);</div><div class="line">                <span class="comment">//执行后台任务</span></div><div class="line">                result = doInBackground(mParams);</div><div class="line">                Binder.flushPendingCommands();</div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable tr) &#123;</div><div class="line">                mCancelled.set(<span class="keyword">true</span>);</div><div class="line">                <span class="keyword">throw</span> tr;</div><div class="line">            &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                <span class="comment">//后台任务结束，处理返回的结果</span></div><div class="line">                postResult(result);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> result;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">	...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里会对<code>mWorker</code>进行初始化。这里实现了<code>call</code>方法，并且设置<code>mTaskInvoked=true</code>，然后调用<code>doInBackground(mParams)</code>，之后又调用了<code>postResult(result)</code>方法来操作后台任务返回的结果，那<code>mWorker</code>的<code>call</code>方法什么时候被调用呢？我们等会再来看，先来看看<code>postResult()</code>方法的实现：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Result <span class="title">postResult</span><span class="params">(Result result)</span> </span>&#123;</div><div class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</div><div class="line">    <span class="comment">//通过getHandler()方法获取Handler对象 然后创建Message对象</span></div><div class="line">    Message message = getHandler().obtainMessage(MESSAGE_POST_RESULT,</div><div class="line">            <span class="keyword">new</span> AsyncTaskResult&lt;Result&gt;(<span class="keyword">this</span>, result));</div><div class="line">    <span class="comment">//异步发送消息</span></div><div class="line">    message.sendToTarget();</div><div class="line">    <span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>终于，我们看到了我们熟悉的异步消息机制，这里传递一个<code>message</code>，<code>message.what</code>为<code>MESSAGE_POST_RESULT</code>，<code>message.object</code>为<code>new AsyncTaskResult&lt;Result&gt;(this, result)</code>，我们再来看<code>AsyncTaskResult</code>:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">AsyncTaskResult</span>&lt;<span class="title">Data</span>&gt; </span>&#123;</div><div class="line">    <span class="keyword">final</span> AsyncTask mTask;</div><div class="line">    <span class="keyword">final</span> Data[] mData;</div><div class="line"></div><div class="line">    AsyncTaskResult(AsyncTask task, Data... data) &#123;</div><div class="line">        mTask = task;</div><div class="line">        mData = data;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>AsyncTaskResult</code>只是一个简单的携带数据的对象。</p>
+<p>看到这里，我们一定相信在某处还存在一个<code>Handler</code>。在<code>postResult(Result result)</code>方法中，通过<code>getHandler()</code>方法获取了一个<code>Handler</code>对象，我们再来看这个方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Handler <span class="title">getHandler</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">synchronized</span> (AsyncTask.class) &#123;</div><div class="line">        <span class="keyword">if</span> (sHandler == <span class="keyword">null</span>) &#123;</div><div class="line">            sHandler = <span class="keyword">new</span> InternalHandler();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> sHandler;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这段代码是线程安全的，并且对<code>sHandler</code>进行了初始化。通过查看<code>sHandler</code>，它是一个静态变量，所以我们可以得出，在整个<code>AsyncTask</code>体系中，都只存在一个<code>Handler</code>。我们再来看看<code>InternalHandler</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">InternalHandler</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InternalHandler</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>(Looper.getMainLooper());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@SuppressWarnings</span>(&#123;<span class="string">"unchecked"</span>, <span class="string">"RawUseOfParameterizedType"</span>&#125;)</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</div><div class="line">        AsyncTaskResult&lt;?&gt; result = (AsyncTaskResult&lt;?&gt;) msg.obj;</div><div class="line">        <span class="keyword">switch</span> (msg.what) &#123;</div><div class="line">            <span class="keyword">case</span> MESSAGE_POST_RESULT:</div><div class="line">                <span class="comment">// There is only one result</span></div><div class="line">                result.mTask.finish(result.mData[<span class="number">0</span>]);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">case</span> MESSAGE_POST_PROGRESS:</div><div class="line">                result.mTask.onProgressUpdate(result.mData);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>InternalHandler</code>类重写了<code>handleMessage</code>方法，在接收到<code>MESSAGE_POST_RESULT</code>消息时，执行了<code>result.mTask.finish(result.mData[0])</code>，其实就是执行了<code>AsyncTask.this.finish(result)</code>，在接收早<code>MESSAGE_POST_PROGRESS</code>消息时，执行了<code>result.mTask.onProgressUpdate(result.mData)</code>，其实是执行了<code>AsyncTask.this.onProgressUpdate(progress)</code>，我们先看<code>finish</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">finish</span><span class="params">(Result result)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</div><div class="line">    	 <span class="comment">//如果是取消 回调onCancelled</span></div><div class="line">        onCancelled(result);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">//正常结束任务 回调onPostExecute</span></div><div class="line">        onPostExecute(result);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//设置当前任务的状态</span></div><div class="line">    mStatus = Status.FINISHED;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到，如果我们调用了<code>cancel()</code>，则执行<code>onCancelled()</code>回调。正常情况下调用的<code>onPostExecute()</code>，而我们一般都会重新<code>onPostExecute()</code>方法。</p>
+<p>现在我们有个疑惑，那么后台任务在什么时候执行呢？那就要看<code>mFuture</code>了。再看<code>AsyncTask</code>的构造方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">AsyncTask</span><span class="params">()</span> </span>&#123;</div><div class="line"></div><div class="line">    ...</div><div class="line">    </div><div class="line">    mFuture = <span class="keyword">new</span> FutureTask&lt;Result&gt;(mWorker) &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">done</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                postResultIfNotInvoked(get());</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                android.util.Log.w(LOG_TAG, e);</div><div class="line">            &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"An error occurred while executing doInBackground()"</span>,</div><div class="line">                        e.getCause());</div><div class="line">            &#125; <span class="keyword">catch</span> (CancellationException e) &#123;</div><div class="line">                postResultIfNotInvoked(<span class="keyword">null</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>任务执行结束会调用<code>postResultIfNotInvoked(get())</code>，<code>get()</code>表示获取<code>mWorker</code>的<code>call</code>方法的返回值，即<code>Result</code>，然后看<code>postResultIfNotInvoked</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">postResultIfNotInvoked</span><span class="params">(Result result)</span> </span>&#123;</div><div class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> wasTaskInvoked = mTaskInvoked.get();</div><div class="line">    <span class="keyword">if</span> (!wasTaskInvoked) &#123;</div><div class="line">        postResult(result);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果<code>mTaskInvoked</code>不为<code>true</code>，则执行<code>postResult</code>，但是在<code>mWorker</code>初始化时就已经将<code>mTaskInvoked</code>为<code>true</code>，所以一般这个<code>postResult</code>执行不到。</p>
+<p>好了，现在<code>mWorker</code>和<code>mFurture</code>都已经介绍完了，不过这里只是初始化了两个对象，并没有真正的执行，下面看真正调用执行的地方。</p>
+<p>不知道大家还记得不，在<code>executeOnExecutor</code>中有这样一句代码<code>exec.execute(mFuture)</code>，而<code>exec</code>又是传过来的，为<code>sDefaultExecutor</code>。下面来看看这个<code>sDefaultExecutor</code>:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Executor sDefaultExecutor = SERIAL_EXECUTOR;</div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Executor SERIAL_EXECUTOR = <span class="keyword">new</span> SerialExecutor();</div><div class="line"></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SerialExecutor</span> <span class="keyword">implements</span> <span class="title">Executor</span> </span>&#123;</div><div class="line">    <span class="comment">//线程队列</span></div><div class="line">    <span class="keyword">final</span> ArrayDeque&lt;Runnable&gt; mTasks = <span class="keyword">new</span> ArrayDeque&lt;Runnable&gt;();</div><div class="line">    Runnable mActive;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(<span class="keyword">final</span> Runnable r)</span> </span>&#123;</div><div class="line">        mTasks.offer(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    r.run();</div><div class="line">                &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                    scheduleNext();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">        <span class="keyword">if</span> (mActive == <span class="keyword">null</span>) &#123;</div><div class="line">            scheduleNext();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">scheduleNext</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> ((mActive = mTasks.poll()) != <span class="keyword">null</span>) &#123;</div><div class="line">            THREAD_POOL_EXECUTOR.execute(mActive);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到<code>sDefaultExecutor</code>其实为<code>SerialExecutor</code>的一个实例，其内部维持一个任务队列，直接看其<code>execute(Runnable runnable)</code>方法，将<code>runnable</code>放入<code>mTasks</code>队尾。并且判断当前<code>mActive</code>是否为空，为空则调用<code>scheduleNext</code>方法，<code>scheduleNext</code>放则直接取出任务队列中的首任务，如果不为<code>null</code>则传入<code>THREAD_POOL_EXECUTOR</code>进行执行。</p>
+<p>再来看<code>THREAD_POOL_EXECUTOR</code>是什么：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Executor THREAD_POOL_EXECUTOR;</div><div class="line"></div><div class="line"><span class="keyword">static</span> &#123;</div><div class="line">    ThreadPoolExecutor threadPoolExecutor = <span class="keyword">new</span> ThreadPoolExecutor(</div><div class="line">            CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_SECONDS, TimeUnit.SECONDS,</div><div class="line">            sPoolWorkQueue, sThreadFactory);</div><div class="line">    threadPoolExecutor.allowCoreThreadTimeOut(<span class="keyword">true</span>);</div><div class="line">    THREAD_POOL_EXECUTOR = threadPoolExecutor;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到就是一个自己设置参数的线程池，参数为：<br><figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CORE_POOL_SIZE = Math.max(<span class="number">2</span>, Math.min(CPU_COUNT - <span class="number">1</span>, <span class="number">4</span>));</div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAXIMUM_POOL_SIZE = CPU_COUNT * <span class="number">2</span> + <span class="number">1</span>;</div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> KEEP_ALIVE_SECONDS = <span class="number">30</span>;</div><div class="line"></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadFactory sThreadFactory = <span class="keyword">new</span> ThreadFactory() &#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AtomicInteger mCount = <span class="keyword">new</span> AtomicInteger(<span class="number">1</span>);</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Thread <span class="title">newThread</span><span class="params">(Runnable r)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Thread(r, <span class="string">"AsyncTask #"</span> + mCount.getAndIncrement());</div><div class="line">    &#125;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> BlockingQueue&lt;Runnable&gt; sPoolWorkQueue =</div><div class="line">        <span class="keyword">new</span> LinkedBlockingQueue&lt;Runnable&gt;(<span class="number">128</span>);</div></pre></td></tr></table></figure></p>
+<p>看到这里，大家会认为背后原来有一个线程池，最大的并发数，长度等和CPU都有关系。但是，其实这是一个线性执行任务的线程池，大家再看<code>SerialExecutor</code>，在<code>execute</code>方法中，会判断当前<code>mActive</code>是不是空，如果不是空，是不会取下一个任务的，只有当前任务执行完成，才会取下一个任务。</p>
+<p>再来看<code>mFuture</code>，在创建<code>mFuture</code>的时候就已经将<code>mWorker</code>传给了<code>mFuture</code>，而<code>mFuture</code>又是间接继承了<code>Runnable</code>类，所以，<code>mFuture</code>会在<code>run</code>方法中去执行<code>mWorker</code>的<code>call</code>方法：</p>
+<p>先来看<code>FutureTask</code>类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">FutureTask</span><span class="params">(Callable&lt;V&gt; callable)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (callable == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</div><div class="line">    <span class="comment">//记录回调</span></div><div class="line">    <span class="keyword">this</span>.callable = callable;</div><div class="line">    <span class="comment">//设置当前状态</span></div><div class="line">    <span class="keyword">this</span>.state = NEW;       <span class="comment">// ensure visibility of callable</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>构造方法中，记录了当前的<code>callable</code>也就是<code>mWorker</code>。我们直接看<code>run</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (state != NEW ||</div><div class="line">        !U.compareAndSwapObject(<span class="keyword">this</span>, RUNNER, <span class="keyword">null</span>, Thread.currentThread()))</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        Callable&lt;V&gt; c = callable;</div><div class="line">        <span class="keyword">if</span> (c != <span class="keyword">null</span> &amp;&amp; state == NEW) &#123;</div><div class="line">            V result;</div><div class="line">            <span class="keyword">boolean</span> ran;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">            		<span class="comment">//调用mWorker 的 call方法 执行后台任务</span></div><div class="line">                result = c.call();</div><div class="line">                ran = <span class="keyword">true</span>;</div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</div><div class="line">                result = <span class="keyword">null</span>;</div><div class="line">                ran = <span class="keyword">false</span>;</div><div class="line">                setException(ex);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (ran)</div><div class="line">                set(result);</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        <span class="comment">// runner must be non-null until state is settled to</span></div><div class="line">        <span class="comment">// prevent concurrent calls to run()</span></div><div class="line">        runner = <span class="keyword">null</span>;</div><div class="line">        <span class="comment">// state must be re-read after nulling runner to prevent</span></div><div class="line">        <span class="comment">// leaked interrupts</span></div><div class="line">        <span class="keyword">int</span> s = state;</div><div class="line">        <span class="keyword">if</span> (s &gt;= INTERRUPTING)</div><div class="line">            handlePossibleCancellationInterrupt(s);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们可以清楚的看到，这里执行了<code>mWorker</code>的<code>call</code>方法。</p>
+<p>还有一个方法我们没说，<code>publishProgress</code>:<br><figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">publishProgress</span><span class="params">(Progress... values)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (!isCancelled()) &#123;</div><div class="line">        getHandler().obtainMessage(MESSAGE_POST_PROGRESS,</div><div class="line">                <span class="keyword">new</span> AsyncTaskResult&lt;Progress&gt;(<span class="keyword">this</span>, values)).sendToTarget();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>很简单，直接使用<code>Handler</code>发送一个消息，并且携带参数：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">InternalHandler</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InternalHandler</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>(Looper.getMainLooper());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@SuppressWarnings</span>(&#123;<span class="string">"unchecked"</span>, <span class="string">"RawUseOfParameterizedType"</span>&#125;)</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</div><div class="line">        AsyncTaskResult&lt;?&gt; result = (AsyncTaskResult&lt;?&gt;) msg.obj;</div><div class="line">        <span class="keyword">switch</span> (msg.what) &#123;</div><div class="line">            <span class="keyword">case</span> MESSAGE_POST_RESULT:</div><div class="line">                <span class="comment">//耗时操作完成</span></div><div class="line">                result.mTask.finish(result.mData[<span class="number">0</span>]);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">case</span> MESSAGE_POST_PROGRESS:</div><div class="line">                <span class="comment">//进度更新</span></div><div class="line">                result.mTask.onProgressUpdate(result.mData);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>好了，至此<code>AsyncTask</code>的使用和原理我们已经说完了，再总结一下原生：</p>
+<ul>
+<li>首先<code>AsyncTask</code>内部维护了<code>mWorker</code>和<code>mFuture</code>，<code>mWorker</code>是真正的执行后台任务，<code>mFuture</code>是一个线程类，内部持有<code>mWorker</code>对象，主要作用是让<code>mWorker</code>去执行后台任务</li>
+<li>并且<code>AsyncTask</code>类内部维护一个静态的线性的线程队列<code>SerialExecutor</code>，只要调用<code>AsyncTask</code>的<code>execute</code>方法，就会将<code>mFuture</code>加入到线程队列中，然后开始执行队列中的任务。</li>
+<li>另外<code>AsyncTask</code>内部还维护了一个静态的<code>Handler</code>，当<code>mWorker</code>任务执行完成后，会使用<code>Handler</code>开启异步消息机制发送消息，并且当更新进度时，也会发送消息。</li>
+</ul>
+<p>好了，关于<code>AsyncTask</code>我们已经了解的差不多了。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;前段时间我有说过&lt;code&gt;Handler&lt;/code&gt;、&lt;code&gt;Message&lt;/code&gt;、&lt;code&gt;Looper&lt;/code&gt;三者之间的关系，它们可以解决线程间通信，可以用作子线程处理耗时操作，主线程刷新UI等。今天我要说的是另外一种解决方案：&lt;code&gt;AsyncTask&lt;/code&gt;。它的内部还是使用异步消息处理机制，只是&lt;code&gt;Android&lt;/code&gt;对这三者进行了高度的封装。如果你对异步消息处理机制还不是很清楚的话，你可以看看这篇文章:&lt;a href=&quot;http://www.guiyongdong.com/2017/03/27/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E5%BC%82%E6%AD%A5%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6/&quot;&gt;一天一Android之异步消息处理机制&lt;/a&gt;。来看看&lt;code&gt;AsyncTask&lt;/code&gt;到底如何使用。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+    
+    
+      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+    
+  </entry>
   
   <entry>
     <title>ReactNative实现js和原生交互</title>
@@ -141,7 +237,7 @@
     <link href="http://www.guiyongdong.com/2017/04/01/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BFragment/"/>
     <id>http://www.guiyongdong.com/2017/04/01/一天一Android之Fragment/</id>
     <published>2017-04-01T03:31:37.000Z</published>
-    <updated>2017-04-01T09:43:17.000Z</updated>
+    <updated>2017-04-02T01:17:24.000Z</updated>
     
     <content type="html"><![CDATA[<p>今天愚人节，先祝大家愚人节快乐!</p>
 <p>今天来说一下Android开发中经常使用到的一个类：<code>Fragment</code>。由于<code>Android</code>屏幕的碎片化，<code>Android</code>为我们提供了一个和方便的类来使我们的APP可以适应各种屏幕的手机和平板，当然，<code>Fragment</code>的功能远不止是为适应屏幕而生。你可以把<code>Fragment</code>当成<code>Activity</code>的一个界面的一个组成部分，甚至<code>Activity</code>的界面可以由完全不同的<code>Fragment</code>组成，更神奇的是<code>Fragment</code>拥有自己的生命周期和接收、处理用户的事件，这样就不必再<code>Activity</code>写一堆控件的事件处理的代码了，更重要的是，你可以动态的添加、替换和移除某个<code>Fragment</code>。</p>
@@ -2032,501 +2128,6 @@ OBJC_ASSOCIATION_COPY                    //copy
     
     
       <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>NSURLSession与NSURLConnection区别</title>
-    <link href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/"/>
-    <id>http://www.guiyongdong.com/2016/11/18/NSURLSession与NSURLConnection区别/</id>
-    <published>2016-11-18T06:09:19.000Z</published>
-    <updated>2017-03-09T07:03:26.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>今天去面试，被问了一道AFNetworking2.0和3.0有什么区别，当时心想，这谁不知道啊，随口答到：2.0使用的NSURLConnection,3.0使用的是NSURLSession,人家又问NSURLSesstion和NSURLConnection有什么区别，瞬间傻眼了，支支吾吾只是说出了缓存策略的不同。亡羊补牢，为时未晚，这篇博客就讲解一下它们两者到底有什么区别。</p>
-<a id="more"></a>
-<h4 id="使用现状"><a href="#使用现状" class="headerlink" title="使用现状"></a>使用现状</h4><p>NSURLSession是NSURLConnection的替代者，在2013年苹果全球开发者大会上（WWDC2013）随iOS7一起发布的，是对NSURLConnection进行了重构优化后的新的网络接口。从iOS9开始，NSURLConnection中发送请求的两个方法已经过期（同步请求，异步请求）,初始化网络连接的方法也被设置为过期，系统不再推荐使用，建议使用NSURLSession发送网络请求。NSURLConnection被废弃的主要接口：</p>
-<pre><code>- (nullable instancetype)initWithRequest:(NSURLRequest *)request delegate:(nullable id)delegate startImmediately:(BOOL)startImmediately NS_DEPRECATED(10_5, 10_11, 2_0, 9_0, &quot;Use NSURLSession (see NSURLSession.h)&quot;) __WATCHOS_PROHIBITED;
-
-- (nullable instancetype)initWithRequest:(NSURLRequest *)request delegate:(nullable id)delegate NS_DEPRECATED(10_3, 10_11, 2_0, 9_0, &quot;Use NSURLSession (see NSURLSession.h)&quot;) __WATCHOS_PROHIBITED;
-+ (nullable NSURLConnection*)connectionWithRequest:(NSURLRequest *)request delegate:(nullable id)delegate NS_DEPRECATED(10_3, 10_11, 2_0, 9_0, &quot;Use NSURLSession (see NSURLSession.h)&quot;) __WATCHOS_PROHIBITED;
-//异步请求
-+ (void)sendAsynchronousRequest:(NSURLRequest*) request
-                          queue:(NSOperationQueue*) queue
-              completionHandler:(void (^)(NSURLResponse* __nullable response, NSData* __nullable data, NSError* __nullable connectionError)) handler NS_DEPRECATED(10_7, 10_11, 5_0, 9_0, &quot;Use [NSURLSession dataTaskWithRequest:completionHandler:] (see NSURLSession.h&quot;) __WATCHOS_PROHIBITED;
-//同步请求             
-+ (nullable NSData *)sendSynchronousRequest:(NSURLRequest *)request returningResponse:(NSURLResponse * __nullable * __nullable)response error:(NSError **)error NS_DEPRECATED(10_3, 10_11, 2_0, 9_0, &quot;Use [NSURLSession dataTaskWithRequest:completionHandler:] (see NSURLSession.h&quot;) __WATCHOS_PROHIBITED;
-</code></pre><h4 id="普通任务和上传"><a href="#普通任务和上传" class="headerlink" title="普通任务和上传"></a>普通任务和上传</h4><p>NSURLSession针对下载/上传等复杂的网络操作提供了专门的解决方案，针对普通、上传和下载分别对应三种不同的网络请求任务：NSURLSessionDataTask,NSURLSessionUploadTask和NSURLSessionDownloadTask。创建的task都是挂起状态，需要resume才能启动。</p>
-<p>当服务器返回的数据较小时,NSURLSession与NSURLConnection执行普通任务的操作步骤没有区别。<br>执行上传任务时，NSURLSession与NSURLConnection一样需要设置POST请求的请求体进行上传。</p>
-<h4 id="下载任务方式"><a href="#下载任务方式" class="headerlink" title="下载任务方式"></a>下载任务方式</h4><p>NSURLConnection下载文件时，先是将整个文件下载到内存，然后再写入到沙盒，如果文件比较大，就会出现内存暴涨的情况。</p>
-<p>而使用NSURLSessionUploadTask下载文件，会默认下载到沙盒中的tem文件中，不会出现内存暴涨的情况，但是在下载完成后会把tem中的临时文件删除，需要在初始化任务方法时，在completionHandler回调中增加保存文件的代码。（后面会详细说）</p>
-<h4 id="请求方法的控制"><a href="#请求方法的控制" class="headerlink" title="请求方法的控制"></a>请求方法的控制</h4><p>NSURLConnection实例化对象，实例化开始，默认请求就发送(同步发送),不需要调用start方法。而cancel可以停止请求的发送，停止后不能继续访问，需要创建新的请求。</p>
-<p>NSURLSession有三个控制方法，取消(cancel)、暂停(suspend)、继续(resume)，暂停以后可以通过继续恢复当前的请求任务。</p>
-<h4 id="断点续传的方式"><a href="#断点续传的方式" class="headerlink" title="断点续传的方式"></a>断点续传的方式</h4><p>NSURLConnection进行断点下载，通过设置访问请求的HTTPHeaderField的Range属性，开启运行循环，NSURLConnection的代理方法作为运行循环的事件源，接收到下载数据时代理方法就会持续调用，并使用NSOutputStream管道流进行数据保存。</p>
-<p>NSURLSession进行断点下载，当暂停下载任务后，如果downloadTask（下载任务）为非空，调用<code>cancelByProducingResumeData:(void (^)(NSData *resumeData))completionHandler</code>这个方法，这个方法接收一个参数，完成处理代码块，这个代码块有一个NSData参数resumeData，如果resumeData非空，我们就保存这个对象到视图控制器的resumeData属性中，在点击再次下载时，通过调用<code>[ [self.session downloadTaskWithResumeData:self.resumeData]resume]</code>方法进行继续下载操作</p>
-<p>经过以上比较可以发现，使用NSURLSession进行断点下载更加便捷.</p>
-<h4 id="配置信息"><a href="#配置信息" class="headerlink" title="配置信息"></a>配置信息</h4><p>NSURLSession的构造方法<code>（sessionWithConfiguration:delegate:delegateQueue）</code>中有一个NSURLSessionConfiguration类的参数可以设置配置信息，其决定了cookie，安全和高速缓存策略，最大主机连接数，资源管理，网络超时等配置。NSURLConnection不能进行这个配置，相比较与NSURLConnection依赖与一个全局的配置对象，缺乏灵活性而言，NSURLSession有很大的改进了。(关于配置信息，后面会讲解到)</p>
-<p>通过以上几点，大概知道了NSURLSession和NSURLConnection的区别，想必下载再遇到这样的问题不会支支吾吾了。下面来点NSURLSession的干货。</p>
-<hr>
-<p><strong><p align="center">干货开始</p></strong></p>
-<hr>
-<h3 id="NSURLSession"><a href="#NSURLSession" class="headerlink" title="NSURLSession"></a>NSURLSession</h3><p>NSURLSession 为 HTTP 数据传输提供一系列的接口，而使用 NSURLSession 总共只需要三步：</p>
-<ol>
-<li>创建NSURLSession对象</li>
-<li>通过 NSURLSession 的实例创建 Task</li>
-<li>执行 Task</li>
-</ol>
-<h5 id="如何获取Session对象"><a href="#如何获取Session对象" class="headerlink" title="如何获取Session对象"></a>如何获取Session对象</h5><p> 1.获取默认的 Session 对象</p>
-<pre><code>/*
- * 用于基本的网络请求，可以几行代码就获取 URL 的内容，使用简单
- * 无法不断的获取服务器返回的数据
- * 无法修改默认的连接行为
- * 身份验证的能力有限
- * 任务在后台时无法上传和下载
- */
-+ (NSURLSession *)sharedSession;
-</code></pre><p> 2.自定义 Session 对象</p>
-<pre><code> // 不用代理
-+ (NSURLSession *)sessionWithConfiguration:(NSURLSessionConfiguration *)configuration;
-// 用代理
-+ (NSURLSession *)sessionWithConfiguration:(NSURLSessionConfiguration *)configuration
-                                  delegate:(nullable id &lt;NSURLSessionDelegate&gt;)delegate
-                             delegateQueue:(nullable NSOperationQueue *)queue;
-</code></pre><p>在使用自定义方式创建NSURLSession对像时，都需要传入一个NSURLSessionConfiguration参数，这个参数是对Session的网络请求的基本配置。那这个NSURLSessionConfiguration都有哪些配置呢？接着往下看</p>
-<h3 id="NSURLSessionConfiguration"><a href="#NSURLSessionConfiguration" class="headerlink" title="NSURLSessionConfiguration"></a>NSURLSessionConfiguration</h3><p>有三个方法来创建NSURLSessionConfiguration:</p>
-<ul>
-<li><strong>defaultSessionConfiguration</strong> 使用全局的cache，cookie,使用硬盘来缓存数据。</li>
-<li><strong>ephemeralSessionConfiguration</strong> 临时session配置，与默认配置相比，这个配置不会将缓存、cookie等存在本地，只会存在内存里，所以当程序退出时，所有的数据都会消失</li>
-<li><strong>backgroundSessionConfiguration</strong> 后台session配置，与默认配置类似，不同的是会在后台开启另一个线程来处理网络数据。</li>
-</ul>
-<p>一旦创建了NSURLSessionConfiguration就可以给它设置各种属性</p>
-<p><strong>看NSURLSessionConfiguration的头文件:</strong></p>
-<pre><code>@interface NSURLSessionConfiguration : NSObject &lt;NSCopying&gt;
-
-/* 三种创建方式 */
-
-+ (NSURLSessionConfiguration *)defaultSessionConfiguration;
-+ (NSURLSessionConfiguration *)ephemeralSessionConfiguration;
-+ (NSURLSessionConfiguration *)backgroundSessionConfigurationWithIdentifier:(NSString *)identifier NS_AVAILABLE(10_10, 8_0);
-
-/* 当使用上述第三种方式创建后台sessionConfiguration时可以读到初始化时传入的唯一标识，其他创建方式都为空 */
-@property (nullable, readonly, copy) NSString *identifier;
-
-/* 
-缓存策略，默认值是NSURLRequestUseProtocolCachePolicy
- */
-@property NSURLRequestCachePolicy requestCachePolicy;
-
-/* 给request指定每次接收数据超时间隔，如果下一次接受新数据用时超过该值，则发送一个请求超时给该request。默认为60s */
-@property NSTimeInterval timeoutIntervalForRequest;
-
-/* 给指定resource设定一个超时时间，resource需要在时间到达之前完成。默认是7天。 */
-@property NSTimeInterval timeoutIntervalForResource;
-
-/* 指定网络传输类型。精切指出传输类型，可以让系统快速响应，提高传输质量，延长电池寿命等。
-typedef NS_ENUM(NSUInteger, NSURLRequestNetworkServiceType)
-{
-    NSURLNetworkServiceTypeDefault = 0,    // 普通网络传输，默认使用这个
-    NSURLNetworkServiceTypeVoIP = 1,    // 网络语音通信传输，只能在VoIP使用
-    NSURLNetworkServiceTypeVideo = 2,    // 影像传输
-    NSURLNetworkServiceTypeBackground = 3, // 网络后台传输，优先级不高时可使用。对用户不需要的网络操作可使用
-    NSURLNetworkServiceTypeVoice = 4       // 语音传输
-};
- */
-@property NSURLRequestNetworkServiceType networkServiceType;
-
-/* 是否使用蜂窝网络，默认是yes. */
-@property BOOL allowsCellularAccess;
-
-/* 是否由系统根据性能自动裁量后台任务。默认值是NO。同sessionSendsLaunchEvent一样，只对后台configuration有效。 */
-@property (getter=isDiscretionary) BOOL discretionary NS_AVAILABLE(10_10, 7_0);
-
-/* 
-如果要为app的插件提供session，需要给这个值赋值
- */
-@property (nullable, copy) NSString *sharedContainerIdentifier NS_AVAILABLE(10_10, 8_0);
-
-/* 
- 表示当后台传输结束时，是否启动app.这个属性只对 后台sessionConfiguration 生效，其他configuration类型会自动忽略该值。默认值是YES。
- */
-@property BOOL sessionSendsLaunchEvents NS_AVAILABLE(NA, 7_0);
-
-/* 
-指定了会话连接中的代理服务器。同样地，大多数面向消费者的应用程序都不需要代理，所以基本上不需要配置这个属性,默认为NULL
-*/
-@property (nullable, copy) NSDictionary *connectionProxyDictionary;
-
-/* 确定是否支持SSLProtocol版本的会话
- */
-@property SSLProtocol TLSMinimumSupportedProtocol;
-
-/* 
-确定是否支持SSLProtocol版本的会话
-*/
-@property SSLProtocol TLSMaximumSupportedProtocol;
-
-/* 
-它可以被用于开启HTTP管道，这可以显着降低请求的加载时间，但是由于没有被服务器广泛支持，默认是禁用的
- */
-@property BOOL HTTPShouldUsePipelining;
-
-/* 
-默认为yes,是否提供来自shareCookieStorge的cookie，如果想要自己提供cookie，可以使用HTTPAdditionalHeaders来提供。
- */
-@property BOOL HTTPShouldSetCookies;
-
-/* Policy for accepting cookies.  This overrides the policy otherwise specified by the cookie storage. */
-@property NSHTTPCookieAcceptPolicy HTTPCookieAcceptPolicy;
-
-/* 
-指定了一组默认的可以设置出站请求的数据头。这对于跨会话共享信息，如内容类型，语言，用户代理，身份认证，是很有用的。
-例如：
-    @{@&quot;Accept&quot;: @&quot;application/json&quot;,
-     @&quot;Accept-Language&quot;: @&quot;en&quot;,
-     @&quot;Authorization&quot;: authString,
-     @&quot;User-Agent&quot;: userAgentString
-   }
- */
-@property (nullable, copy) NSDictionary *HTTPAdditionalHeaders;
-
-/* 
-同时连接一个host的最大数。iOS默认是4.APP是作为一个整体来看的
- */
-@property NSInteger HTTPMaximumConnectionsPerHost;
-
-/* 
-存储cookie，清除存储，直接set为nil即可。
-对于默认和后台的session，使用sharedHTTPCookieStorage。
-对于短暂的session，cookie仅仅储存到内存，session失效时会自动清除。
- */
-@property (nullable, retain) NSHTTPCookieStorage *HTTPCookieStorage;
-
-/* 
-证书存储，如果不使用，可set为nil.
-默认和后台session，默认使用的sharedCredentialStorage.
-短暂的session使用一个私有存储在内存中。session失效会自动清除。
- */
-@property (nullable, retain) NSURLCredentialStorage *URLCredentialStorage;
-
-/* 
-缓存NSURLRequest的response。
-默认的configuration，默认值的是sharedURLCache。
-后台的configuration，默认值是nil
-短暂的configuration，默认一个私有的cache于内存，session失效，cache自动清除。
-*/
-@property (nullable, retain) NSURLCache *URLCache;
-
-/* Enable extended background idle mode for any tcp sockets created.    Enabling this mode asks the system to keep the socket open
- *  and delay reclaiming it when the process moves to the background (see https://developer.apple.com/library/ios/technotes/tn2277/_index.html) 
- */
-@property BOOL shouldUseExtendedBackgroundIdleMode NS_AVAILABLE(10_11, 9_0);
-
-/* 
-处理NSURLRequest的NSURLProtocol的子类。
-重要:对后台Session失效。
- */
-@property (nullable, copy) NSArray&lt;Class&gt; *protocolClasses;
-
-@end
-</code></pre><p>现在，我们知道如何来创建一个Session对象了，创建完Session对象，根据一个Request对象我们就可以发送网络请求了。下面看一下NSURLSession的头文件中的这些方法，如图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/NSURLSession1.png?raw=true"><br></div>
-
-<p>从这些方法中得知，分别返回了<code>NSURLSessionDataTask</code>、<code>NSURLSessionUploadTask</code>、<code>NSURLSessionDownloadTask</code>，<code>NSURLSessionStreamTask</code> 这四个类的对象，那么这四个类是干什么呢？我们接着往下看。</p>
-<h3 id="URLSessionTask"><a href="#URLSessionTask" class="headerlink" title="URLSessionTask"></a>URLSessionTask</h3><p>NSURLSessionTask是一个抽象类，其下有4个实体子类可以直接使用：<code>NSURLSessionDataTask</code>、<code>NSURLSessionUploadTask</code>、<code>NSURLSessionDownloadTask</code>、<code>NSURLSessionStreamTask</code>。这四个子类封装了现代程序四个最基本的网络任务：获取数据，比如JSON或者XML，上传文件和下载文件还有数据流的获取。</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/NSURLSessionTask.png?raw=true"><br></div>
-
-<p>NSURLSession比NSURLConnection最方便的地方就是任务可以暂停，继续。在网络请求中，真正去执行下载或者上传任务的就是URLSessionTask，我们来看一下它常用的方法：</p>
-<p><code>- (void)resume;</code> 当使用NSURLSession创建一个NSURLSessionTask任务时，要手动调用此方法，任务才会开启，而NSURLConnection默认开启。</p>
-<p><code>- (void)suspend;</code> 暂停任务方法，手动调用会暂停当前任务，再次开启此任务时，会从紧接上次任务开始，会面会说到如何暂停任务再开启任务。</p>
-<p><code>- (void)cancel;</code> 取消任务。</p>
-<p>NSURLSessionTask还有个属性，<code>@property (readonly) NSURLSessionTaskState state;</code> 此属性标识当前任务的状态，枚举类型</p>
-<pre><code>typedef NS_ENUM(NSInteger, NSURLSessionTaskState) {
-    NSURLSessionTaskStateRunning = 0,                     /* 正在执行 */
-    NSURLSessionTaskStateSuspended = 1,                   /* 暂停状态 */
-    NSURLSessionTaskStateCanceling = 2,                   /* 取消状态*/
-    NSURLSessionTaskStateCompleted = 3,                   /* 任务完成状态 */
-}
-</code></pre><p>上面说到的四个类，都直接或间接继承NSURLSessionTask，所有NSURLSessionTask的方法或者属性这四个类都有，那么，简单说一下这四个类都是干什么的。</p>
-<h4 id="NSURLSessionDataTask"><a href="#NSURLSessionDataTask" class="headerlink" title="NSURLSessionDataTask"></a>NSURLSessionDataTask</h4><p>NSURLSessionDataTask是开发中使用频率最高的，我们平常使用的GET和POST请求都是通过它来实现的，如果请求的数据简单并且不需要对获取的数据进行复杂操作，我们使用 Block 解析返回的数据即可。具体代码如下：</p>
-<h5 id="简单-Get-请求"><a href="#简单-Get-请求" class="headerlink" title="简单 Get 请求"></a>简单 Get 请求</h5><pre><code>/**
- *  简单 GET 请求
-  */
-- (void)getWithsharedSession
-{
-  // 获取默认 Session
-  NSURLSession *session = [NSURLSession sharedSession];
-  // 创建 URL
-  NSURL *url = [NSURL URLWithString:@&quot;https://www.baidu.com/s?wd=test&quot;];
-  // 创建任务 task
-  NSURLSessionDataTask *task = [session dataTaskWithURL:url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-    // 获取数据后解析并输出
-     NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSLog(@&quot;%@&quot;,dataStr);
-  }];
-  // 启动任务
-  [task resume];
-}
-</code></pre><h5 id="简单-POST-请求"><a href="#简单-POST-请求" class="headerlink" title="简单 POST 请求"></a>简单 POST 请求</h5><pre><code>/**
- *  简单 Post 请求，POST 和 GET 请求在于对 request 的处理不同，其余和 GET 相同
- */
-- (void)postWithSharedSession
-{
-  // 获取默认 Session
-  NSURLSession *session = [NSURLSession sharedSession];
-  // 创建 URL
-  NSURL *url = [NSURL URLWithString:@&quot;http://120.25.226.186:32812/login&quot;];
-  // 创建 request
-  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-  // 请求方法
-  request.HTTPMethod = @&quot;POST&quot;;
-  // 请求体
-  request.HTTPBody = [@&quot;username=1234&amp;pwd=4321&quot; dataUsingEncoding:NSUTF8StringEncoding];
-  // 创建任务 task
-  NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-          // 获取数据后解析并输出
-          NSLog(@&quot;%@&quot;,[NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil]);
-  }];
-  // 启动任务
-  [task resume];
-}
-</code></pre><p>另外我们也可以设置session的代理来实时的监听数据，我们可以使用NSURLSession的<code>+ (NSURLSession *)sessionWithConfiguration:(NSURLSessionConfiguration *)configuration;</code>和<code>+ (NSURLSession *)sessionWithConfiguration:(NSURLSessionConfiguration *)configuration delegate:(nullable id &lt;NSURLSessionDelegate&gt;)delegate delegateQueue:(nullable NSOperationQueue *)queue;</code>这两个方法来设置代理，具体的协议为<code>NSURLSessionDelegate</code>，它有四个直接或间接子协议<code>NSURLSessionTaskDelegate</code>，<code>NSURLSessionDownloadDelegate</code>和 <code>NSURLSessionStreamDelegate</code>、<code>NSURLSessionDataDelegate</code>。具体代理方法如下：</p>
-<pre><code>//创建有代理的session
-- (void)sessionDataDelegate
-{
-    // 创建带有代理方法的自定义 session
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-
-    // 创建任务
-    NSURLSessionDataTask *task = [session dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@&quot;http://120.25.226.186:32812/login?username=1234&amp;pwd=4321&quot;]]];
-
-    // 启动任务
-    [task resume];
-}
-
-#pragma mark -
-#pragma mark - NSURLSessionDelegate
-
-// 1. 接收到服务器的响应
-- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler
-{
-    NSLog(@&quot;接收到服务器的响应&quot;);
-    // 必须设置对响应进行允许处理才会执行后面两个操作。
-    completionHandler(NSURLSessionResponseAllow);
-}
-
-// 2. 接收到服务器的数据（可能调用多次）
-- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
-    // 处理每次接收的数据
-    NSLog(@&quot;接受到服务器的数据%s&quot;,__func__);
-}
-
-// 3. 请求成功或者失败（如果失败，error有值）
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
-    // 请求完成,成功或者失败的处理
-    NSLog(@&quot;SessionTask %s&quot;,__func__);
-}
-</code></pre><h4 id="NSURLSessionDownloadTask"><a href="#NSURLSessionDownloadTask" class="headerlink" title="NSURLSessionDownloadTask"></a>NSURLSessionDownloadTask</h4><p>NSURLSessionDownloadTask在下载文件的时候，是将数据一点点地写入本地的临时文件。所以在 completionHandler 这个 block 里，我们需要把文件从一个临时地址移动到一个永久的地址保存起来：</p>
-<pre><code>/**
- *  NSURLSessionDownloadTask 下载任务
- */
-- (void)downLoad
-{
-    NSURLSession *session = [NSURLSession sharedSession];
-    NSURL *url = [NSURL URLWithString:@&quot;http://120.25.226.186:32812/resources/images/minion_01.png&quot;] ;
-    NSURLSessionDownloadTask *task = [session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
-        // location 是沙盒中 tmp 文件夹下的一个临时 url，文件下载后会存到这个位置，由于 tmp 中的文件随时可能被删除，所以我们需要自己需要把下载的文件挪到 Caches 文件夹中
-        NSString *path = [[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:response.suggestedFilename];
-        // 剪切文件
-        [[NSFileManager defaultManager] moveItemAtURL:location toURL:[NSURL fileURLWithPath:path] error:nil];
-        NSLog(@&quot;%@&quot;,[NSThread currentThread]);
-        //切记当前为子线程，
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.imageView.image = [UIImage imageNamed:path];
-        });
-
-    }];
-    // 启动任务
-    [task resume];
-}
-</code></pre><p>代理方法下载</p>
-<pre><code>/**
- *  NSURLSessionDownloadTask 代理
- */
-- (void)sessionDownloadTaskDelegate
-{
-  // 创建带有代理方法的自定义 session
-  NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-
-  // 创建任务
-  NSURLSessionDownloadTask *task = [session downloadTaskWithURL:[NSURL URLWithString:@&quot;http://120.25.226.186:32812/resources/images/minion_02.png&quot;]];
-
-  // 启动任务
-  [task resume];
-}
-#pragma mark -
-#pragma mark -NSURLSessionDownloadDelegate
-/**
- *  写入临时文件时调用
- *  @param bytesWritten              本次写入大小
- *  @param totalBytesWritten         已写入文件大小
- *  @param totalBytesExpectedToWrite 请求的总文件的大小
- */
-- (void)URLSession:(NSURLSession *)session downloadTask:(nonnull NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite
-{
-    //可以监听下载的进度
-  CGFloat progress = 1.0 * totalBytesWritten / totalBytesExpectedToWrite;
-  NSLog(@&quot;downloadTask %f&quot;,progress);
-}
-
-// 2. 下载完成调用
-- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location
-{
-  // location 还是一个临时路径,需要自己挪到需要的路径（caches 文件夹）
-  NSString *filePath = [[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:downloadTask.response.suggestedFilename];
-  [[NSFileManager defaultManager] moveItemAtURL:location toURL:[NSURL fileURLWithPath:filePath] error:nil];
-  NSLog(@&quot;downloadTask 移动文件路径&quot;);
-}
-</code></pre><h5 id="断点续传"><a href="#断点续传" class="headerlink" title="断点续传"></a>断点续传</h5><p>说一下开发中经常用到的断点续传。在开发中，我们经常由于某种原因，在下载或上传的时候往往不能一次性下载或上传完，有可能下载或上传了一半就终止了，这时候当条件满足继续下载或上传时，我们不希望从头开始，这时候就可以使用断点续传。它的大概思路是：</p>
-<ul>
-<li>某种限制，续传暂停</li>
-<li>将暂停后数据（当前数据）保存起来–_resumeData = resumeData;</li>
-<li>条件允许续传时，使用resumeData创建新的NSURLSessionTask</li>
-</ul>
-<p>代码：</p>
-<pre><code>- (IBAction)startDowning:(id)sender {
-
-
-    if (_resumeData) {
-        _downloadTask = [_session downloadTaskWithResumeData:_resumeData];
-    }else {
-        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:nil];
-        _request = [[NSURLRequest alloc] initWithURL:[NSURL URLWithString:@&quot;http://image.baidu.com/search/down?tn=download&amp;ipn=dwnl&amp;word=download&amp;ie=utf8&amp;fr=result&amp;url=http%3A%2F%2Fb.zol-img.com.cn%2Fdesk%2Fbizhi%2Fimage%2F6%2F960x600%2F1427787678554.jpg&amp;thumburl=http%3A%2F%2Fimg3.imgtn.bdimg.com%2Fit%2Fu%3D1996019669%2C1779575266%26fm%3D21%26gp%3D0.jpg&quot;]];
-        _downloadTask = [_session downloadTaskWithRequest:_request];
-    }
-    [_downloadTask resume];
-}
-
-- (IBAction)stopDowning:(id)sender {
-    if (_downloadTask) {
-        __weak typeof (self)weakSelf = self;
-        [_downloadTask cancelByProducingResumeData:^(NSData * _Nullable resumeData) {
-            NSLog(@&quot;%@&quot;,resumeData);
-            weakSelf.resumeData = resumeData;
-            weakSelf.downloadTask = nil;
-        }];
-    }
-}
-
-#pragma mark -
-#pragma mark - NSURLSessionDownloadDelegate
-
-- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
-didFinishDownloadingToURL:(NSURL *)location {
-    NSString *path = [[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:downloadTask.response.suggestedFilename];
-    // 剪切文件
-    [[NSFileManager defaultManager] moveItemAtURL:location toURL:[NSURL fileURLWithPath:path] error:nil];
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        self.imageView.image = [UIImage imageNamed:path];
-    });
-}
-- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
-      didWriteData:(int64_t)bytesWritten
- totalBytesWritten:(int64_t)totalBytesWritten
-totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
-    CGFloat progress = 1.0 * totalBytesWritten / totalBytesExpectedToWrite;
-    NSLog(@&quot;downloadTask %f&quot;,progress);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        self.progressView.progress = progress;
-    });
-
-}
-</code></pre><p><strong>注意：</strong>上面的代码是不会断点续传的，原因是这个图片的url不支持断点续传，在断点续传时，要和服务器配合好。</p>
-<h4 id="NSURLSessionUploadTask"><a href="#NSURLSessionUploadTask" class="headerlink" title="NSURLSessionUploadTask"></a>NSURLSessionUploadTask</h4><p>在 NSURLSession 中，文件上传主要使用两种方式：</p>
-<pre><code>- (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromFile:(NSURL *)fileURL;
-- (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromData:(NSData *)bodyData;
-</code></pre><p>我们这里使用第二个方法，表单的形式上传数据</p>
-<pre><code>- (void)upload {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@&quot;https://api.weibo.com/2/statuses/public_timeline.json&quot;]];
-    //设置HTTP请求方式  GET / POST
-    [request setHTTPMethod:@&quot;POST&quot;];
-    //设置请求头
-    NSString *boundary = @&quot;hwg&quot;;
-    [request setValue:[NSString stringWithFormat: @&quot;multipart/form-data;%@&quot;, boundary]forHTTPHeaderField:@&quot;Content-type&quot;];
-    //设置请求体
-    //获取上传的图片的data
-    NSData *data = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@&quot;xiaoxin&quot; ofType:@&quot;jpeg&quot;]];
-    //此处添加需要看清楚内容
-    NSData *body =  [self httpFormDataBodyWithBoundary:boundary params:@{@&quot;access_token&quot;:@&quot;2.00cYYKWF6EKpiB3883361b1dJiZ4eD&quot;,@&quot;status&quot;:@&quot;哈哈，这是我测试NSURLSession上传文件的微博&quot;} fieldName:@&quot;pic&quot; fileName:@&quot;pic.png&quot; fileContentType:@&quot;image/png&quot; data:data];
-    NSURLSession *session = [NSURLSession sharedSession];
-    NSURLSessionUploadTask *upload_task = [session uploadTaskWithRequest:request fromData:body completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSLog(@&quot;upload  success&quot;);
-    }];
-    //必须要 resume
-    [upload_task resume];
-}
-
-#pragma mark-拼接请求体
-- (NSData *)httpFormDataBodyWithBoundary:(NSString *)boundary
-                                 params:(NSDictionary *)params
-                              fieldName:(NSString *)fieldName
-                               fileName:(NSString *)fileName
-                        fileContentType:(NSString *)fileContentType
-                                   data:(NSData *)fileData {
-
-    NSString *preBoundary = [NSString stringWithFormat:@&quot;--%@&quot;,boundary];
-    NSString *endBoundary = [NSString stringWithFormat:@&quot;--%@--&quot;,boundary];
-    NSMutableString *body = [[NSMutableString alloc] init];
-    //遍历
-    for (NSString *key in params) {
-        //得到当前的key
-        //如果key不是当前的pic，说明value是字符类型，比如name：Boris
-        //添加分界线，换行，必须使用\r\n
-        [body appendFormat:@&quot;%@\r\n&quot;,preBoundary];
-        //添加字段名称换2行
-        [body appendFormat:@&quot;Content-Disposition: form-data; name=\&quot;%@\&quot;\r\n\r\n&quot;,key];
-        //添加字段值
-        [body appendFormat:@&quot;%@\r\n&quot;,[params objectForKey:key]];
-
-    }
-    //添加分界线，换行
-    [body appendFormat:@&quot;%@\r\n&quot;,preBoundary];
-    //声明pic字段，文件名为boris.png
-    [body appendFormat:@&quot;Content-Disposition: form-data; name=\&quot;%@\&quot;; filename=\&quot;%@\&quot;\r\n&quot;,fieldName,fileName];
-    //声明上传文件的格式
-    [body appendFormat:@&quot;Content-Type: %@\r\n\r\n&quot;,fileContentType];
-    //声明结束符
-    NSString *endStr = [NSString stringWithFormat:@&quot;\r\n%@&quot;,endBoundary];
-    //声明myRequestData，用来放入http  body
-    NSMutableData *myRequestData = [NSMutableData data];
-    //将body字符串转化为UTF8格式的二进制
-    [myRequestData appendData:[body dataUsingEncoding:NSUTF8StringEncoding]];
-    //将image的data加入
-    [myRequestData appendData:fileData];
-    //加入结束符--hwg--
-    [myRequestData appendData:[endStr dataUsingEncoding:NSUTF8StringEncoding]];
-    return myRequestData;
-}
-</code></pre><p>这里我们需要拼接一个表单数据，才能够上传数据。 当然，我们也可以用代理方法来监听上传的进度</p>
-<pre><code>- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
-   didSendBodyData:(int64_t)bytesSent
-    totalBytesSent:(int64_t)totalBytesSent
-totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend {
-    CGFloat progress = 1.0 * totalBytesSent / bytesSent;
-    NSLog(@&quot;downloadTask %f&quot;,progress);
-}
-</code></pre><h4 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h4><p>以上就是我今天总结的，哪里有问题还希望大家提出意见。其实在开发中，我们很少使用到这些，因为总是有一些牛人为我们封装了各种功能的强大库，比如网络类，最常用的就是AFNetworking。人家的库为什么好用，说白了就是各种情况都考虑到了。所有我们要学的还是人家的编程思想。接下来，我会做一个专题，研究一下各大平常使用到的库，它们到底牛在哪里，敬请阅读！</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;今天去面试，被问了一道AFNetworking2.0和3.0有什么区别，当时心想，这谁不知道啊，随口答到：2.0使用的NSURLConnection,3.0使用的是NSURLSession,人家又问NSURLSesstion和NSURLConnection有什么区别，瞬间傻眼了，支支吾吾只是说出了缓存策略的不同。亡羊补牢，为时未晚，这篇博客就讲解一下它们两者到底有什么区别。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
-    
-    
-      <category term="NSURLSession" scheme="http://www.guiyongdong.com/tags/NSURLSession/"/>
     
   </entry>
   
