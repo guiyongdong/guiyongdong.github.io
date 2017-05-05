@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2017-05-05T02:25:54.000Z</updated>
+  <updated>2017-05-05T07:42:05.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -14,6 +14,81 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>一天一Android之存储目录</title>
+    <link href="http://www.guiyongdong.com/2017/05/05/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E5%AD%98%E5%82%A8%E7%9B%AE%E5%BD%95/"/>
+    <id>http://www.guiyongdong.com/2017/05/05/一天一Android之存储目录/</id>
+    <published>2017-05-05T03:47:05.000Z</published>
+    <updated>2017-05-05T07:42:05.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>在<code>iOS</code>系统中，系统会为每个应用分配一个独立的空间，用来存放应用产生的数据，并且每个应用只能访问自己的存储空间。由于<code>Android</code>手机可以插拔内存卡，所以，相对于<code>iOS</code>来说，存储方式更多一点。</p>
+<a id="more"></a>
+<h3 id="内部存储空间的应用私有目录"><a href="#内部存储空间的应用私有目录" class="headerlink" title="内部存储空间的应用私有目录"></a>内部存储空间的应用私有目录</h3><hr>
+<p>在<code>Android</code>系统中，当你安装了某个应用后，系统会为此应用分配一块私有存储空间，如果手机未<code>Root</code>，用户是看不到这个空间下的内容的，但是开发人员通过<code>DDMS</code>可以查看此空间，文件目录为：<code>data/data/应用包名</code>，如图：</p>
+<div align="center"><br><img src="http://ocq7gtgqu.bkt.clouddn.com/1493214455.jpg" width="375"><br></div>
+
+<p>这个文件夹用于<code>App</code>中的<code>WebView</code>缓存页面信息，<code>SharedPreferences</code>和<code>SQLiteDatabase</code>持久化应用相关数据等。当然，我们可以通过<code>ContextWrapper</code>提供的方法来获取相应的目录：</p>
+<ul>
+<li>getFilesDir()  获取名为<code>files</code>的文件夹目录</li>
+<li>getCacheDir()  获取名为<code>cache</code>的文件目录</li>
+</ul>
+<p>当使用数据库，<code>Webview</code>，和<code>SharedPreferences</code>的时候，系统会自动创建<code>databases</code>，<code>app_webview</code>和<code>shared_prefs</code>等文件夹，当然也可以自己创建相关的文件夹。</p>
+<blockquote>
+<p>注意：当用户卸载APP时，系统会自动删除data/data/目录下对应包名的文件夹及其内容</p>
+</blockquote>
+<h3 id="外部存储空间中的应用私有目录"><a href="#外部存储空间中的应用私有目录" class="headerlink" title="外部存储空间中的应用私有目录"></a>外部存储空间中的应用私有目录</h3><hr>
+<p>考虑到内部存储空间容量有限，<code>Android</code>在外部存储空间中也提供有特殊目录供应用存放私有文件，文件路径为:</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">/storage/emulated/0/Android/data/app package name</div></pre></td></tr></table></figure>
+<p>与内部存储空间的应用私有目录不同的是：</p>
+<p>第一，默认情况下，系统并不会自动创建外部存储空间的应用私有目录，只有在应用需要的时候，开发人员通过<code>SDK</code>提供的API创建该目录文件夹和操作文件夹内容。</p>
+<p>第二，自<code>Android</code>7.0开始，系统对应用私有目录的访问权限进一步限制。其他<code>App</code>无法通过<code>file://</code>这种形式的<code>Uri</code>直接读写该目录下的文件内容，而是通过<code>FileProvider</code>访问。</p>
+<p>我们可以通过<code>ContextWrapper</code>提供的方法来获取相应的目录：</p>
+<ul>
+<li>getExternalCacheDir() </li>
+<li>getExternalCacheDir()</li>
+</ul>
+<p>等等，当然，也可以通过<code>Environment</code>间接操作，但是需要向用户申请权限。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">Environment.getExternalStorageState();</div></pre></td></tr></table></figure>
+<p>类似于 File 和 Cache 默认分类目录，开发人员也可以在应用私有目录中创建属于自己的自定义目录，方便于分类存储应用相关文件。</p>
+<p>值得注意的一点是，对于外部存储空间下的应用私有目录文件，由于普通用户可以自由修改和删除，开发人员在使用时，一定要做好判空处理和异常捕获，防止应用崩溃退出！</p>
+<h3 id="外部存储空间中的公共目录"><a href="#外部存储空间中的公共目录" class="headerlink" title="外部存储空间中的公共目录"></a>外部存储空间中的公共目录</h3><hr>
+<p>通常来说，应用涉及到的持久化数据分为两类：应用相关数据和应用无关数据。前者是指专供宿主 App 使用的数据信息，比如一些应用的配置信息，数据库信息，缓存文件等。当应用被卸载，这些信息也应该被随之删除，避免存储空间产生不必要的占用。</p>
+<p>相对而言，后者更偏向于这类信息：当应用被卸载，用户仍然希望保留于设备当中的信息。常见如，拍照类应用的图片文件，用户是使用浏览器手动下载的文件等。</p>
+<p>显然，无论是内部存储空间，还是外部储存空间，上述两个应用私有目录由于其特有的生命周期（随着应用卸载而自动清除）只适合存储应用相关数据。</p>
+<p>或者从访问权限上来说，应用无关数据应该是宿主应用希望与其他应用共享这些数据的，应该存放在外部存储空间的公共目录文件夹下。</p>
+<p>外部存储空间已经为用户默认分类出一些公共目录。开发人员可以通过 Environment 类提供的方法直接获取相应目录的绝对路径，传递不同的 type 参数类型即可：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">Environment.getExternalStoragePublicDirectory(String type);</div></pre></td></tr></table></figure>
+<p>Envinonment 类提供诸多 type 参数的常量，比如：</p>
+<ul>
+<li>DIRECTORY_MUSIC：Music</li>
+<li>DIRECTORY_MOVIES：Movies</li>
+<li>DIRECTORY_PICTURES：Pictures</li>
+<li>DIRECTORY_DOWNLOADS：Download</li>
+</ul>
+<p>等等，以第一个常量为例，音乐类别的公共目录绝对路径为：/storage/emulated/0/Music。如果你使用文件管理器打开设备的外部存储空间的话，均可以看到这些公共目录文件夹。</p>
+<p>面对如此诸多的默认类别，开发人员在保存自己应用的公共文件时，也要养成良好的习惯，将要保存的数据分门别类地保存在不同公共目录下。当然，你也可以在公共目录下再次创建属于自己应用的目录，便于管理。</p>
+<blockquote>
+<p>注意：访问外部存储空间时记得申请读写权限！</p>
+</blockquote>
+<h3 id="外部存储空间中的其他目录"><a href="#外部存储空间中的其他目录" class="headerlink" title="外部存储空间中的其他目录"></a>外部存储空间中的其他目录</h3><hr>
+<p>一般来说，利用两种应用私有目录和公共目录便能够存储应用中需要保存的数据和文件。如果这些还不够的话，那一定是你的开发姿势不对。在 Code Review 的前提下，如果还是不够的话，还可以在外部存储空间自由创建其他目录，通过这个方式获取外部存储空间的绝对路径，然后操作文件：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">Environment.getExternalStorageDirectory();</div></pre></td></tr></table></figure>
+<p>例如，我们可以在外包存储的根目录下创建自己的目录：<code>/storage/emulated/0/自己的目录</code>。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在&lt;code&gt;iOS&lt;/code&gt;系统中，系统会为每个应用分配一个独立的空间，用来存放应用产生的数据，并且每个应用只能访问自己的存储空间。由于&lt;code&gt;Android&lt;/code&gt;手机可以插拔内存卡，所以，相对于&lt;code&gt;iOS&lt;/code&gt;来说，存储方式更多一点。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+    
+    
+      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+    
+  </entry>
   
   <entry>
     <title>一天一Android之运行时权限</title>
@@ -2057,54 +2132,6 @@
     
       &lt;p&gt;前面几篇基本介绍了runtime中的大部分功能，包括对类与对象、成员变量与属性、方法与消息、分类与协议的处理。runtime大部分的功能都是围绕这几点来实现的。&lt;/p&gt;
 &lt;p&gt;本章的内容并不算重点，主要针对前文中对Objective-C Runtime Reference内容遗漏的地方做些补充。当然这并不能包含所有的内容。runtime还有许多内容。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
-    
-    
-      <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Objective-C-Runtime运行时之五：协议与分类</title>
-    <link href="http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B9%8B%E4%BA%94%EF%BC%9A%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%88%86%E7%B1%BB/"/>
-    <id>http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/</id>
-    <published>2016-12-18T06:25:59.000Z</published>
-    <updated>2017-03-09T07:03:56.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。</p>
-<p>Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过<code>@protocol</code>定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，<code>@protocol</code>声明了可以被其他任何类实现的方法，协议仅仅是定义一个接口，而由其他的类去负责实现。</p>
-<p>在本章中，我们来看看runtime对分类与协议的支持。</p>
-<a id="more"></a>
-<h4 id="基础数据类型"><a href="#基础数据类型" class="headerlink" title="基础数据类型"></a>基础数据类型</h4><h5 id="Category"><a href="#Category" class="headerlink" title="Category"></a>Category</h5><p>Category是表示一个指向分类的结构体的指针，其定义如下：</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_category *Category;</div><div class="line"><span class="keyword">struct</span> objc_category &#123;</div><div class="line">    <span class="keyword">char</span> *category_name                          OBJC2_UNAVAILABLE;	<span class="comment">// 分类名</span></div><div class="line">    <span class="keyword">char</span> *class_name                             OBJC2_UNAVAILABLE;	<span class="comment">// 分类所属的类名</span></div><div class="line">    <span class="keyword">struct</span> objc_method_list *instance_methods    OBJC2_UNAVAILABLE;	<span class="comment">// 实例方法列表</span></div><div class="line">    <span class="keyword">struct</span> objc_method_list *class_methods       OBJC2_UNAVAILABLE;	<span class="comment">// 类方法列表</span></div><div class="line">    <span class="keyword">struct</span> objc_protocol_list *protocols         OBJC2_UNAVAILABLE;	<span class="comment">// 分类所实现的协议列表</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这个结构体主要包含了分类定义的实例方法与类方法，其中<code>instance_methods</code>列表是元类方法列表的一个子集。</p>
-<h5 id="Protocol"><a href="#Protocol" class="headerlink" title="Protocol"></a>Protocol</h5><p>Protocol的定义如下：</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_object Protocol;</div></pre></td></tr></table></figure>
-<p>我们可以看到，Protocol其实就是一个对象结构体。</p>
-<h5 id="操作函数"><a href="#操作函数" class="headerlink" title="操作函数"></a>操作函数</h5><p>Runtime并没有在<code>&lt;objc/runtime.h&gt;</code>头文件中提供针对分类的操作函数。因为这些分类中的信息都包含在<code>objc_class</code>中，我们可以通过针对<code>objc_class</code>的操作函数来获取分类的信息。如下里所示：</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RuntimeCategoryClass</span> : <span class="title">NSObject</span></span></div><div class="line">- (<span class="keyword">void</span>)method1;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RuntimeCategoryClass</span> (<span class="title">Category</span>)</span></div><div class="line">- (<span class="keyword">void</span>)method2;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">RuntimeCategoryClass</span></span></div><div class="line">- (<span class="keyword">void</span>)method1 &#123;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">RuntimeCategoryClass</span> (<span class="title">Category</span>)</span></div><div class="line">- (<span class="keyword">void</span>)method2 &#123;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="meta">#pragma mark -</span></div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"测试objc_class中的方法列表是否包含分类中的方法"</span>);</div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> outCount = <span class="number">0</span>;</div><div class="line">Method *methodList = class_copyMethodList(RuntimeCategoryClass.class, &amp;outCount);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; outCount; i++) &#123;</div><div class="line">    Method method = methodList[i];</div><div class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name = sel_getName(method_getName(method));</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"RuntimeCategoryClass's method: %s"</span>, name);</div><div class="line">    <span class="keyword">if</span> (strcmp(name, sel_getName(<span class="keyword">@selector</span>(method2)))) &#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"分类方法method2在objc_class的方法列表中"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>其输出是：</p>
-<figure class="highlight"><table><tr><td class="code"><pre><div class="line">2014-11-08 10:36:39.213 [561:151847] 测试objc_class中的方法列表是否包含分类中的方法</div><div class="line">2014-11-08 10:36:39.215 [561:151847] RuntimeCategoryClass's method: method2</div><div class="line">2014-11-08 10:36:39.215 [561:151847] RuntimeCategoryClass's method: method1</div><div class="line">2014-11-08 10:36:39.215 [561:151847] 分类方法method2在objc_class的方法列表中</div></pre></td></tr></table></figure>
-<p>而对于Protocol，runtime提供了一系列函数来对其进行操作，这些函数包括：</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 返回指定的协议</span></div><div class="line">Protocol * objc_getProtocol ( <span class="keyword">const</span> <span class="keyword">char</span> *name );</div><div class="line"><span class="comment">// 获取运行时所知道的所有协议的数组</span></div><div class="line">Protocol ** objc_copyProtocolList ( <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 创建新的协议实例</span></div><div class="line">Protocol * objc_allocateProtocol ( <span class="keyword">const</span> <span class="keyword">char</span> *name );</div><div class="line"><span class="comment">// 在运行时中注册新创建的协议</span></div><div class="line"><span class="keyword">void</span> objc_registerProtocol ( Protocol *proto );</div><div class="line"><span class="comment">// 为协议添加方法</span></div><div class="line"><span class="keyword">void</span> protocol_addMethodDescription ( Protocol *proto, SEL name, <span class="keyword">const</span> <span class="keyword">char</span> *types, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod );</div><div class="line"><span class="comment">// 添加一个已注册的协议到协议中</span></div><div class="line"><span class="keyword">void</span> protocol_addProtocol ( Protocol *proto, Protocol *addition );</div><div class="line"><span class="comment">// 为协议添加属性</span></div><div class="line"><span class="keyword">void</span> protocol_addProperty ( Protocol *proto, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> objc_property_attribute_t *attributes, <span class="keyword">unsigned</span> <span class="keyword">int</span> attributeCount, <span class="built_in">BOOL</span> isRequiredProperty, <span class="built_in">BOOL</span> isInstanceProperty );</div><div class="line"><span class="comment">// 返回协议名</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> * protocol_getName ( Protocol *p );</div><div class="line"><span class="comment">// 测试两个协议是否相等</span></div><div class="line"><span class="built_in">BOOL</span> protocol_isEqual ( Protocol *proto, Protocol *other );</div><div class="line"><span class="comment">// 获取协议中指定条件的方法的方法描述数组</span></div><div class="line"><span class="keyword">struct</span> objc_method_description * protocol_copyMethodDescriptionList ( Protocol *p, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 获取协议中指定方法的方法描述</span></div><div class="line"><span class="keyword">struct</span> objc_method_description protocol_getMethodDescription ( Protocol *p, SEL aSel, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod );</div><div class="line"><span class="comment">// 获取协议中的属性列表</span></div><div class="line">objc_property_t * protocol_copyPropertyList ( Protocol *proto, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 获取协议的指定属性</span></div><div class="line">objc_property_t protocol_getProperty ( Protocol *proto, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="built_in">BOOL</span> isRequiredProperty, <span class="built_in">BOOL</span> isInstanceProperty );</div><div class="line"><span class="comment">// 获取协议采用的协议</span></div><div class="line">Protocol ** protocol_copyProtocolList ( Protocol *proto, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 查看协议是否采用了另一个协议</span></div><div class="line"><span class="built_in">BOOL</span> protocol_conformsToProtocol ( Protocol *proto, Protocol *other );</div></pre></td></tr></table></figure>
-<ul>
-<li><code>objc_getProtocol</code>函数，需要注意的是如果仅仅是声明了一个协议，而未在任何类中实现这个协议，则该函数返回的是nil。</li>
-<li><code>objc_copyProtocolList</code>函数，获取的数值需要使用free来释放。</li>
-<li><code>objc_allcateProtocol</code>函数，如果同名的协议已经存在，则返回nil.</li>
-<li><code>objc_registerProtocol</code>函数，创建一个新的协议后，必须调用该函数以在运行时钟注册新的协议。协议注册后便可以使用，但不能再做修改，即注册完后不能再向协议添加方法或协议。</li>
-</ul>
-<p>需要强调的是，协议一旦注册后就不能修改，即无法再通过调用<code>protocol_addMethodDescription</code>、<code>protocol_addProtocol</code>和<code>protocol_addProperty</code>往协议中添加方法等。</p>
-<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>Runtime并没有提供过多的函数来处理分类。对于协议，我们可以动态地创建协议，并向其添加方法、属性及继承的协议，并在运行时动态地获取这些信息。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。&lt;/p&gt;
-&lt;p&gt;Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过&lt;code&gt;@protocol&lt;/code&gt;定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，&lt;code&gt;@protocol&lt;/code&gt;声明了可以被其他任何类实现的方法，协议仅仅是定义一个接口，而由其他的类去负责实现。&lt;/p&gt;
-&lt;p&gt;在本章中，我们来看看runtime对分类与协议的支持。&lt;/p&gt;
     
     </summary>
     
