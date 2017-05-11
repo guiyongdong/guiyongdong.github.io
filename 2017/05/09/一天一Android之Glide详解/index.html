@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>RunLoop总结 - 贵大头的博客</title>
+    <title>一天一Android之Glide详解 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -16,16 +16,19 @@
     
         <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
     
-    <meta name="description" content="最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对&amp;lt;CoreFoundation/CFRunLoop.h&amp;gt;的头文件函数总结。">
+    <meta name="description" content="图片可以丰富App的显示效果，但是图片也是最难处理的，因为通常情况下，图片是最耗内存的。
+iOS的同学都知道SDWebImage，它极大的简化了我们对图片的操作。而Android端的图片加载框架则有很多，Volley、Picasso和Glide，今天我们主要说的就是Glide。">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="RunLoop总结">
-<meta property="og:url" content="http://www.guiyongdong.com/2016/09/08/RunLoop总结/index.html">
+<meta property="og:title" content="一天一Android之Glide详解">
+<meta property="og:url" content="http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对&amp;lt;CoreFoundation/CFRunLoop.h&amp;gt;的头文件函数总结。">
-<meta property="og:updated_time" content="2017-03-09T07:08:53.000Z">
+<meta property="og:description" content="图片可以丰富App的显示效果，但是图片也是最难处理的，因为通常情况下，图片是最耗内存的。
+iOS的同学都知道SDWebImage，它极大的简化了我们对图片的操作。而Android端的图片加载框架则有很多，Volley、Picasso和Glide，今天我们主要说的就是Glide。">
+<meta property="og:updated_time" content="2017-05-10T03:14:42.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="RunLoop总结">
-<meta name="twitter:description" content="最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对&amp;lt;CoreFoundation/CFRunLoop.h&amp;gt;的头文件函数总结。">
+<meta name="twitter:title" content="一天一Android之Glide详解">
+<meta name="twitter:description" content="图片可以丰富App的显示效果，但是图片也是最难处理的，因为通常情况下，图片是最耗内存的。
+iOS的同学都知道SDWebImage，它极大的简化了我们对图片的操作。而Android端的图片加载框架则有很多，Volley、Picasso和Glide，今天我们主要说的就是Glide。">
     
     
         
@@ -205,19 +208,19 @@
         <div class="post-header main-content-wrap text-left">
     
         <h1 class="post-title" itemprop="headline">
-            RunLoop总结
+            一天一Android之Glide详解
         </h1>
     
     <div class="post-meta">
-    <time itemprop="datePublished" datetime="2016-09-08T17:05:52+08:00">
+    <time itemprop="datePublished" datetime="2017-05-09T17:12:03+08:00">
 	
-		    9月 08, 2016
+		    5月 09, 2017
     	
     </time>
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+    <a class="category-link" href="/categories/Android/">Android</a>
 
 
     
@@ -227,231 +230,51 @@
     
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
-            <p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p>
+            <p>图片可以丰富<code>App</code>的显示效果，但是图片也是最难处理的，因为通常情况下，图片是最耗内存的。</p>
+<p><code>iOS</code>的同学都知道<code>SDWebImage</code>，它极大的简化了我们对图片的操作。而<code>Android</code>端的图片加载框架则有很多，<code>Volley</code>、<code>Picasso</code>和<code>Glide</code>，今天我们主要说的就是<code>Glide</code>。</p>
 <a id="more"></a>
-<h3 id="关于RunLoop的资料总结"><a href="#关于RunLoop的资料总结" class="headerlink" title="关于RunLoop的资料总结"></a>关于RunLoop的资料总结</h3><p>网上关于RunLoop的总结大致相同，这里推荐几篇好的文章共大家学习。</p>
+<h3 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h3><p>首先使用<code>gradle</code>导入<code>Glide</code>：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">dependencies &#123;</div><div class="line">    compile &apos;com.github.bumptech.glide:glide:3.7.0&apos;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在导入之前，最好先去<code>Github</code>上查看一下最新版本。当然，需要加入网络权限。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> <span class="keyword">implements</span> <span class="title">View</span>.<span class="title">OnClickListener</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> ImageView mImageView;</div><div class="line">    <span class="keyword">private</span> Button mButton;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        </div><div class="line">        mImageView = (ImageView) findViewById(R.id.image_view);</div><div class="line">        mButton = (Button) findViewById(R.id.loadImage);</div><div class="line">        mButton.setOnClickListener(<span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">        String url = <span class="string">"https://f10.baidu.com/it/u=1863145503,1330064667&amp;fm=72"</span>;</div><div class="line">        Glide.with(<span class="keyword">this</span>)</div><div class="line">                .load(url)</div><div class="line">                .into(mImageView);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="with"><a href="#with" class="headerlink" title="with()"></a>with()</h5><p>先来看看<code>with</code>方法，<code>with</code>方法可以接收<code>Context</code>、<code>Activity</code>、<code>FragmentActivity</code>、<code>Fragment</code>，这四种类型的参数。此方法传入的实例决定<code>Glide</code>加载图片的生命周期，如果传入的是<code>Activity</code>的实例，当<code>Activity</code>被销毁的时候，图片加载也会停止。此方法返回一个<code>RequestManager</code>对象。</p>
+<h5 id="load"><a href="#load" class="headerlink" title="load()"></a>load()</h5><p><code>load</code>方法用于指定加载的图片资源，可以是网络图片，本地图片，应用资源，二进制流，Uri对象等。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 加载本地图片</span></div><div class="line">File file = <span class="keyword">new</span> File(getExternalCacheDir() + <span class="string">"/image.jpg"</span>);</div><div class="line">Glide.with(<span class="keyword">this</span>).load(file).into(mImageView);</div><div class="line"></div><div class="line"><span class="comment">// 加载应用资源</span></div><div class="line"><span class="keyword">int</span> resource = R.drawable.image;</div><div class="line">Glide.with(<span class="keyword">this</span>).load(resource).into(mImageView);</div><div class="line"></div><div class="line"><span class="comment">// 加载二进制流</span></div><div class="line"><span class="keyword">byte</span>[] image = getImageBytes();</div><div class="line">Glide.with(<span class="keyword">this</span>).load(image).into(mImageView);</div><div class="line"></div><div class="line"><span class="comment">// 加载Uri对象</span></div><div class="line">Uri imageUri = getImageUri();</div><div class="line">Glide.with(<span class="keyword">this</span>).load(imageUri).into(mImageView);</div></pre></td></tr></table></figure>
+<h5 id="into"><a href="#into" class="headerlink" title="into()"></a>into()</h5><p><code>into</code>表示将下载好的图片显示在哪个<code>ImageView</code>上。当然，有时候我们需要在图片下载完成以后做一些事情，如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">Glide.with(this)</div><div class="line">     .load(imageUri)</div><div class="line">     .into(new SimpleTarget&lt;Bitmap&gt;() &#123;</div><div class="line">            @Override</div><div class="line">            public void onResourceReady(Bitmap resource, GlideAnimation&lt;? super Bitmap&gt; glideAnimation) &#123;</div><div class="line">				     //处理图片</div><div class="line">            &#125;</div><div class="line">     &#125;);;</div></pre></td></tr></table></figure>
+<p>上面三个方法组成了一个完整的加载过程，在这个加载过程中，我们还可以添加其他的配置。下面的方法都是添加在<code>load</code>和<code>into</code>之间。</p>
+<h5 id="asBitmap"><a href="#asBitmap" class="headerlink" title="asBitmap()"></a>asBitmap()</h5><p>设置图片的格式为静态图片，如果要加载的图片格式是<code>gif</code>，那么会显示第一帧的静态图片。</p>
+<h5 id="asGif"><a href="#asGif" class="headerlink" title="asGif()"></a>asGif()</h5><p>设置图片的格式为动态图片，如果要加载的图片格式是静态图片，那么会直接回显示错误图片。</p>
+<h5 id="placeholder"><a href="#placeholder" class="headerlink" title="placeholder()"></a>placeholder()</h5><p>此方法用于设置一个占位图 </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">String url = &quot;https://f10.baidu.com/it/u=1863145503,1330064667&amp;fm=72&quot;;</div><div class="line">Glide.with(this)</div><div class="line">        .load(url)</div><div class="line">        .placeholder(R.mipmap.ic_launcher)</div><div class="line">        .into(mImageView);</div></pre></td></tr></table></figure>
+<h5 id="diskCacheStrategy"><a href="#diskCacheStrategy" class="headerlink" title="diskCacheStrategy()"></a>diskCacheStrategy()</h5><p>此方法主要用作与磁盘缓存，可传参数为:</p>
 <ul>
-<li><p>YYModel作者关于RunLoop的总结 《<a href="http://blog.ibireme.com/2015/05/18/runloop/" target="_blank" rel="external">深入理解RunLoop</a>》</p>
-</li>
-<li><p>简书上不错的文章 《<a href="http://www.jianshu.com/p/37ab0397fec7" target="_blank" rel="external">【iOS程序启动与运转】- RunLoop个人小结</a>》</p>
-</li>
-<li><p>sunnyxx的RunLoop线下讨论会 <a href="https://pan.baidu.com/s/1i5bN3dN" target="_blank" rel="external">百度网盘</a></p>
-</li>
-<li><p>用RunLoop捕获程序Crash 防止用户使用时程序崩溃 <a href="https://github.com/guiyongdong/Resource/tree/master/%20CrashManager" target="_blank" rel="external">git连接</a></p>
-</li>
+<li><code>DiskCacheStrategy.ALL</code>: 即缓存原图又缓存压缩后的图</li>
+<li><code>DiskCacheStrategy.NONE</code>：不缓存</li>
+<li><code>DiskCacheStrategy.SOURCE</code>：原图缓存</li>
+<li><code>DiskCacheStrategy.RESULT</code>：缓存压缩后的图片，因为<code>Glide</code>通常不会把原图显示到界面上，例如我们的<code>ImageView</code>的大小是50x50，而图片的大小是200x200，如果我们原图显示，会造成不必要的内存浪费。所以<code>Glide</code>会根据图片的实际大小来压缩。</li>
 </ul>
-<h3 id="关于CFRunLoop-h的总结"><a href="#关于CFRunLoop-h的总结" class="headerlink" title="关于CFRunLoop.h的总结"></a>关于CFRunLoop.h的总结</h3><pre><code>
-
-//Runloop
-typedef struct __CFRunLoop * CFRunLoopRef;
-//事件源
-typedef struct __CFRunLoopSource * CFRunLoopSourceRef;
-//观察者
-typedef struct __CFRunLoopObserver * CFRunLoopObserverRef;
-//定时器
-typedef struct CF_BRIDGED_MUTABLE_TYPE(NSTimer) __CFRunLoopTimer * CFRunLoopTimerRef;
-
-/* Reasons for CFRunLoopRunInMode() to Return */
-enum {
-    kCFRunLoopRunFinished = 1, //Run Loop结束，没有Timer或者其他Input Source
-    kCFRunLoopRunStopped = 2, //Run Loop被停止，使用CFRunLoopStop停止Run Loop
-    kCFRunLoopRunTimedOut = 3, //RunLoop 超时
-    kCFRunLoopRunHandledSource = 4 //Run Loop处理完事件，注意Timer事件的触发是不会让Run Loop退出返回的，即使CFRunLoopRunInMode的第三个参数是YES也不行
-};
-
-/* Run Loop Observer Activities */
-typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
-    kCFRunLoopEntry = (1UL << 0), // 即将进入Loop
-    kCFRunLoopBeforeTimers = (1UL << 1), // 即将处理 Timer
-    kCFRunLoopBeforeSources = (1UL << 2), // 即将处理 Source
-    kCFRunLoopBeforeWaiting = (1UL << 5), // 即将进入休眠
-    kCFRunLoopAfterWaiting = (1UL << 6), // 刚从休眠中唤醒
-    kCFRunLoopExit = (1UL << 7), // 即将退出Loop
-    kCFRunLoopAllActivities = 0x0FFFFFFFU
-};
-
-//默认model
-CF_EXPORT const CFStringRef kCFRunLoopDefaultMode;
-//当uiscrollView滑动时Model
-CF_EXPORT const CFStringRef kCFRunLoopCommonModes;
-
-//获取当前RunLoop 当当前RunLoop没有的时候回创建一个  一个线程对应一个RunLoop
-CF_EXPORT CFRunLoopRef CFRunLoopGetCurrent(void);
-//获取主线程的RunLoop
-CF_EXPORT CFRunLoopRef CFRunLoopGetMain(void);
-//复制当前RunLoop
-CF_EXPORT CFStringRef CFRunLoopCopyCurrentMode(CFRunLoopRef rl);
-//复制当前RunLoop的所有Model
-CF_EXPORT CFArrayRef CFRunLoopCopyAllModes(CFRunLoopRef rl);
-//给当前RunLoop添加Model
-CF_EXPORT void CFRunLoopAddCommonMode(CFRunLoopRef rl, CFStringRef mode);
-//获取RunLoop model的超时时间
-CF_EXPORT CFAbsoluteTime CFRunLoopGetNextTimerFireDate(CFRunLoopRef rl, CFStringRef mode);
-//手动启动RunLoop
-CF_EXPORT void CFRunLoopRun(void);
-/**
- *  切换当前RunLoop的model
- *
- *  @param mode                     model
- *  @param seconds                  执行时间
- *  @param returnAfterSourceHandled 执行完是否结束
- */
-CF_EXPORT SInt32 CFRunLoopRunInMode(CFStringRef mode, CFTimeInterval seconds, Boolean returnAfterSourceHandled);
-//当前RunLoop是否休眠
-CF_EXPORT Boolean CFRunLoopIsWaiting(CFRunLoopRef rl);
-//唤醒RunLoop
-CF_EXPORT void CFRunLoopWakeUp(CFRunLoopRef rl);
-//手动停止RunLoop
-CF_EXPORT void CFRunLoopStop(CFRunLoopRef rl);
-
-#if __BLOCKS__
-//在RunLoop 特定Model执行 操作
-CF_EXPORT void CFRunLoopPerformBlock(CFRunLoopRef rl, CFTypeRef mode, void (^block)(void)) CF_AVAILABLE(10_6, 4_0); 
-#endif
-//RunLoop下是否包含某个Source
-CF_EXPORT Boolean CFRunLoopContainsSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
-//添加Source
-CF_EXPORT void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
-//移除Source
-CF_EXPORT void CFRunLoopRemoveSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFStringRef mode);
-//是否包换观察者
-CF_EXPORT Boolean CFRunLoopContainsObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
-//添加某个model下的观察者
-CF_EXPORT void CFRunLoopAddObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
-//移除观察者
-CF_EXPORT void CFRunLoopRemoveObserver(CFRunLoopRef rl, CFRunLoopObserverRef observer, CFStringRef mode);
-//是否包含定时器
-CF_EXPORT Boolean CFRunLoopContainsTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
-//添加定时器
-CF_EXPORT void CFRunLoopAddTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
-//移除定时器
-CF_EXPORT void CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode);
-
-typedef struct {
-    CFIndex    version;
-    void *    info;
-    const void *(*retain)(const void *info);
-    void    (*release)(const void *info);
-    CFStringRef    (*copyDescription)(const void *info);
-    Boolean    (*equal)(const void *info1, const void *info2);
-    CFHashCode    (*hash)(const void *info);
-    void    (*schedule)(void *info, CFRunLoopRef rl, CFStringRef mode);
-    void    (*cancel)(void *info, CFRunLoopRef rl, CFStringRef mode);
-    void    (*perform)(void *info);
-} CFRunLoopSourceContext;
-
-typedef struct {
-    CFIndex    version;
-    void *    info;
-    const void *(*retain)(const void *info);
-    void    (*release)(const void *info);
-    CFStringRef    (*copyDescription)(const void *info);
-    Boolean    (*equal)(const void *info1, const void *info2);
-    CFHashCode    (*hash)(const void *info);
-#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) || (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
-    mach_port_t    (*getPort)(void *info);
-    void *    (*perform)(void *msg, CFIndex size, CFAllocatorRef allocator, void *info);
-#else
-    void *    (*getPort)(void *info);
-    void    (*perform)(void *info);
-#endif
-} CFRunLoopSourceContext1;
-
-CF_EXPORT CFTypeID CFRunLoopSourceGetTypeID(void);
-
-//创建事件源
-CF_EXPORT CFRunLoopSourceRef CFRunLoopSourceCreate(CFAllocatorRef allocator, CFIndex order, CFRunLoopSourceContext *context);
-
-CF_EXPORT CFIndex CFRunLoopSourceGetOrder(CFRunLoopSourceRef source);
-CF_EXPORT void CFRunLoopSourceInvalidate(CFRunLoopSourceRef source);
-CF_EXPORT Boolean CFRunLoopSourceIsValid(CFRunLoopSourceRef source);
-CF_EXPORT void CFRunLoopSourceGetContext(CFRunLoopSourceRef source, CFRunLoopSourceContext *context);
-CF_EXPORT void CFRunLoopSourceSignal(CFRunLoopSourceRef source);
-
-typedef struct {
-    CFIndex    version;
-    void *    info;
-    const void *(*retain)(const void *info);
-    void    (*release)(const void *info);
-    CFStringRef    (*copyDescription)(const void *info);
-} CFRunLoopObserverContext;
-
-typedef void (*CFRunLoopObserverCallBack)(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info);
-
-CF_EXPORT CFTypeID CFRunLoopObserverGetTypeID(void);
-
-CF_EXPORT CFRunLoopObserverRef CFRunLoopObserverCreate(CFAllocatorRef allocator, CFOptionFlags activities, Boolean repeats, CFIndex order, CFRunLoopObserverCallBack callout, CFRunLoopObserverContext *context);
-#if __BLOCKS__
-/**
- *  创建观察者
- *
- *  @param allocator  默认 kCFAllocatorDefault
- *  @param activities 监听 RunLoop的哪种状态
- *  @param repeats    是否一直监听
- *  @param order      优先级 默认 0
- *  @param ^block     回调
- *
- */
-CF_EXPORT CFRunLoopObserverRef CFRunLoopObserverCreateWithHandler(CFAllocatorRef allocator, CFOptionFlags activities, Boolean repeats, CFIndex order, void (^block) (CFRunLoopObserverRef observer, CFRunLoopActivity activity)) CF_AVAILABLE(10_7, 5_0);
-#endif
-
-//获取当前观察者观察的状态
-CF_EXPORT CFOptionFlags CFRunLoopObserverGetActivities(CFRunLoopObserverRef observer);
-//获取当前观察者是否一直观察
-CF_EXPORT Boolean CFRunLoopObserverDoesRepeat(CFRunLoopObserverRef observer);
-//获取优先级
-CF_EXPORT CFIndex CFRunLoopObserverGetOrder(CFRunLoopObserverRef observer);
-CF_EXPORT void CFRunLoopObserverInvalidate(CFRunLoopObserverRef observer);
-CF_EXPORT Boolean CFRunLoopObserverIsValid(CFRunLoopObserverRef observer);
-CF_EXPORT void CFRunLoopObserverGetContext(CFRunLoopObserverRef observer, CFRunLoopObserverContext *context);
-
-typedef struct {
-    CFIndex    version;
-    void *    info;
-    const void *(*retain)(const void *info);
-    void    (*release)(const void *info);
-    CFStringRef    (*copyDescription)(const void *info);
-} CFRunLoopTimerContext;
-
-typedef void (*CFRunLoopTimerCallBack)(CFRunLoopTimerRef timer, void *info);
-
-CF_EXPORT CFTypeID CFRunLoopTimerGetTypeID(void);
-//创建定时器
-CF_EXPORT CFRunLoopTimerRef CFRunLoopTimerCreate(CFAllocatorRef allocator, CFAbsoluteTime fireDate, CFTimeInterval interval, CFOptionFlags flags, CFIndex order, CFRunLoopTimerCallBack callout, CFRunLoopTimerContext *context);
-#if __BLOCKS__
-//使用Block创建定时器
-CF_EXPORT CFRunLoopTimerRef CFRunLoopTimerCreateWithHandler(CFAllocatorRef allocator, CFAbsoluteTime fireDate, CFTimeInterval interval, CFOptionFlags flags, CFIndex order, void (^block) (CFRunLoopTimerRef timer)) CF_AVAILABLE(10_7, 5_0);
-#endif
-//获取超时时间
-CF_EXPORT CFAbsoluteTime CFRunLoopTimerGetNextFireDate(CFRunLoopTimerRef timer);
-//设置超时时间
-CF_EXPORT void CFRunLoopTimerSetNextFireDate(CFRunLoopTimerRef timer, CFAbsoluteTime fireDate);
-CF_EXPORT CFTimeInterval CFRunLoopTimerGetInterval(CFRunLoopTimerRef timer);
-//是否循环执行
-CF_EXPORT Boolean CFRunLoopTimerDoesRepeat(CFRunLoopTimerRef timer);
-//获取优先级
-CF_EXPORT CFIndex CFRunLoopTimerGetOrder(CFRunLoopTimerRef timer);
-CF_EXPORT void CFRunLoopTimerInvalidate(CFRunLoopTimerRef timer);
-CF_EXPORT Boolean CFRunLoopTimerIsValid(CFRunLoopTimerRef timer);
-CF_EXPORT void CFRunLoopTimerGetContext(CFRunLoopTimerRef timer, CFRunLoopTimerContext *context);
-
-// Setting a tolerance for a timer allows it to fire later than the scheduled fire date, improving the ability of the system to optimize for increased power savings and responsiveness. The timer may fire at any time between its scheduled fire date and the scheduled fire date plus the tolerance. The timer will not fire before the scheduled fire date. For repeating timers, the next fire date is calculated from the original fire date regardless of tolerance applied at individual fire times, to avoid drift. The default value is zero, which means no additional tolerance is applied. The system reserves the right to apply a small amount of tolerance to certain timers regardless of the value of this property.
-// As the user of the timer, you will have the best idea of what an appropriate tolerance for a timer may be. A general rule of thumb, though, is to set the tolerance to at least 10% of the interval, for a repeating timer. Even a small amount of tolerance will have a significant positive impact on the power usage of your application. The system may put a maximum value of the tolerance.
-CF_EXPORT CFTimeInterval CFRunLoopTimerGetTolerance(CFRunLoopTimerRef timer) CF_AVAILABLE(10_9, 7_0);
-CF_EXPORT void CFRunLoopTimerSetTolerance(CFRunLoopTimerRef timer, CFTimeInterval tolerance) CF_AVAILABLE(10_9, 7_0);
-
-CF_EXTERN_C_END
-CF_IMPLICIT_BRIDGING_DISABLED
-
-
-</code></pre>
-
-
-
-
-
-
-<!-- more -->
+<p><strong>注意：</strong>如果显示的图片位<code>gif</code>格式的图片，最好不缓存，因为<code>Glide</code>会一帧一帧的缓存图片。</p>
+<h5 id="skipMemoryCache"><a href="#skipMemoryCache" class="headerlink" title="skipMemoryCache()"></a>skipMemoryCache()</h5><p>此方法表示是否跳过内存缓存，设置为<code>true</code>表示不进行内存缓存。</p>
+<h5 id="error"><a href="#error" class="headerlink" title="error()"></a>error()</h5><p>设置一个加载失败的图片</p>
+<h5 id="animate"><a href="#animate" class="headerlink" title="animate()"></a>animate()</h5><p>设置加载成功后，显示的动画</p>
+<h5 id="override"><a href="#override" class="headerlink" title="override()"></a>override()</h5><p>设置图片加载成功后的大小，例如：<code>verride(300,300)</code></p>
+<h5 id="priority"><a href="#priority" class="headerlink" title="priority()"></a>priority()</h5><p>设置下载的优先级 </p>
+<h5 id="clearDiskCache"><a href="#clearDiskCache" class="headerlink" title="clearDiskCache()"></a>clearDiskCache()</h5><p>清理磁盘缓存，需要在子线程中执行 <code>Glide.get(this).clearDiskCache();</code></p>
+<h5 id="clearMemory"><a href="#clearMemory" class="headerlink" title="clearMemory()"></a>clearMemory()</h5><p>清理内存缓存，可以在UI线程执行 <code>Glide.get(this).clearMemory();</code></p>
+<hr>
+<h3 id="GlideMoudle"><a href="#GlideMoudle" class="headerlink" title="GlideMoudle"></a>GlideMoudle</h3><p><code>GlideMoudle</code>是一个抽象方法，全局改变<code>Glide</code>行为的一个方式，通过全局<code>GlideMoudle</code>配置<code>Glide</code>，用<code>GlideBuilder</code>设置选项，用<code>Glide</code>注册<code>ModelLoader</code>等。</p>
+<h5 id="自定义一个GlideMoudle"><a href="#自定义一个GlideMoudle" class="headerlink" title="自定义一个GlideMoudle"></a>自定义一个GlideMoudle</h5><figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyGlideModule</span> <span class="keyword">implements</span> <span class="title">GlideModule</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">applyOptions</span><span class="params">(Context context, GlideBuilder builder)</span> </span>&#123;</div><div class="line">        <span class="comment">//配置</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerComponents</span><span class="params">(Context context, Glide glide)</span> </span>&#123;</div><div class="line">		<span class="comment">//注册</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="AndroidManifest-xml注册"><a href="#AndroidManifest-xml注册" class="headerlink" title="AndroidManifest.xml注册"></a>AndroidManifest.xml注册</h5><figure class="highlight xml"><table><tr><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.guiyongdong.wangyidemo"</span>&gt;</div><div class="line">    <span class="tag">&lt;<span class="name">application</span></span></div><div class="line">        <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">        <span class="attr">android:roundIcon</span>=<span class="string">"@mipmap/ic_launcher_round"</span></div><div class="line">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span>&gt;</div><div class="line">        ...</div><div class="line">        <span class="tag">&lt;<span class="name">meta-data</span> <span class="attr">android:name</span>=<span class="string">"com.guiyongdong.wangyidemo.MyGlideModule"</span></span></div><div class="line">                   <span class="attr">android:value</span>=<span class="string">"GlideModule"</span>/&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<h5 id="添加混淆处理"><a href="#添加混淆处理" class="headerlink" title="添加混淆处理"></a>添加混淆处理</h5><p>因为我们的代码有可能添加混淆，所以不要给<code>MyGlideModule</code>添加混淆</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">-keepnames class com.guiyongdong.wangyidemo.MyGlideModule</div></pre></td></tr></table></figure>
+<h5 id="设置Glide内存缓存大小"><a href="#设置Glide内存缓存大小" class="headerlink" title="设置Glide内存缓存大小"></a>设置Glide内存缓存大小</h5><figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">int</span> maxMemory = (<span class="keyword">int</span>) Runtime.getRuntime().maxMemory(); <span class="comment">//获取系统分配给应用的总内存大小</span></div><div class="line"><span class="keyword">int</span> memoryCacheSize = maxMemory/<span class="number">8</span>; <span class="comment">//设置图片内存缓存占八分之一</span></div><div class="line">builder.setMemoryCache(<span class="keyword">new</span> LruResourceCache(memoryCacheSize)); <span class="comment">//设置内存缓存大小</span></div></pre></td></tr></table></figure>
+<h5 id="设置Glide磁盘缓存大小"><a href="#设置Glide磁盘缓存大小" class="headerlink" title="设置Glide磁盘缓存大小"></a>设置Glide磁盘缓存大小</h5><figure class="highlight java"><table><tr><td class="code"><pre><div class="line">File cacheDir = context.getExternalCacheDir(); <span class="comment">//设置缓存路径</span></div><div class="line"><span class="keyword">int</span> diskCacheSize = <span class="number">1024</span>*<span class="number">1024</span>*<span class="number">30</span>; <span class="comment">//缓存大小</span></div><div class="line">builder.setDiskCache(<span class="keyword">new</span> DiskLruCacheFactory(cacheDir.getParent(),<span class="string">"glide"</span>,diskCacheSize)); <span class="comment">//设置磁盘缓存大小 glide 表示文件名</span></div></pre></td></tr></table></figure>
+<p>也可以通过如下两种方式：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="comment">//存放在data/data/xxxx/cache/</span></div><div class="line">builder.setDiskCache(<span class="keyword">new</span> InternalCacheDiskCacheFactory(context, <span class="string">"glide"</span>, diskCacheSize));</div><div class="line"><span class="comment">//存放在外置文件浏览器</span></div><div class="line">builder.setDiskCache(<span class="keyword">new</span> ExternalCacheDiskCacheFactory(context, <span class="string">"glide"</span>, diskCacheSize));</div></pre></td></tr></table></figure>
+<h5 id="设置图片的解码格式"><a href="#设置图片的解码格式" class="headerlink" title="设置图片的解码格式"></a>设置图片的解码格式</h5><figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="comment">//设置图片解码格式</span></div><div class="line">builder.setDecodeFormat(DecodeFormat.PREFER_ARGB_8888);</div></pre></td></tr></table></figure>
+<h5 id="设置缓存内存大小"><a href="#设置缓存内存大小" class="headerlink" title="设置缓存内存大小"></a>设置缓存内存大小</h5><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">//设置BitmapPool缓存内存大小</div><div class="line">builder.setBitmapPool(new LruBitmapPool(memoryCacheSize));</div></pre></td></tr></table></figure>
+<p>基本上的关于<code>Glide</code>的用法已经了解的差不多了，接下来，如果有时间，会了解一下<code>Glide</code>的源码。</p>
 
             
         </div>
@@ -461,7 +284,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">标签</span><br/>
                 
-    <a class="tag tag--primary tag--small t-link" href="/tags/RunLoop/">RunLoop</a>
+    <a class="tag tag--primary tag--small t-link" href="/tags/android/">android</a>
 
             </div>
         
@@ -470,7 +293,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/13/聊一聊GCD的那些事/"  data-tooltip="聊一聊GCD的那些事">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/10/一天一Android之ViewPager/"  data-tooltip="一天一Android之ViewPager">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -478,7 +301,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/06/关于RAC的一些资料/" data-tooltip="关于RAC的一些资料">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/05/一天一Android之存储目录/" data-tooltip="一天一Android之存储目录">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -493,12 +316,12 @@ CF_IMPLICIT_BRIDGING_DISABLED
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/09/08/RunLoop总结/&amp;title=RunLoop总结">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/&amp;title=一天一Android之Glide详解">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -516,7 +339,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/09/08/RunLoop总结/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -587,7 +410,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/13/聊一聊GCD的那些事/"  data-tooltip="聊一聊GCD的那些事">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/10/一天一Android之ViewPager/"  data-tooltip="一天一Android之ViewPager">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -595,7 +418,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/09/06/关于RAC的一些资料/" data-tooltip="关于RAC的一些资料">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/05/一天一Android之存储目录/" data-tooltip="一天一Android之存储目录">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -610,12 +433,12 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/09/08/RunLoop总结/&amp;title=RunLoop总结">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/&amp;title=一天一Android之Glide详解">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -633,7 +456,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/09/08/RunLoop总结/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -654,12 +477,12 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div id="share-options-bar" class="share-options-bar" data-behavior="4">
     <ul class="share-options">
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/">
                 <i class="fa fa-weibo"></i><span>微博</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/">
                 <i class="fa fa-qq"></i><span>QQ</span>
             </a>
         </li>
@@ -674,7 +497,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
 
 
 
-<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/09/08/RunLoop总结/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){

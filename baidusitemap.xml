@@ -4,6 +4,66 @@
 
     
   <url>
+    <loc>http://www.guiyongdong.com/2017/05/10/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BViewPager/</loc>
+    <lastmod>2017-05-11T07:26:50.000Z</lastmod>
+    <data>
+        <display>
+        <title>一天一Android之ViewPager</title>
+        <pubTime>2017-05-10T03:19:04.000Z</pubTime>
+        
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="Android" url="http://www.guiyongdong.com/categories/Android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.guiyongdong.com/2017/05/09/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BGlide%E8%AF%A6%E8%A7%A3/</loc>
+    <lastmod>2017-05-10T03:14:42.000Z</lastmod>
+    <data>
+        <display>
+        <title>一天一Android之Glide详解</title>
+        <pubTime>2017-05-09T09:12:03.000Z</pubTime>
+        
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="Android" url="http://www.guiyongdong.com/categories/Android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.guiyongdong.com/2017/04/01/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BFragment/</loc>
+    <lastmod>2017-05-08T03:53:21.000Z</lastmod>
+    <data>
+        <display>
+        <title>一天一Android之Fragment</title>
+        <pubTime>2017-04-01T03:31:37.000Z</pubTime>
+        
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="Android" url="http://www.guiyongdong.com/categories/Android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://www.guiyongdong.com/2017/05/05/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E5%AD%98%E5%82%A8%E7%9B%AE%E5%BD%95/</loc>
     <lastmod>2017-05-05T07:42:05.000Z</lastmod>
     <data>
@@ -137,26 +197,6 @@
            
              
               <breadCrumb title="ReactNative" url="http://www.guiyongdong.com/categories/ReactNative/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://www.guiyongdong.com/2017/04/01/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BFragment/</loc>
-    <lastmod>2017-04-02T01:17:24.000Z</lastmod>
-    <data>
-        <display>
-        <title>一天一Android之Fragment</title>
-        <pubTime>2017-04-01T03:31:37.000Z</pubTime>
-        
-        <tag>android</tag>
-         
-         
-           
-             
-              <breadCrumb title="Android" url="http://www.guiyongdong.com/categories/Android/"/>
           
         </display>
     </data>
