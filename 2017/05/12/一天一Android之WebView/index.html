@@ -1,0 +1,793 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="贵大头的博客">
+    <title>一天一Android之WebView - 贵大头的博客</title>
+    <meta name="author" content="贵永冬">
+<link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta name="description" content="无论是iOS还是Android，通常都会用到混合模式开发，这就要使用到WebView了，通过js和原生交互，可以实现很多功能。今天就来研究一下WebView。">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="一天一Android之WebView">
+<meta property="og:url" content="http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/index.html">
+<meta property="og:site_name" content="贵大头的博客">
+<meta property="og:description" content="无论是iOS还是Android，通常都会用到混合模式开发，这就要使用到WebView了，通过js和原生交互，可以实现很多功能。今天就来研究一下WebView。">
+<meta property="og:updated_time" content="2017-05-12T03:47:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一天一Android之WebView">
+<meta name="twitter:description" content="无论是iOS还是Android，通常都会用到混合模式开发，这就要使用到WebView了，通过js和原生交互，可以实现很多功能。今天就来研究一下WebView。">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-yrst5vo1nxaxbp2g3v9na2wg1lixlpr3ghbjdvskeixmu79deycecx3rh4bt.min.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">贵大头的博客</a>
+    </div>
+    
+        
+            <a  class="header-right-icon "
+                href="#about">
+        
+        
+            <i class="fa fa-lg fa-header.jpg"></i>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a href="/#about">
+                    <img class="sidebar-profile-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">贵永冬</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="https://github.com/guiyongdong" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="mailto:564024928@qq.com" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-envelope-o"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">订阅</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            一天一Android之WebView
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2017-05-12T09:55:54+08:00">
+	
+		    5月 12, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android/">Android</a>
+
+
+    
+</div>
+
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>无论是<code>iOS</code>还是<code>Android</code>，通常都会用到混合模式开发，这就要使用到<code>WebView</code>了，通过<code>js</code>和原生交互，可以实现很多功能。今天就来研究一下<code>WebView</code>。</p>
+<a id="more"></a>
+<h3 id="加载方式"><a href="#加载方式" class="headerlink" title="加载方式"></a>加载方式</h3><p>加载一个网页：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">webView.loadUrl(<span class="string">"https://www.baidu.com/"</span>);</div></pre></td></tr></table></figure>
+<p>加载一个静态html</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">webView.loadUrl(<span class="string">"file:///android_asset/test.html"</span>);</div></pre></td></tr></table></figure>
+<h3 id="WebSettings"><a href="#WebSettings" class="headerlink" title="WebSettings"></a>WebSettings</h3><p>主要是针对<code>WebView</code>做一些设置，比如是否启用<code>js</code>等。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">WebSettings webSettings = mWebView .getSettings();</div><div class="line"></div><div class="line"><span class="comment">//支持获取手势焦点，输入用户名、密码或其他</span></div><div class="line">webview.requestFocusFromTouch();</div><div class="line"></div><div class="line">setJavaScriptEnabled(<span class="keyword">true</span>);  <span class="comment">//支持js</span></div><div class="line">setPluginsEnabled(<span class="keyword">true</span>);  <span class="comment">//支持插件</span></div><div class="line"></div><div class="line">webSettings.setRenderPriority(RenderPriority.HIGH);  <span class="comment">//提高渲染的优先级</span></div><div class="line"></div><div class="line"><span class="comment">//设置自适应屏幕，两者合用</span></div><div class="line">setUseWideViewPort(<span class="keyword">true</span>);  <span class="comment">//将图片调整到适合webview的大小</span></div><div class="line">setLoadWithOverviewMode(<span class="keyword">true</span>); <span class="comment">// 缩放至屏幕的大小</span></div><div class="line"></div><div class="line">setSupportZoom(<span class="keyword">true</span>);  <span class="comment">//支持缩放，默认为true。是下面那个的前提。</span></div><div class="line">setBuiltInZoomControls(<span class="keyword">true</span>); <span class="comment">//设置内置的缩放控件。</span></div><div class="line"><span class="comment">//若上面是false，则该WebView不可缩放，这个不管设置什么都不能缩放。</span></div><div class="line">setTextZoom(<span class="number">2</span>);<span class="comment">//设置文本的缩放倍数，默认为 100</span></div><div class="line"></div><div class="line">setDisplayZoomControls(<span class="keyword">false</span>); <span class="comment">//隐藏原生的缩放控件</span></div><div class="line"></div><div class="line">setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN); <span class="comment">//支持内容重新布局</span></div><div class="line">supportMultipleWindows();  <span class="comment">//多窗口</span></div><div class="line">setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);  <span class="comment">//关闭webview中缓存</span></div><div class="line">setAllowFileAccess(<span class="keyword">true</span>);  <span class="comment">//设置可以访问文件</span></div><div class="line">setNeedInitialFocus(<span class="keyword">true</span>); <span class="comment">//当webview调用requestFocus时为webview设置节点</span></div><div class="line">setJavaScriptCanOpenWindowsAutomatically(<span class="keyword">true</span>); <span class="comment">//支持通过JS打开新窗口</span></div><div class="line">setLoadsImagesAutomatically(<span class="keyword">true</span>);  <span class="comment">//支持自动加载图片</span></div><div class="line">setDefaultTextEncodingName(<span class="string">"utf-8"</span>);<span class="comment">//设置编码格式</span></div><div class="line"></div><div class="line">setStandardFontFamily(<span class="string">""</span>);<span class="comment">//设置 WebView 的字体，默认字体为 "sans-serif"</span></div><div class="line">setDefaultFontSize(<span class="number">20</span>);<span class="comment">//设置 WebView 字体的大小，默认大小为 16</span></div><div class="line">setMinimumFontSize(<span class="number">12</span>);<span class="comment">//设置 WebView 支持的最小字体大小，默认为 8</span></div></pre></td></tr></table></figure>
+<h3 id="WebViewClient"><a href="#WebViewClient" class="headerlink" title="WebViewClient"></a>WebViewClient</h3><p><code>WebViewClient</code>就是帮助<code>WebView</code>处理各种通知、请求事件的。 </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">mWebView.setWebViewClient(<span class="keyword">new</span> WebViewClient()&#123;</div><div class="line">    <span class="comment">//此方法表示是否覆盖重定向，即是否允许打开重定向，</span></div><div class="line">    <span class="comment">//返回true表示不打开重定向，一般情况下，为了适配Android老版本，</span></div><div class="line">    <span class="comment">//我们这里统一返回true，调用我们自己的webView来打开重定向。</span></div><div class="line">    <span class="comment">//切记，不是所有请求都会走这个方法，只有重定向才会走</span></div><div class="line">    <span class="meta">@RequiresApi</span>(api = Build.VERSION_CODES.LOLLIPOP)</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">shouldOverrideUrlLoading</span><span class="params">(WebView view, WebResourceRequest request)</span> </span>&#123;</div><div class="line">        Log.d(<span class="string">"aaa"</span>, <span class="string">"shouldOverrideUrlLoading1: "</span>+request.getUrl().toString());</div><div class="line">        view.loadUrl(request.getUrl().toString());</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//此方法同上</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">shouldOverrideUrlLoading</span><span class="params">(WebView view, String url)</span> </span>&#123;</div><div class="line">        Log.d(<span class="string">"aaa"</span>, <span class="string">"shouldOverrideUrlLoading2: "</span>+url);</div><div class="line">        view.loadUrl(url);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//这个事件就是开始载入页面调用的，我们可以设定一个loading的页面，告诉用户程序在等待网络响应。</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageStarted</span><span class="params">(WebView view, String url, Bitmap favicon)</span> </span>&#123;</div><div class="line">        Log.d(<span class="string">"aaa"</span>, <span class="string">"onPageStarted: "</span>+url);</div><div class="line">        <span class="keyword">super</span>.onPageStarted(view, url, favicon);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//在页面加载结束时调用。同样道理，我们可以关闭loading 条，切换程序动作。</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageFinished</span><span class="params">(WebView view, String url)</span> </span>&#123;</div><div class="line">        Log.d(<span class="string">"aaa"</span>, <span class="string">"onPageFinished: "</span>+url);</div><div class="line">        <span class="keyword">super</span>.onPageFinished(view, url);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//加载错误信息</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceivedError</span><span class="params">(WebView view, WebResourceRequest request, WebResourceError error)</span> </span>&#123;</div><div class="line">        Toast.makeText(MyWebViewActivity.<span class="keyword">this</span>,error.toString(),Toast.LENGTH_SHORT).show();</div><div class="line">        Log.d(<span class="string">"aaa"</span>, <span class="string">"onReceivedError: "</span>+error.toString());</div><div class="line">        <span class="keyword">super</span>.onReceivedError(view, request, error);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 在加载页面资源时会调用，每一个资源（比如图片）的加载都会调用一次。</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLoadResource</span><span class="params">(WebView view, String url)</span> </span>&#123;</div><div class="line">       Log.d(<span class="string">"aaa"</span>, <span class="string">"onLoadResource: "</span>+url);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//此方法表示是否禁用网页中的按键事件，比如键盘输入等</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">shouldOverrideKeyEvent</span><span class="params">(WebView view, KeyEvent event)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.shouldOverrideKeyEvent(view,event);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//拦截替换网络请求数据 我们可以在这里返回我们自己的数据</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> WebResourceResponse <span class="title">shouldInterceptRequest</span><span class="params">(WebView view, WebResourceRequest request)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.shouldInterceptRequest(view, request);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//同上</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> WebResourceResponse <span class="title">shouldInterceptRequest</span><span class="params">(WebView view, String url)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.shouldInterceptRequest(view, url);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//更新历史记录</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doUpdateVisitedHistory</span><span class="params">(WebView view, String url, <span class="keyword">boolean</span> isReload)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.doUpdateVisitedHistory(view, url, isReload);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//(应用程序重新请求网页数据)</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFormResubmission</span><span class="params">(WebView view, Message dontResend, Message resend)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onFormResubmission(view, dontResend, resend);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//（获取返回信息授权请求）</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceivedHttpAuthRequest</span><span class="params">(WebView view, HttpAuthHandler handler, String host, String realm)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onReceivedHttpAuthRequest(view, handler, host, realm);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//重写此方法可以让webview处理https请求。</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceivedSslError</span><span class="params">(WebView view, SslErrorHandler handler, SslError error)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onReceivedSslError(view, handler, error);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// (WebView发生改变时调用)</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onScaleChanged</span><span class="params">(WebView view, <span class="keyword">float</span> oldScale, <span class="keyword">float</span> newScale)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onScaleChanged(view, oldScale, newScale);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//（Key事件未被加载时调用）</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onUnhandledKeyEvent</span><span class="params">(WebView view, KeyEvent event)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onUnhandledKeyEvent(view, event);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h3 id="WebChromeClient"><a href="#WebChromeClient" class="headerlink" title="WebChromeClient"></a>WebChromeClient</h3><p><code>WebChromeClient</code>是辅助<code>WebView</code>处理<code>js</code>的各种事件。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">mWebView.setWebChromeClient(<span class="keyword">new</span> WebChromeClient()&#123;</div><div class="line"></div><div class="line">    <span class="comment">//当js调用alert()方法后，会调用此方法 返回true表示弹出</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onJsAlert</span><span class="params">(WebView view, String url, String message, JsResult result)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.onJsAlert(view, url, message, result);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//处理prompt弹出框 </span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onJsPrompt</span><span class="params">(WebView view, String url, String message, String defaultValue, JsPromptResult result)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.onJsPrompt(view, url, message, defaultValue, result);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//处理confirm弹出框 </span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onJsConfirm</span><span class="params">(WebView view, String url, String message, JsResult result)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.onJsConfirm(view, url, message, result);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//获得网页的加载进度 0-100 这里可以更新进度条</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onProgressChanged</span><span class="params">(WebView view, <span class="keyword">int</span> newProgress)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onProgressChanged(view, newProgress);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//获取网页中的title</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceivedTitle</span><span class="params">(WebView view, String title)</span> </span>&#123;</div><div class="line">        Log.d(<span class="string">"aaa"</span>, <span class="string">"onReceivedTitle: "</span>+title);</div><div class="line">        <span class="keyword">super</span>.onReceivedTitle(view, title);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//获取网页的icon</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceivedIcon</span><span class="params">(WebView view, Bitmap icon)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onReceivedIcon(view, icon);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h3 id="WebView的方法"><a href="#WebView的方法" class="headerlink" title="WebView的方法"></a>WebView的方法</h3><p>前进、后退:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">goBack()<span class="comment">//后退</span></div><div class="line">goForward()<span class="comment">//前进</span></div><div class="line">goBackOrForward(intsteps) <span class="comment">//以当前的index为起始点前进或者后退到历史记录中指定的steps，如果steps为负数则为后退，正数则为前进</span></div><div class="line">canGoForward()<span class="comment">//是否可以前进</span></div><div class="line">canGoBack() <span class="comment">//是否可以后退</span></div></pre></td></tr></table></figure>
+<p>通常情况下，我们可以拦截系统的回退按钮，判断网页是否回退完，否者退出<code>Activity</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBackPressed</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (mWebView.canGoBack()) &#123;</div><div class="line">        mWebView.goBack();</div><div class="line">    &#125;<span class="keyword">else</span> &#123;</div><div class="line">        finish();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>WebView的状态：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">onResume() <span class="comment">//激活WebView为活跃状态，能正常执行网页的响应</span></div><div class="line">onPause()<span class="comment">//当页面被失去焦点被切换到后台不可见状态，需要执行onPause动过， onPause动作通知内核暂停所有的动作，比如DOM的解析、plugin的执行、JavaScript执行。</span></div><div class="line"></div><div class="line">pauseTimers()<span class="comment">//当应用程序被切换到后台我们使用了webview， 这个方法不仅仅针对当前的webview而是全局的全应用程序的webview，它会暂停所有webview的layout，parsing，javascripttimer。降低CPU功耗。</span></div><div class="line">resumeTimers()<span class="comment">//恢复pauseTimers时的动作。</span></div><div class="line"></div><div class="line">destroy()<span class="comment">//销毁，关闭了Activity时，音乐或视频，还在播放。就必须销毁。</span></div></pre></td></tr></table></figure>
+<p>注意：<code>webview</code>调用<code>destory</code>时，<code>webview</code>仍绑定在<code>Activity</code>上。这是由于自定义<code>webview</code>构建时传入了该<code>Activity</code>的<code>context</code>对象，因此需要先从父容器中移除<code>webview</code>,然后再销毁<code>webview</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">rootLayout.removeView(webView);</div><div class="line">webView.destroy();</div></pre></td></tr></table></figure>
+<p>判断<code>WebView</code>是否已经滚动到页面底端或者顶端：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">getScrollY() <span class="comment">//方法返回的是当前可见区域的顶端距整个页面顶端的距离,也就是当前内容滚动的距离.</span></div><div class="line">getHeight()或者getBottom() <span class="comment">//方法都返回当前WebView这个容器的高度</span></div><div class="line">getContentHeight() <span class="comment">//返回的是整个html的高度,但并不等同于当前整个页面的高度,因为WebView有缩放功能,所以当前整个页面的高度实际上应该是原始html的高度再乘上缩放比例</span></div></pre></td></tr></table></figure>
+<p> 获取当前<code>WebView</code>的真实的高度：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> (webView.getContentHeight() * webView.getScale() == (webView.getHeight() + webView.getScrollY())) &#123;</div><div class="line">    <span class="comment">//已经处于底端</span></div><div class="line">&#125;</div><div class="line"><span class="keyword">if</span>(webView.getScrollY() == <span class="number">0</span>)&#123;</div><div class="line">    <span class="comment">//处于顶端</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="与js交互"><a href="#与js交互" class="headerlink" title="与js交互"></a>与js交互</h3><p>首先，必须打开与<code>js</code>交互的开关：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">webSettings.setJavaScriptEnabled(<span class="keyword">true</span>);</div></pre></td></tr></table></figure>
+<p>原生调用<code>js</code>的方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="meta">@RequiresApi</span>(api = Build.VERSION_CODES.KITKAT)</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">jsButtonClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">    mWebView.evaluateJavascript(<span class="string">"javascript:alert('s')"</span>, <span class="keyword">new</span> ValueCallback&lt;String&gt;() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceiveValue</span><span class="params">(String value)</span> </span>&#123;</div><div class="line">            Log.d(<span class="string">"aaa"</span>, <span class="string">"onReceiveValue: "</span>+value+<span class="string">"---thread:"</span>+Thread.currentThread());</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>js</code>调用原生方法，例如我们的<code>html</code>如下：</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">language</span>=<span class="string">"javascript"</span>&gt;</span><span class="undefined"></span></div><div class="line">    function play()&#123;</div><div class="line">         obj.play('abc');</div><div class="line">    &#125;</div><div class="line">    <span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span> <span class="attr">bgcolor</span>=<span class="string">"black"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">a</span> <span class="attr">onClick</span>=<span class="string">"play()"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">img</span> <span class="attr">id</span>=<span class="string">"image"</span> <span class="attr">src</span>=<span class="string">"ic_launcher.png"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">a</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>当点击图片的时候，会调用原生的<code>play</code>方法，并传递一个参数。</p>
+<p>首先，创建一个类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSObject</span> </span>&#123;</div><div class="line">    <span class="meta">@JavascriptInterface</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">play</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">        Log.d(<span class="string">"aaa"</span>, <span class="string">"play: "</span>+name);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>记住，方法名一定要和<code>js</code>中的方法名一致，而且参数也一定要一致。并且需要在方法前加<code>@JavascriptInterface</code>注解，这样<code>js</code>才能调用到我们的原生方法。然后这样设定：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">mWebView.addJavascriptInterface(<span class="keyword">new</span> JSObject(),<span class="string">"obj"</span>);</div></pre></td></tr></table></figure>
+<p>这个<code>obj</code>就是我们在<code>js</code>中定义的对象。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>关于<code>WebView</code>的基本使用就这么多了，基本上能满足我们的日常开发。</p>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/android/">android</a>
+
+            </div>
+        
+        <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/10/一天一Android之ViewPager/" data-tooltip="一天一Android之ViewPager">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/&amp;title=一天一Android之WebView">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+        
+            
+                
+<div class="duoshuo">
+<div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+<script src="https://img1.cache.netease.com/f2e/tie/yun/sdk/loader.js"></script>
+<script>
+var cloudTieConfig = {
+  url: document.location.href, 
+  sourceId: "",
+  productKey: "3b1a42e3f91145d197b9e8b6e2f2a144",
+  target: "cloud-tie-wrapper"
+};
+var yunManualLoad = true;
+Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true);
+</script>
+</div>
+
+
+
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2017 贵永冬. All Rights Reserved.
+    </span>
+</footer>
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/10/一天一Android之ViewPager/" data-tooltip="一天一Android之ViewPager">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/&amp;title=一天一Android之WebView">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <ul class="share-options">
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/">
+                <i class="fa fa-weibo"></i><span>微博</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/">
+                <i class="fa fa-qq"></i><span>QQ</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i><span>微信</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+
+
+
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">贵永冬</h4>
+        
+            <div id="about-card-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>郑州市时空隧道信息技术有限公司</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker"></i>
+                <br/>
+                河南 郑州
+            </div>
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    autofocus="autofocus"/>
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/11/初识ReactiveCocoa/">
+                            <h3 class="media-heading">初识ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月11日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/12/深入ReactiveCocoa/">
+                            <h3 class="media-heading">深入ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月12日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                            <h3 class="media-heading">ReactiveCocoa和RXSwift速查表</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/关于RAC的一些资料/">
+                            <h3 class="media-heading">关于RAC的一些资料</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+                            <h3 class="media-heading">RunLoop总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/13/聊一聊GCD的那些事/">
+                            <h3 class="media-heading">聊一聊GCD的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月13日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/">
+                            <h3 class="media-heading">聊一聊NSOperation的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/">
+                            <h3 class="media-heading">iOS动画篇之UIView动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                            <h3 class="media-heading">iOS动画篇之CoreAnimation动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
+                            <h3 class="media-heading">iOS动画之CATransition动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 48 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-rt08quwts7iav5x0cfd2ym0gb5qkd1lvrsmwrakxtkhefmaaes4ywkmnjnwf.min.js"></script>
+<script src="/assets/js/prism.js"></script>
+<!--SCRIPTS END-->
+
+    
+        <script type="text/javascript">
+            var duoshuoQuery = {short_name:'guiyongdong'};
+            (function() {
+                var ds = document.createElement('script');
+                ds.type = 'text/javascript';ds.async = true;
+                ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+                ds.charset = 'UTF-8';
+                (document.getElementsByTagName('head')[0]
+                || document.getElementsByTagName('body')[0]).appendChild(ds);
+            })();
+        </script>
+    
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('DWKE0MOOLY', '141d50cf933ece6dd635747973c4fe00');
+        var algoliaIndex = algoliaClient.initIndex('blog');
+    </script>
+
+    </body>
+</html>
