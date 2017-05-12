@@ -256,7 +256,7 @@
 <p>原生调用<code>js</code>的方法：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="meta">@RequiresApi</span>(api = Build.VERSION_CODES.KITKAT)</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">jsButtonClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">    mWebView.evaluateJavascript(<span class="string">"javascript:alert('s')"</span>, <span class="keyword">new</span> ValueCallback&lt;String&gt;() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceiveValue</span><span class="params">(String value)</span> </span>&#123;</div><div class="line">            Log.d(<span class="string">"aaa"</span>, <span class="string">"onReceiveValue: "</span>+value+<span class="string">"---thread:"</span>+Thread.currentThread());</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><code>js</code>调用原生方法，例如我们的<code>html</code>如下：</p>
-<figure class="highlight html"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">language</span>=<span class="string">"javascript"</span>&gt;</span><span class="undefined"></span></div><div class="line">    function play()&#123;</div><div class="line">         obj.play('abc');</div><div class="line">    &#125;</div><div class="line">    <span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span> <span class="attr">bgcolor</span>=<span class="string">"black"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">a</span> <span class="attr">onClick</span>=<span class="string">"play()"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">img</span> <span class="attr">id</span>=<span class="string">"image"</span> <span class="attr">src</span>=<span class="string">"ic_launcher.png"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">a</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">language</span>=<span class="string">"javascript"</span>&gt;</span><span class="javascript"></span></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">play</span>(<span class="params"></span>)</span>&#123;</div><div class="line">         obj.play(<span class="string">'abc'</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span> <span class="attr">bgcolor</span>=<span class="string">"black"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">a</span> <span class="attr">onClick</span>=<span class="string">"play()"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">img</span> <span class="attr">id</span>=<span class="string">"image"</span> <span class="attr">src</span>=<span class="string">"ic_launcher.png"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">a</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
 <p>当点击图片的时候，会调用原生的<code>play</code>方法，并传递一个参数。</p>
 <p>首先，创建一个类：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSObject</span> </span>&#123;</div><div class="line">    <span class="meta">@JavascriptInterface</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">play</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">        Log.d(<span class="string">"aaa"</span>, <span class="string">"play: "</span>+name);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -282,7 +282,7 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/12/一天一Android之Service/"  data-tooltip="一天一Android之Service">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -399,7 +399,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/12/一天一Android之Service/"  data-tooltip="一天一Android之Service">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -754,7 +754,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 48 篇文章
+                找到 49 篇文章
             </p>
         </div>
     </div>
