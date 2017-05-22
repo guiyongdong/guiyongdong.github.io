@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.guiyongdong.com/"/>
-  <updated>2017-05-12T09:13:09.000Z</updated>
+  <updated>2017-05-22T07:22:07.000Z</updated>
   <id>http://www.guiyongdong.com/</id>
   
   <author>
@@ -16,11 +16,253 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>ReactNative导航新宠儿react-navigation</title>
+    <link href="http://www.guiyongdong.com/2017/05/20/ReactNative%E5%AF%BC%E8%88%AA%E6%96%B0%E5%AE%A0%E5%84%BFreact-navigation/"/>
+    <id>http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/</id>
+    <published>2017-05-20T01:24:19.000Z</published>
+    <updated>2017-05-22T07:22:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>导航一直是<code>App</code>开发中比较重要的一个组件，<code>ReactNative</code>提供了两种导航组件供我们使用，分别是：<code>NavigatorIOS</code>和<code>Navigator</code>，但是前者只能用于<code>iOS</code>平台，后者在<code>ReactNative</code>0.44版本以后已经被移除了。好在有人提供了更好的导航组件，就是我们今天要讲的<code>react-navigation</code>，并且<code>ReactNative</code>官方更推荐我们使用此组件。</p>
+<a id="more"></a>
+<p>本篇文章只讲解基础用法，如果你想了解更多，请戳这里-&gt;<a href="https://reactnavigation.org/docs/intro/" target="_blank" rel="external">戳我</a>。</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p><code>react-navigation</code>主要包括导航，底部<code>tab</code>，顶部<code>tab</code>，侧滑等，功能很强大，而且体验接近原生。今天我们介绍的组件分别为：</p>
+<p></p><p></p>
+<ul>
+<li>导航 -&gt; StackNavigator</li>
+<li>底部或者顶部<code>tab</code> -&gt; TabNavigator</li>
+<li>侧滑 -&gt; DrawerNavigator</li>
+</ul>
+<h3 id="DrawerNavigator"><a href="#DrawerNavigator" class="headerlink" title="DrawerNavigator"></a>DrawerNavigator</h3><p>先来看看运行效果：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android35.gif?raw=true"><br></div>
+
+<p>这里，我们定义三个界面，一个为根界面，一个主界面，一个侧滑界面，分别如下：</p>
+<p><strong>侧滑界面DrawerLeftPage.js：</strong></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> React, &#123;Component&#125; <span class="keyword">from</span> <span class="string">'react'</span>;</div><div class="line"><span class="keyword">import</span> &#123;</div><div class="line">    View,</div><div class="line">    Text,</div><div class="line">    TouchableOpacity,</div><div class="line">    StyleSheet,</div><div class="line">    Image</div><div class="line">&#125; <span class="keyword">from</span> <span class="string">'react-native'</span>;</div><div class="line"></div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">DrawerLeftPage</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</div><div class="line">    <span class="keyword">static</span> navigationOptions = &#123;</div><div class="line">        <span class="comment">//标题</span></div><div class="line">        drawerLabel:<span class="string">'购物车'</span>,</div><div class="line">        <span class="comment">//图标</span></div><div class="line">        drawerIcon:(&#123;tintColor&#125;) =&gt; &#123;</div><div class="line">            <span class="keyword">return</span> (</div><div class="line">                &lt;Image</div><div class="line">                    source=&#123;require('../images/car@3x.png')&#125;</div><div class="line">                    style=&#123;[&#123;width:24,height:24&#125;,&#123;tintColor:tintColor&#125;]&#125;</div><div class="line">                /&gt;</div><div class="line">            );</div><div class="line">        &#125;,</div><div class="line">    &#125;;</div><div class="line">    render() &#123;</div><div class="line">        return(</div><div class="line">            &lt;View style=&#123;styles.container&#125;&gt;</div><div class="line">                &lt;TouchableOpacity onPress=&#123;()=&gt;&#123;</div><div class="line">                    //点击关闭侧滑</div><div class="line">                    this.props.navigation.navigate('DrawerClose')</div><div class="line">                &#125;&#125;&gt;</div><div class="line">                    &lt;Text&gt;关闭侧滑栏&lt;/Text&gt;</div><div class="line">                &lt;/TouchableOpacity&gt;</div><div class="line">            &lt;/View&gt;</div><div class="line">        );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">const styles = StyleSheet.create(&#123;</div><div class="line">    container: &#123;</div><div class="line">        flex:1,</div><div class="line">        justifyContent:'center',</div><div class="line">        alignItems:'center'</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这个界面很简单，我们定义了一个按钮，点击按钮的时候，关闭侧滑页，这里关闭的参数为<code>DrawerClose</code>,通过<code>props</code>属性可以拿到当前<code>navigation</code>。另外我们又定义了一个静态属性，来配置侧滑显示的具体属性。注意，此属性名一定要写成<code>navigationOptions</code>。</p>
+<p><code>navigationOptions</code>主要有以下参数：</p>
+<p></p><p></p>
+<ul>
+<li><code>title</code>：通用标题，当你不写<code>drawerLabel</code>时，使用此参数作为侧滑标题，通常都不写</li>
+<li><code>drawerLabel</code>：侧滑标题</li>
+<li><code>drawerIcon</code>：侧滑的标题图标，这里会回传两个参数，<code>{focused: boolean, tintColor: string}</code>，<code>focused</code>表示是否是选中状态，<code>tintColor</code>表示选中的颜色，这个颜色是我们自己在根视图定义的。当然，你也可以使用其他的组件来作为图标，比如<code>Text</code>。</li>
+</ul>
+<p><strong>主界面 DrawerHomePage.js</strong></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> React, &#123;Component&#125; <span class="keyword">from</span> <span class="string">'react'</span>;</div><div class="line"><span class="keyword">import</span> &#123;</div><div class="line">    View,</div><div class="line">    Text,</div><div class="line">    TouchableOpacity,</div><div class="line">    StyleSheet,</div><div class="line">    Image</div><div class="line">&#125; <span class="keyword">from</span> <span class="string">'react-native'</span>;</div><div class="line"></div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">DrawerHomePage</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</div><div class="line">    <span class="keyword">static</span> navigationOptions = &#123;</div><div class="line">        drawerLabel:<span class="string">'首页'</span>,</div><div class="line">        drawerIcon:(&#123;tintColor&#125;) =&gt; &#123;</div><div class="line">            <span class="keyword">return</span> (</div><div class="line">                &lt;Image</div><div class="line">                    source=&#123;require('../images/home@3x.png')&#125;</div><div class="line">                    style=&#123;[&#123;width:24,height:24&#125;,&#123;tintColor:tintColor&#125;]&#125;</div><div class="line">                /&gt;</div><div class="line">            );</div><div class="line">        &#125;,</div><div class="line">    &#125;;</div><div class="line">    render() &#123;</div><div class="line">        return(</div><div class="line">              &lt;View style=&#123;styles.container&#125;&gt;</div><div class="line">                  &lt;TouchableOpacity onPress=&#123;()=&gt;&#123;</div><div class="line">                      //点击打开抽屉</div><div class="line">                      this.props.navigation.navigate('DrawerOpen')</div><div class="line">                  &#125;&#125;&gt;</div><div class="line">                      &lt;Text&gt;打开侧滑栏&lt;/Text&gt;</div><div class="line">                  &lt;/TouchableOpacity&gt;</div><div class="line">              &lt;/View&gt;</div><div class="line">        );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">const styles = StyleSheet.create(&#123;</div><div class="line">    container: &#123;</div><div class="line">        flex:1,</div><div class="line">        justifyContent:'center',</div><div class="line">        alignItems:'center'</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这个界面和上一个界面基本一样，只是这里的点击事件为打开抽屉，传的参数为<code>DrawerOpen</code>。<br>打开侧滑：<code>this.props.navigation.navigate(&#39;DrawerOpen&#39;)</code><br>关闭侧滑：<code>this.props.navigation.navigate(&#39;DrawerClose&#39;)</code></p>
+<p><strong>根视图 DrawerPage.js</strong></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> React, &#123;Component&#125; <span class="keyword">from</span> <span class="string">'react'</span>;</div><div class="line"><span class="keyword">import</span> &#123;</div><div class="line">    StyleSheet,</div><div class="line">    View</div><div class="line">&#125; <span class="keyword">from</span> <span class="string">'react-native'</span>;</div><div class="line"></div><div class="line"><span class="keyword">import</span> DrawerHomePage <span class="keyword">from</span> <span class="string">'./DrawerHomePage'</span>;</div><div class="line"><span class="keyword">import</span> DrawerLeftPage <span class="keyword">from</span> <span class="string">'./DrawerLeftPage'</span>;</div><div class="line"><span class="keyword">import</span> &#123;DrawerNavigator&#125; <span class="keyword">from</span> <span class="string">'react-navigation'</span>;</div><div class="line"></div><div class="line"><span class="keyword">const</span> Drawer = DrawerNavigator(</div><div class="line">    &#123;</div><div class="line">        Home:&#123;</div><div class="line">            screen:DrawerHomePage,</div><div class="line">        &#125;,</div><div class="line">        Left:&#123;</div><div class="line">            screen:DrawerLeftPage</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">        drawerWidth:<span class="number">300</span>,</div><div class="line">        drawerPosition:<span class="string">'left'</span>,</div><div class="line">    &#125;</div><div class="line">);</div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">DrawerPage</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</div><div class="line">    render() &#123;</div><div class="line">        <span class="keyword">return</span>(</div><div class="line">            &lt;Drawer/&gt;</div><div class="line">        );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">const</span> styles = StyleSheet.create(&#123;</div><div class="line">    container: &#123;</div><div class="line">        flex:<span class="number">1</span>,</div><div class="line">        justifyContent:<span class="string">'center'</span>,</div><div class="line">        alignItems:<span class="string">'center'</span></div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这里我们从<code>react-navigation</code>导入侧滑组件<code>DrawerNavigator</code>，这里我们定义一个常量<code>Drawer</code>，主要来配置侧滑的各种参数。首先，看<code>DrawerNavigator</code>的构造方法：<br><code>DrawerNavigator(RouteConfigs, DrawerNavigatorConfig)</code><br>这里接收两个参数，一个为页面路由配置，一个为显示的配置，我们分别来看，</p>
+<p><code>RouteConfigs</code>：</p>
+<p>这里你可以配置所有的界面，例如，当前例子配置了两个界面：<code>Home</code>和<code>Left</code>，指定界面分别为<code>DrawerHomePage</code>和<code>DrawerLeftPage</code>。你还可以配置其他界面，这些配置的界面都将显示在侧滑栏上。</p>
+<p><code>DrawerNavigatorConfig</code>：</p>
+<p></p><p></p>
+<ul>
+<li><code>drawerWidth</code>: 侧滑栏的宽度，如果你不想写死，可以使用<code>Dimensions</code>获取屏幕的宽度，动态计算</li>
+<li><code>drawerPosition</code>: 侧滑的方向，<code>left</code>和<code>right</code>，默认<code>left</code></li>
+<li><code>contentComponent</code>: 这个就比较重要了，可以自定义侧滑页，我们等会详细说。</li>
+<li><code>contentOptions</code>: 主要配置侧滑栏条目的属性，只对<code>DrawerItems</code>，例如我们刚才写的例子，就可以通过这个属性来配置颜色，背景色等。其主要属性有：<ul>
+<li><code>items</code>: 这个我也没弄清是什么意思，不影响</li>
+<li><code>activeItemKey</code>: 定义当前选中的页面的key</li>
+<li><code>activeTintColor</code>: 选中条目状态的文字颜色</li>
+<li><code>activeBackgroundColor</code>: 选中条目的背景色</li>
+<li><code>inactiveTintColor</code>: 未选中条目状态的文字颜色</li>
+<li><code>inactiveBackgroundColor</code>: 未选中条目的背景色</li>
+<li><code>onItemPress</code>: 选中条目的回调，这个参数属性为函数，会将当前路由回调过去</li>
+<li><code>style</code>: 定义条目的颜色</li>
+<li><code>labelStyle</code>: 定义条目文字的颜色</li>
+</ul>
+</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">&#123;</div><div class="line">    drawerWidth:<span class="number">300</span>,</div><div class="line">    drawerPosition:<span class="string">'left'</span>,</div><div class="line">    contentOptions:&#123;</div><div class="line">        activeTintColor: <span class="string">'#e91e63'</span>,</div><div class="line">        items:[<span class="string">"Home"</span>],</div><div class="line">        activeItemKey:<span class="string">'abc'</span>,</div><div class="line">        activeBackgroundColor:<span class="string">'yellow'</span>,</div><div class="line">        inactiveTintColor:<span class="string">'blue'</span>,</div><div class="line">        inactiveBackgroundColor:<span class="string">'red'</span>,</div><div class="line">        onItemPress:((route)=&gt;&#123;</div><div class="line">            <span class="built_in">console</span>.log(route);</div><div class="line">        &#125;),</div><div class="line">        labelStyle:&#123;</div><div class="line">            fontSize:<span class="number">30</span></div><div class="line">        &#125;,</div><div class="line">        style:&#123;</div><div class="line">            marginRight:<span class="number">30</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如此，<code>DrawerNavigator</code>的基本用法我们已经搞的差不多了，但是，这还不能满足我们的日常开发，因为我们的侧滑界面可不是这个样子的。</p>
+<p>刚才还有个参数没有介绍，就是<code>contentComponent</code>，他就是用来自定义侧滑界面的。</p>
+<p>上面的例子有一个问题，加入我们的<code>item</code>比较多，但是侧滑页面并不能滑动，这时，就要使用<code>contentComponent</code>来自定义界面，如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="comment">//导入DrawerItems 因为系统的条目就是DrawerItems</span></div><div class="line"><span class="keyword">import</span> &#123;DrawerNavigator,DrawerItems&#125; <span class="keyword">from</span> <span class="string">'react-navigation'</span>;</div><div class="line"></div><div class="line">&#123;</div><div class="line">    drawerWidth:<span class="number">300</span>,</div><div class="line">    drawerPosition:<span class="string">'left'</span>,</div><div class="line">    <span class="comment">//ScrollView作为我们的侧滑界面，内部依然是DrawerItems</span></div><div class="line">    contentComponent:((props)=&gt;&#123;</div><div class="line">        <span class="keyword">return</span>(</div><div class="line">            &lt;ScrollView style=&#123;styles.container&#125; &gt;</div><div class="line">                &lt;DrawerItems &#123;...props&#125;/&gt;</div><div class="line">            &lt;/ScrollView&gt;</div><div class="line">        )&#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行效果如下：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android36.gif?raw=true"><br></div>
+
+<p>当然，我们完全可以自定义侧滑界面，并且不使用<code>DrawerItems</code>条目。如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> DrawerHomePage <span class="keyword">from</span> <span class="string">'./DrawerHomePage'</span>;</div><div class="line"><span class="keyword">import</span> DrawerLeftPage <span class="keyword">from</span> <span class="string">'./DrawerLeftPage'</span>;</div><div class="line"></div><div class="line"><span class="keyword">import</span> &#123;DrawerNavigator&#125; <span class="keyword">from</span> <span class="string">'react-navigation'</span>;</div><div class="line"></div><div class="line"><span class="comment">//自定义侧滑界面 </span></div><div class="line"><span class="keyword">const</span> CustomDrawerContentComponent = (props)=&gt;&#123;</div><div class="line">    <span class="keyword">return</span>(</div><div class="line">        &lt;DrawerLeftPage style=&#123;styles.container&#125; &#123;...props&#125; /&gt;</div><div class="line">    );</div><div class="line">&#125;;</div><div class="line">const Drawer = DrawerNavigator(</div><div class="line">    &#123;</div><div class="line">        Home:&#123;</div><div class="line">            screen:DrawerHomePage,</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">        drawerWidth:300,</div><div class="line">        drawerPosition:'left',</div><div class="line">        contentComponent:(CustomDrawerContentComponent)</div><div class="line">    &#125;</div><div class="line">);</div><div class="line">export default class DrawerPage extends Component &#123;</div><div class="line">    render() &#123;</div><div class="line">        return(</div><div class="line">            &lt;Drawer/&gt;</div><div class="line">        );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">const styles = StyleSheet.create(&#123;</div><div class="line">    container: &#123;</div><div class="line">        flex:1</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>我们这里定义了一个常量，返回<code>DrawerLeftPage</code>作为我们的侧滑界面，在<code>DrawerLeftPage</code>中就可以随意定制了。注意，一定要将<code>props</code>传递到下一个界面，否则通过<code>props</code>拿不到<code>navigation</code>。最终运行效果：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android37.gif?raw=true"><br></div>
+
+<p>好了，<code>DrawerNavigator</code>我们已经了解完了。</p>
+<hr>
+<h3 id="StackNavigator"><a href="#StackNavigator" class="headerlink" title="StackNavigator"></a>StackNavigator</h3><p>这个组件就比较麻烦了，我们先来看他的构造函数：<br><code>StackNavigator(RouteConfigs, StackNavigatorConfig)</code></p>
+<p><strong>RouteConfigs:</strong> </p>
+<p>它主要是来配置页面路由的，类似与<code>Android</code>的<code>Manifest.xml</code>，所有的界面都必须配置在里面。如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">&#123;</div><div class="line">    First:&#123;</div><div class="line">        screen:FirstNavigation,</div><div class="line">        navigationOptions:(&#123;</div><div class="line">            title:<span class="string">'首页'</span></div><div class="line">        &#125;)</div><div class="line">    &#125;,</div><div class="line">    Second:&#123;</div><div class="line">        screen:SecondNavigation,</div><div class="line">        navigationOptions:(&#123;navigation&#125;) =&gt; (&#123;</div><div class="line">            title: <span class="string">"第二个界面"</span></div><div class="line">        &#125;)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里我们配置了首页和第二个页面，并且配置了标题参数。当然，如果你不想在路由里面配置页面的参数，你也可以在页面中配置，需要在页面中定义一个静态常量<code>navigationOptions</code>，和<code>DrawerNavigator</code>的使用方法类似。我们来看看<code>navigationOptions</code>有哪些可以配置的参数：</p>
+<p></p><p></p>
+<ul>
+<li><code>title</code>: 这个即可以作为头部标题，也可以作为返回标题和<code>Tab</code>标题</li>
+<li><code>header</code>: 自定义导航条，系统的导航条会隐藏</li>
+<li><code>headerTitle</code>: 标题</li>
+<li><code>headerBackTitle</code>: 回退标题</li>
+<li><code>headerTruncatedBackTitle</code>: 当回退标题不能显示的时候显示此属性的标题，比如回退标题太长了</li>
+<li><code>headerRight</code>: 定义导航栏右边视图</li>
+<li><code>headerLeft</code>: 定义导航栏左边视图</li>
+<li><code>headerStyle</code>: 定义导航栏的样式，比如背景色等</li>
+<li><code>headerTitleStyle</code>: 定义标题的样式</li>
+<li><code>headerBackTitleStyle</code>: 定义返回标题的样式</li>
+<li><code>headerTintColor</code>: 定义导航条的tintColor，会覆盖<code>headerTitleStyle</code>中的颜色</li>
+<li><code>gesturesEnabled</code>: 定义是否能侧滑返回，<code>iOS</code>默认<code>true</code>，<code>Android</code>默认<code>false</code></li>
+</ul>
+<p>示例如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">static</span> navigationOptions=(&#123;</div><div class="line">    title:<span class="string">'首页'</span>,</div><div class="line">    header:(</div><div class="line">        &lt;View style=&#123;&#123;width:Dimensions.get('window').width,height:64,backgroundColor:'red'&#125;&#125;/&gt;</div><div class="line">    ),</div><div class="line">    headerTitle:(</div><div class="line">        &lt;View style=&#123;&#123;width:60,height:20,backgroundColor:'red'&#125;&#125;/&gt;</div><div class="line">    ),</div><div class="line">    headerBackTitle:'哈哈哈哈哈',</div><div class="line">    headerTruncatedBackTitle:'你好',</div><div class="line">    headerRight:(</div><div class="line">        &lt;View&gt;</div><div class="line">            &lt;Text&gt;right&lt;/Text&gt;</div><div class="line">        &lt;/View&gt;</div><div class="line">    ),</div><div class="line">    headerLeft:(</div><div class="line">        &lt;View&gt;</div><div class="line">            &lt;Text&gt;left&lt;/Text&gt;</div><div class="line">        &lt;/View&gt;</div><div class="line">    ),</div><div class="line">    headerStyle: &#123;</div><div class="line">        backgroundColor:'yellow'</div><div class="line">    &#125;,</div><div class="line">    headerTitleStyle:&#123;</div><div class="line">        color:'red'</div><div class="line">    &#125;,</div><div class="line">    headerBackTitleStyle:&#123;</div><div class="line">        tintColor:'#789'</div><div class="line">    &#125;,</div><div class="line">    headerTintColor:'#956',</div><div class="line">    gesturesEnabled:false</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><strong>StackNavigatorConfig</strong></p>
+<p>这个参数主要是配置整个路由的，包括跳转动画，跳转方式等。先来看看它有哪些参数：</p>
+<p></p><p></p>
+<ul>
+<li><code>initialRouteName</code>: 初始化哪个界面为根界面，如果不配置，默认使用<code>RouteConfigs</code>中的第一个页面当做根界面</li>
+<li><code>initialRouteParams</code>: 初始化根界面参数，主要是给根视图传递一些参数，通过<code>this.props.navigation.state.params</code>可以取到</li>
+<li><code>navigationOptions</code>: 配置默认的<code>navigationOptions</code></li>
+<li><code>paths</code>: 官方意思是覆盖已经配置的路由，可是我没有试出来效果</li>
+<li><code>mode</code>: 跳转方式，一种是<code>card</code>，默认的，在<code>iOS</code>上是从右到左跳转，在<code>Android</code>上是从下到上，都是使用原生系统的默认跳转方式。一种是<code>modal</code>，只针对<code>iOS</code>平台，模态跳转。</li>
+<li><code>headerMode</code>: 跳转过程中，导航条的动画效果，有三个值，<code>float</code>表示会渐变，类似于<code>iOS</code>的原生效果，<code>screen</code>表示没有渐变。<code>none</code>表示隐藏导航条</li>
+<li><code>cardStyle</code>: 可以统一定义界面的颜色，例如背景色</li>
+<li><code>transitionConfig</code>：配置页面跳转的动画</li>
+<li><code>onTransitionStart</code>: 页面跳转动画即将开始的回调</li>
+<li><code>onTransitionEnd</code>: 页面跳转动画结束的回调</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">static</span> stackNavigatorConfig = (&#123;</div><div class="line">    initialRouteName:<span class="string">'First'</span>,</div><div class="line">    initialRouteParams:&#123;</div><div class="line">        data:<span class="string">'haha'</span></div><div class="line">    &#125;,</div><div class="line">    navigationOptions:&#123;</div><div class="line">        headerTintColor:<span class="string">'red'</span></div><div class="line">    &#125;,</div><div class="line">    mode:<span class="string">'card'</span>,</div><div class="line">    headerMode:<span class="string">'screen'</span>,</div><div class="line">    cardStyle:(&#123;backgroundColor:<span class="string">'blue'</span>&#125;),</div><div class="line">    onTransitionStart:((route)=&gt;&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'开始动画'</span>);</div><div class="line">    &#125;),</div><div class="line">    onTransitionEnd:((route)=&gt;&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'结束动画'</span>);</div><div class="line">    &#125;),</div><div class="line">    transitionConfig:(()=&gt;(&#123;</div><div class="line">        <span class="comment">//因为ios 的导航动画默认是从左到右，所以，这里配置一下动画，使用react-navigation已经实现的从左到右的动画，</span></div><div class="line">        <span class="comment">//适配Android，不过，需要导入动画 </span></div><div class="line">        <span class="comment">//import CardStackStyleInterpolator from 'react-navigation/src/views/CardStackStyleInterpolator';</span></div><div class="line">        screenInterpolator:CardStackStyleInterpolator.forHorizontal,</div><div class="line">    &#125;))</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="Navigation-Prop"><a href="#Navigation-Prop" class="headerlink" title="Navigation Prop"></a>Navigation Prop</h4><p>了解完路由配置以后，我们再来看看组件的属性，</p>
+<p></p><p></p>
+<ul>
+<li><code>navigate</code>：路由方法，主要来启动另一个页面</li>
+<li><code>state</code>：状态，其实<code>StackNavigator</code>内部维护了两个路由栈，一个名为<code>newState</code>，是当前显示页面之前的所有页面，包括当前界面。一个名为<code>lastState</code>，当然，通过<code>state</code>还能拿到很多参数。</li>
+<li><code>setParams</code>: 设置参数，记住，一定不要在<code>render</code>方法中调用此方法。</li>
+<li><code>goBack</code>: 返回</li>
+<li><code>dispatch</code>: 给当前界面设置action，会替换原来的跳转，回退等事件</li>
+</ul>
+<p><strong>navigate</strong></p>
+<p>此方法可以传三个参数：<code>navigate(routeName, params, action)</code></p>
+<p></p><p></p>
+<ul>
+<li><code>routeName</code>: 页面名称，一定要在路由配置中配置。</li>
+<li><code>params</code>: 传递参数到下一个页面</li>
+<li><code>action</code>: <code>action</code></li>
+</ul>
+<p>例如：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">this</span>.props.navigation.navigate(<span class="string">'Second'</span>,&#123;<span class="string">'data'</span>:<span class="string">'haha'</span>&#125;);</div></pre></td></tr></table></figure>
+<p><strong>state</strong></p>
+<p>通过<code>state</code>，我们能拿到传递过来的参数，通过打印<code>state</code>，得到如下结果：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line">state: </div><div class="line">   &#123; params: &#123;<span class="string">'data'</span>:<span class="string">'haha'</span>&#125;,</div><div class="line">     key: <span class="string">'id-1495292939049-1'</span>,</div><div class="line">     routeName: <span class="string">'Model'</span> &#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到，通过<code>state</code>，我们可以拿到传递过来的<code>params</code></p>
+<p><strong>setParams</strong></p>
+<p>设置当前页面的参数，记住，调用此方法一定要在<code>componentDidMount</code></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">componentDidMount() &#123;</div><div class="line">    <span class="keyword">var</span> &#123;setParams&#125; = <span class="keyword">this</span>.props.navigation;</div><div class="line">    setParams(&#123;<span class="string">'haha'</span>:<span class="string">'abc'</span>&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>goBack</strong></p>
+<p>回退到指定界面，如果什么都不传，回退到上一个界面，传<code>null</code>，回退到任意界面。传<code>key</code>，可以回退到指定界面。例如：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">this</span>.props.navigation.goBack();</div><div class="line"><span class="keyword">this</span>.props.navigation.goBack(<span class="literal">null</span>);</div><div class="line"><span class="keyword">this</span>.props.navigation.goBack(<span class="string">'Profile'</span>);</div></pre></td></tr></table></figure>
+<p>关于<code>react-navigation</code>的基本用法已经了解的差不多了，至于更详细的用法，可以看官方文档。</p>
+<p><strong>注意：</strong></p>
+<p>全屏侧滑返回手势：系统默认有侧滑返回手势，距离屏幕距离为35，为了使用全屏侧滑，需要修改源码：在<code>react-navigation/src/views/CardStack.js</code>类，修改常量<code>GESTURE_RESPONSE_DISTANCE_HORIZONTAL</code>为<code>Dimensions.get(&#39;window&#39;).width</code>即可。</p>
+<p>在<code>iOS</code>上，标题会居中，但是在<code>Android</code>上是居左的，想要<code>Android</code>上也居中，需要修改：<code>react-navigation/src/views/Header.js</code>中的<code>title</code>样式修改为<code>center</code>，并且在方法<code>_renderTitle</code>中注释掉</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> (Platform.OS === <span class="string">'android'</span>) &#123;</div><div class="line">      <span class="keyword">if</span> (!options.hasLeftComponent) &#123;</div><div class="line">        style.left = <span class="number">0</span>;</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">if</span> (!options.hasRightComponent) &#123;</div><div class="line">        style.right = <span class="number">0</span>;</div><div class="line">      &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>这几句代码。</p>
+<hr>
+<h3 id="TabNavigator"><a href="#TabNavigator" class="headerlink" title="TabNavigator"></a>TabNavigator</h3><p><code>tab</code>选项卡的功能，在<code>iOS</code>上默认类似于<code>TabBar</code>，在<code>Android</code>中类似于<code>TabLayout</code>，先来看看构造方法：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">TabNavigator(RouteConfigs, TabNavigatorConfig)</div></pre></td></tr></table></figure>
+<p><strong>RouteConfigs</strong></p>
+<p>同样的，还是配置路由，如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">&#123;</div><div class="line">    Home:&#123;</div><div class="line">        screen:HomeTab,</div><div class="line">        <span class="comment">//navigationOptions:&#123;</span></div><div class="line">        <span class="comment">//    ....</span></div><div class="line">        <span class="comment">//&#125;</span></div><div class="line">    &#125;,</div><div class="line">    Car:&#123;</div><div class="line">        screen:CarTab</div><div class="line">    &#125;,</div><div class="line">    Profile:&#123;</div><div class="line">        screen:ProfileTab</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当然，你也可以配置<code>navigationOptions</code>，但是，在这里配置的优先级比在页面中配置的优先级高，所以，我们一般再单个页面中配置所有的<code>navigationOptions</code>。</p>
+<p><strong>TabNavigatorConfig</strong></p>
+<p></p><p></p>
+<ul>
+<li><code>tabBarComponent</code>: 默认两种方式，<code>TabBarBottom</code>和<code>TabBarTop</code>，可以通过如下代码导入：<code>import {TabBarBottom,TabBarTop} from &#39;react-navigation&#39;;</code>，这两者的区别主要是样式和位置的区别，<code>iOS</code>上默认使用<code>TabBarBottom</code>，<code>Android</code>上默认使用<code>TabBarTop</code>。</li>
+<li><code>tabBarPosition</code>: 配置<code>tab</code>的位置，<code>top</code>和<code>bottom</code></li>
+<li><code>swipeEnabled</code>: 是否可以滑动切换<code>tab</code></li>
+<li><code>animationEnabled</code>: 点击选项卡切换界面是否需要动画</li>
+<li><code>lazy</code>: 是否懒加载界面，默认一次加载所有的界面，我们最好设置为true</li>
+<li><code>tabBarOptions</code>: <code>tab</code>的样式等配置，我们下面详细说</li>
+<li><code>initialRouteName</code>，第一次初始化哪个界面，默认初始化第一个。</li>
+<li><code>order</code>，<code>tab</code>排序，默认使用配置路由的顺序</li>
+<li><code>paths</code>: 配置path</li>
+<li><code>backBehavior</code>，当<code>Android</code>点击返回键的时候，做的处理，<code>initialRoute</code>返回到初始化的界面，<code>none</code>退出应用</li>
+</ul>
+<p>例子如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">const</span> Tab = TabNavigator(</div><div class="line">    &#123;</div><div class="line">        Home:&#123;</div><div class="line">            screen:HomeTab</div><div class="line">        &#125;,</div><div class="line">        Car:&#123;</div><div class="line">            screen:CarTab</div><div class="line">        &#125;,</div><div class="line">        Profile:&#123;</div><div class="line">            screen:ProfileTab</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">        tabBarComponent:TabBarBottom,</div><div class="line">        tabBarPosition:<span class="string">'bottom'</span>,</div><div class="line">        swipeEnabled:<span class="literal">true</span>,</div><div class="line">        animationEnabled:<span class="literal">false</span>,</div><div class="line">        lazy:<span class="literal">true</span>,</div><div class="line">        initialRouteName:<span class="string">'Profile'</span>,</div><div class="line">        order:([<span class="string">'Profile'</span>,<span class="string">'Home'</span>,<span class="string">'Car'</span>]),</div><div class="line">        backBehavior:<span class="string">'none'</span></div><div class="line">    &#125;</div><div class="line">);</div></pre></td></tr></table></figure>
+<p><strong>tabBarOptions</strong></p>
+<p>这个参数主要配置样式，针对<code>TabBarBottom</code>和<code>TabBarTop</code>。</p>
+<p><code>TabBarBottom</code>:</p>
+<p></p><p></p>
+<ul>
+<li><code>activeTintColor</code>: 选中的文字颜色</li>
+<li><code>activeBackgroundColor</code>: 选中的背景色</li>
+<li><code>inactiveTintColor</code>： 未选中的文字颜色</li>
+<li><code>inactiveBackgroundColor</code>: 未选中的背景色</li>
+<li><code>showLabel</code>: 是否显示标题，默认显示</li>
+<li><code>style</code>: 定义item的样式</li>
+<li><code>labelStyle</code>: 标题的样式</li>
+</ul>
+<p>例如：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line">tabBarOptions:&#123;</div><div class="line">    activeTintColor:<span class="string">'red'</span>,</div><div class="line">    activeBackgroundColor:<span class="string">'blue'</span>,</div><div class="line">    inactiveTintColor:<span class="string">'yellow'</span>,</div><div class="line">    inactiveBackgroundColor:<span class="string">'#987'</span>,</div><div class="line">    showLabel:<span class="literal">true</span>,</div><div class="line">    labelStyle:&#123;</div><div class="line">        fontSize:<span class="number">12</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>TabBarTop</code>:</p>
+<p></p><p></p>
+<ul>
+<li><code>activeTintColor</code>: 选中的文字颜色</li>
+<li><code>inactiveTintColor</code>： 未选中的文字颜色</li>
+<li><code>showIcon</code>: 是否显示图标，默认显示</li>
+<li><code>showLabel</code>: 是否显示标题，默认显示</li>
+<li><code>upperCaseLabel</code>: 使用大写字母</li>
+<li><code>pressColor</code>: 定义颜色，大于<code>Android5.0</code>的一种按压效果</li>
+<li><code>pressOpacity</code>: 按压下去的透明度，在<code>iOS</code>或者<code>Android5.0</code>之前</li>
+<li><code>scrollEnabled</code>: 是否能够滚动，类似于今日头条的标题头</li>
+<li><code>tabStyle</code>: 定义<code>item</code>的样式</li>
+<li><code>indicatorStyle</code>: 指示器的颜色</li>
+<li><code>labelStyle</code>: 文字的样式</li>
+<li><code>iconStyle</code>: 图标的样式</li>
+<li><code>style</code>: 定义<code>tab</code>的样式</li>
+</ul>
+<p>例如：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line">tabBarOptions:&#123;</div><div class="line">    activeTintColor:<span class="string">'red'</span>,</div><div class="line">    inactiveTintColor:<span class="string">'yellow'</span>,</div><div class="line">    showIcon:<span class="literal">false</span>,</div><div class="line">    showLabel:<span class="literal">true</span>,</div><div class="line">    upperCaseLabel:<span class="literal">false</span>,</div><div class="line">    labelStyle:&#123;</div><div class="line">        fontSize:<span class="number">12</span></div><div class="line">    &#125;,</div><div class="line">    indicatorStyle:<span class="string">'green'</span>,</div><div class="line">    pressColor:<span class="string">'#823453'</span>,</div><div class="line">    pressOpacity:<span class="number">0.8</span>,</div><div class="line">    scrollEnabled:<span class="literal">true</span>,</div><div class="line">    tabStyle:&#123;</div><div class="line">        height:<span class="number">44</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><strong>NavigationOptions</strong></p>
+<p>当然，通过<code>NavigationOptions</code>来配置我们的<code>tabBarItem</code>:</p>
+<p>
+
+<ul>
+<li><code>title</code>: 标题</li>
+<li><code>tabBarVisible</code>: 是否可见</li>
+<li><code>tabBarIcon</code>: 配置图片，当然，完全可以不使用图片</li>
+<li><code>tabBarLabel</code>: 也是配置标题，只不过<code>title</code>既能配置<code>tab</code>的标题，也能配置<code>navigation</code>的标题</li>
+</ul>
+</p><p>例如：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line">Profile:&#123;</div><div class="line">    screen:ProfileTab,</div><div class="line">    navigationOptions:(&#123;navigation&#125;)=&gt;(&#123;</div><div class="line">        tabBarLabel:<span class="string">'我的'</span>,</div><div class="line">        tabBarIcon:(&#123;focused,tintColor&#125;)=&gt;(</div><div class="line">            &lt;Image</div><div class="line">                source=&#123;focused?require('../../images/user_hover@3x.png'):require('../../images/user@3x.png')&#125;</div><div class="line">                style=&#123;&#123;width:30,height:30,tintColor:tintColor&#125;&#125;</div><div class="line">            /&gt;</div><div class="line">        )</div><div class="line">    &#125;),</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>好了，<code>TabNavigator</code>也说的差不多了。当然，如果你想在某个界面切换<code>tab</code>，使用如下方法：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">this</span>.props.navigation.navigate(<span class="string">'Home'</span>)</div></pre></td></tr></table></figure></p>
+<h3 id="仿QQ主界面"><a href="#仿QQ主界面" class="headerlink" title="仿QQ主界面"></a>仿QQ主界面</h3><p>下面的例子是仿<code>QQ</code>主界面的，当然包括本篇文章的实例代码，请戳这里-&gt;<a href="http://git.oschina.net/guiyongdong/reactnavigationdemo" target="_blank" rel="external">戳我</a>。</p>
+<p>运行效果：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android38.gif?raw=true"><br></div>
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;导航一直是&lt;code&gt;App&lt;/code&gt;开发中比较重要的一个组件，&lt;code&gt;ReactNative&lt;/code&gt;提供了两种导航组件供我们使用，分别是：&lt;code&gt;NavigatorIOS&lt;/code&gt;和&lt;code&gt;Navigator&lt;/code&gt;，但是前者只能用于&lt;code&gt;iOS&lt;/code&gt;平台，后者在&lt;code&gt;ReactNative&lt;/code&gt;0.44版本以后已经被移除了。好在有人提供了更好的导航组件，就是我们今天要讲的&lt;code&gt;react-navigation&lt;/code&gt;，并且&lt;code&gt;ReactNative&lt;/code&gt;官方更推荐我们使用此组件。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="ReactNative" scheme="http://www.guiyongdong.com/categories/ReactNative/"/>
+    
+    
+      <category term="ReactNative" scheme="http://www.guiyongdong.com/tags/ReactNative/"/>
+    
+  </entry>
+  
+  <entry>
     <title>一天一Android之Service</title>
     <link href="http://www.guiyongdong.com/2017/05/12/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BService/"/>
     <id>http://www.guiyongdong.com/2017/05/12/一天一Android之Service/</id>
     <published>2017-05-12T04:00:17.000Z</published>
-    <updated>2017-05-12T09:13:09.000Z</updated>
+    <updated>2017-05-12T09:23:22.000Z</updated>
     
     <content type="html"><![CDATA[<p>在<code>Android</code>系统中，知道为什么有些软件杀不死么？很大的原因就是<code>Service</code>。那<code>Service</code>是什么？</p>
 <p><code>Service</code>是<code>Android</code>四大组件之一，开发中会经常用到它，例如当检测到<code>App</code>有新版本的时候，这时候我们一般会开启一个<code>Service</code>去后台下载新包，这时候，无论用户是否清除我们的<code>App</code>，都不会影响下载进度。</p>
@@ -83,7 +325,7 @@
 <p>新建了一个<code>DownloadService</code>，在里面启动了一个工作线程，在线程里下载图片，然后通过<code>BroadcastReceiver</code>通知<code>Activity</code>显示。</p>
 <p><code>Activity</code>的代码很简单，注册<code>BroadcastReceiver</code>，在<code>onReceiver</code>中显示图片就好了，代码如下：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServiceDemoActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> ImageView mImageView;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> BroadcastReceiver mReceiver = <span class="keyword">new</span> BroadcastReceiver() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</div><div class="line">            Bitmap bitmap = intent.getParcelableExtra(<span class="string">"bitmap"</span>);</div><div class="line">            mImageView.setImageBitmap(bitmap);</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_service_demo);</div><div class="line">        mImageView = (ImageView) findViewById(R.id.imageView);</div><div class="line"></div><div class="line">        <span class="comment">//注册广播</span></div><div class="line">        IntentFilter intentFilter = <span class="keyword">new</span> IntentFilter();</div><div class="line">        intentFilter.addAction(DownloadService.RECEIVER_ACTION);</div><div class="line">        LocalBroadcastManager.getInstance(<span class="keyword">this</span>).registerReceiver(mReceiver,intentFilter);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startDownload</span><span class="params">(View view)</span> </span>&#123;</div><div class="line">        Intent intent = <span class="keyword">new</span> Intent(<span class="keyword">this</span>,DownloadService.class);</div><div class="line">        intent.putExtra(<span class="string">"url"</span>,<span class="string">"http://www.8kmm.com/UploadFiles/2012/8/201208140920132659.jpg"</span>);</div><div class="line">        intent.setAction(DownloadService.ACTION_DOWNLOAD);</div><div class="line">        startService(intent);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android33.gif?raw=true"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android33.gif?raw=true" width="375"><br></div>
 
 
 <h4 id="LocaService-使用Binder-和-服务通信"><a href="#LocaService-使用Binder-和-服务通信" class="headerlink" title="LocaService 使用Binder 和 服务通信"></a>LocaService 使用Binder 和 服务通信</h4><p>既然通过<code>startService</code>启动的服务与启动它的组件是独立的。相互通信比较麻烦，那么<code>Google</code>也提供了两者之间的通信方法，那就是组件绑定服务，也就是上文将的通过<code>bindService</code>将组件和服务绑定到一起。组件可以获取<code>Service</code>通过<code>onBind</code>返回的一个<code>IBinder</code>接口，这样两者就可以通信了，这也是<code>Service</code>应用类通信比较常用的方式。</p>
@@ -1850,128 +2092,6 @@
     
       &lt;p&gt;今天来说一说Android四大组件之一的&lt;code&gt;Activity&lt;/code&gt;，类似于iOS的&lt;code&gt;UIViewController&lt;/code&gt;。当我们新建一个Android项目时，Android Studio默认会为我们创建一个主活动:&lt;code&gt;MainActivity&lt;/code&gt;和一个默认的主布局:&lt;code&gt;activity_main.xml&lt;/code&gt;。一个活动想要显示在屏幕上，就必须在&lt;code&gt;AndroidManifest.xml&lt;/code&gt;中注册。但是这些工作都有IDE帮我们自动完成了。我们来看&lt;code&gt;AndroidManifest.xml&lt;/code&gt;:&lt;/p&gt;
 &lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;&amp;lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&amp;gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;manifest&lt;/span&gt; &lt;span class=&quot;attr&quot;&gt;xmlns:android&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;http://schemas.android.com/apk/res/android&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;          &lt;span class=&quot;attr&quot;&gt;package&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;com.guiyongdong.activitydemo&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;application&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:allowBackup&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;true&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:icon&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;@mipmap/ic_launcher&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:label&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;@string/app_name&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:roundIcon&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;@mipmap/ic_launcher_round&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:supportsRtl&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;true&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;attr&quot;&gt;android:theme&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;@style/AppTheme&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;comment&quot;&gt;&amp;lt;!--MainActivity--&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;activity&lt;/span&gt; &lt;span class=&quot;attr&quot;&gt;android:name&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;.MainActivity&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;            &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;intent-filter&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;                &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;action&lt;/span&gt; &lt;span class=&quot;attr&quot;&gt;android:name&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;android.intent.action.MAIN&quot;&lt;/span&gt;/&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;                &lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;category&lt;/span&gt; &lt;span class=&quot;attr&quot;&gt;android:name&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;android.intent.category.LAUNCHER&quot;&lt;/span&gt;/&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;            &lt;span class=&quot;tag&quot;&gt;&amp;lt;/&lt;span class=&quot;name&quot;&gt;intent-filter&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;span class=&quot;tag&quot;&gt;&amp;lt;/&lt;span class=&quot;name&quot;&gt;activity&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;        &lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;tag&quot;&gt;&amp;lt;/&lt;span class=&quot;name&quot;&gt;application&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;/&lt;span class=&quot;name&quot;&gt;manifest&lt;/span&gt;&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-    
-    </summary>
-    
-      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
-    
-    
-      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>一天一Android之Android系统初窥</title>
-    <link href="http://www.guiyongdong.com/2017/03/15/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BAndroid%E7%B3%BB%E7%BB%9F%E5%88%9D%E7%AA%A5/"/>
-    <id>http://www.guiyongdong.com/2017/03/15/一天一Android之Android系统初窥/</id>
-    <published>2017-03-15T09:08:17.000Z</published>
-    <updated>2017-03-17T09:35:58.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>由于前段时间使用ReactNative开发过一个项目，在开发的过程中，会使用到大量的非ReactNative提供的组件和功能。这时候就必须写原生桥接，iOS还好说，毕竟是靠这个吃饭的，可是android就捉襟见肘了。为了向大前端的目标更进一步，我计划开始学习android，为期6个月，我的目标是6个月内起码自己公司的android项目可以上手，当然，如果想成为真正的android开发者，光靠这6个月是不行。还需要大量的实际项目才能锻炼。</p>
-<p>值得庆幸的是我在大学主攻的就是java(哈哈，现在也基本上忘的差不多了)。为了打好基础，我买了两本书，一本是《java编程思想》，一本是京东上销量很好的《第二行代码Android》，希望这两本书能够帮到我。另外我也会专门开一个专栏，讲解我学习java的过程。可能在接下来的博客中，我总结的都是基础知识，大神莫嘲笑。</p>
-<a id="more"></a>
-<h3 id="Android系统架构"><a href="#Android系统架构" class="headerlink" title="Android系统架构"></a>Android系统架构</h3><p>Android大概可以分为四层架构：Linux内核层、系统运行库层、应用框架层和应用层。</p>
-<p><strong>Linux内核层</strong></p>
-<p>Android系统是基于Linux内核的，这一层为Android设备的各种硬件提供了底层的驱动，如显示驱动、音频驱动、照相机驱动、蓝牙驱动、Wi-Fi驱动、电源管理等。</p>
-<p><strong>系统运行时库层</strong></p>
-<p>这一层通过一些C/C++库来为Android系统提供了主要的特性支持。如SQLite库提供了数据库的支持，OpenGL|ES库提供了3D绘图的支持，Webkit库提供了浏览器内核的支持等。</p>
-<p>同样在这一层还要Android运行时库，主要提供了一些核心库，能是开发者可以使用java来编写Android应用。另外，Android运行时库还包含了Dalvik虚拟机（5.0系统之后改为ART运行环境），它能让每一个Android应用都能运行在独立的进程中，并且拥有一个自己的Dalvik虚拟机实例。</p>
-<p><strong>应用框架层</strong></p>
-<p>这一层主要提供了构建应用程序时可能用到的各种API，Android自带的一些核心应用就是使用这些API完成的，我们也是通过这些API来完成我们的应用。</p>
-<p><strong>应用层</strong></p>
-<p>普通用户主要就是和这一层打交道，我们自己开发的应用都是属于这一层的，当然，系统自带的应用也是这一层的。</p>
-<p>系统架构图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android1.jpg?raw=true"><br></div>
-
-
-<h3 id="Android版本"><a href="#Android版本" class="headerlink" title="Android版本"></a>Android版本</h3><p>可能现在应用最低的适配都是从4.0版本开始，目前最高版本是7.1.1，而且谷歌对Android版本的命名都是以甜点命名的。什么牛轧糖、棒棒糖。</p>
-<h3 id="IDE"><a href="#IDE" class="headerlink" title="IDE"></a>IDE</h3><p>在我没接触Android之前，我的同学都是使用MyEclipse开发的，至于是如何开发的，我不知道，因为当我开始学Android的时候，已经普及了另一个开发工具：<strong>Android Studio</strong>。当然，只有IDE是不行的，还得有<strong>JDK</strong>、<strong>Android SDK</strong>。</p>
-<p>如果使用Android Studio，你也可以使用studio自带的工具进行下载各个版本的SDK。如图：</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android2.png?raw=true"><br></div>
-
-<p>当然，SDK的目录你可以随便选。</p>
-<h3 id="项目目录"><a href="#项目目录" class="headerlink" title="项目目录"></a>项目目录</h3><p>至于该如何创建项目，我就不说了。创建完项目以后切换到Project模式下，就是项目的真实目录了。</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android3.png?raw=true"><br></div>
-
-<p>下面来看看这些目录或者文件都是干什么的：</p>
-<p><strong>.gradle和.idea</strong> </p>
-<p>这两个目录下放置的都是Android Studio自动生成的一些文件，我们无须关心，也不要去编辑。</p>
-<p><strong>app</strong></p>
-<p>这个目录才是我们以后经常使用和编辑的，一会再说它。</p>
-<p><strong>build</strong></p>
-<p>这个目录也不需要关心，它主要包含了一些在编译时自动生成的文件。</p>
-<p><strong>gradle</strong></p>
-<p>这个目录下包含了gradle wrapper的配置文件，使用gradle wrapper的方式不需要提前将gradle下载好，而是会自动根据本地的缓存情况决定是否需要联网下载gradle。Android Studio默认没有启动gradle wrapper的方式，如果需要打开，可以点击 File-&gt;Other Settings-&gt;Build,Execution,Deployment-&gt;Build Tools-&gt;Gradle 进行配置。</p>
-<p><strong>.gitignore</strong></p>
-<p>设置git忽略哪些文件</p>
-<p><strong>build.gradle</strong></p>
-<p>这个文件时全局的gradle构建脚本，通常这个文件中的内容是不需要修改的，我只知道gradle是构建工具，至于gradle更多的信息，我还得再研究一下。</p>
-<p><strong>gradle.properties</strong></p>
-<p>这个文件时全局的gradle配置文件，在这里配置的属性将会影响到项目中所有的gradle编译脚本。</p>
-<p><strong>gradlew和gradlew.bat</strong></p>
-<p>这两个文件时用来在命令行界面中执行gradle命令的，其中gradlew是在Linux或Mac系统中使用，gradlew.bat是在Windows系统中使用的。</p>
-<p><strong>ListViewDemo.iml</strong></p>
-<p>这个文件的名字和我们的项目名字是一样的，不固定。一般不用动。</p>
-<p><strong>local.properties</strong></p>
-<p>这个文件用于指定Android SDK路径，一般我们不动，除非你的SDK本地路径改变了。</p>
-<p><strong>settings.gradle</strong></p>
-<p>这个文件用于指定项目中所引入的模块，因为当前项目就一个模块：app，在以后可能我们还会引入其他模块，一般IDE帮我们自动导入。</p>
-<h4 id="app"><a href="#app" class="headerlink" title="app"></a>app</h4><p>看了整个工程的目录，感觉有用的不是很多，好多都是和gradle或者配置有关。其实，真正需要我们关心的只有app这个目录。</p>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android4.png?raw=true"><br></div>
-
-<p><strong>build</strong></p>
-<p>这个目录和外层的build目录类似，主要也是包含了一些在编译时生成的文件，不过它里面的内容更复杂，也不需要管。</p>
-<p><strong>libs</strong></p>
-<p>如果项目中使用到了第三方的jar包，就需要把这些jar包都放在libs录下，放在这个目录下的jar包都会被自动添加到构建路径中去。</p>
-<p><strong>androidTest</strong></p>
-<p>这个一看就是用来编写测试用例的，一些小公司可能也不写测试代码的。</p>
-<p><strong>java</strong></p>
-<p>毫无疑问，java目录是放置我们所有java代码的地方，以后所有的代码都在里面。</p>
-<p><strong>res</strong></p>
-<p>这个目录下的内容比较多，简单所，就是放各种资源的，图片，布局，字符串等资源。图片放到drawable文件下，布局放置layout下，字符串放在values下。</p>
-<p><strong>AndroidMainfest.xml</strong></p>
-<p>这个文件很重要，是整个Android的配置文件，包括程序中使用到的所有四大组件都需要在这个文件注册，另外还有权限声明等。</p>
-<p><strong>test</strong></p>
-<p>它是用来编写Unit Test测试用例的，是对项目进行自动化测试的另一种方式。</p>
-<p><strong>.gitignore</strong></p>
-<p>忽略文件</p>
-<p><strong>app.iml</strong></p>
-<p>不需要关心</p>
-<p><strong>build.gradle</strong></p>
-<p>这个文件也很重要，是app模块的gradle构建脚本，里面会有好多的配置，以后研究到了再说。</p>
-<p><strong>proguard-rules.pro</strong></p>
-<p>代码混淆规则，主要混淆代码，放在人家破解你的项目。</p>
-<p>好了， android项目的大概工程目录就是这样，其实我们会发现，重要的没几个，而且重要的好多都和gradle有关，看来真得好好研究下gradle是什么了。</p>
-<h3 id="build-gradle文件"><a href="#build-gradle文件" class="headerlink" title="build.gradle文件"></a>build.gradle文件</h3><p>在整个项目中，一共有连个build.gradle文件。我们先来看看最外层的build.gradle文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">buildscript &#123;</div><div class="line">    repositories &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line">    dependencies &#123;</div><div class="line">        classpath <span class="string">'com.android.tools.build:gradle:2.3.0'</span></div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">allprojects &#123;</div><div class="line">    repositories &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这些代码都是自动生成的，我们发现在两个闭包中都声明了<code>jcenter()</code>，它是一个代码托管仓库，很多android开源项目都会托管到jcenter上。只要声明它，就可以引用jcenter上的托管的项目。</p>
-<p>在<code>dependencies</code>闭包中，还声明了<code>classpath</code>，这个主要是声明gradle插件的，因为gradle不仅仅为android工作，还为java等项目工作，所有我们要声明使用哪个包中的gradle工具。例如我们声明了<code>com.android.tools.build:gradle:2.3.0</code>，2.3.0是此插件的版本号。</p>
-<p>再来看看app下的<code>build.gradle</code>文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">apply plugin: <span class="string">'com.android.application'</span></div><div class="line"></div><div class="line">android &#123;</div><div class="line">    compileSdkVersion <span class="number">25</span></div><div class="line">    buildToolsVersion <span class="string">"25.0.1"</span></div><div class="line">    defaultConfig &#123;</div><div class="line">        applicationId <span class="string">"com.guiyongdong.listviewdemo"</span></div><div class="line">        minSdkVersion <span class="number">15</span></div><div class="line">        targetSdkVersion <span class="number">25</span></div><div class="line">        versionCode <span class="number">1</span></div><div class="line">        versionName <span class="string">"1.0"</span></div><div class="line">        testInstrumentationRunner <span class="string">"android.support.test.runner.AndroidJUnitRunner"</span></div><div class="line">    &#125;</div><div class="line">    buildTypes &#123;</div><div class="line">        release &#123;</div><div class="line">            <span class="function">minifyEnabled <span class="keyword">false</span></span></div><div class="line">            proguardFiles <span class="title">getDefaultProguardFile</span><span class="params">(<span class="string">'proguard-android.txt'</span>)</span>, 'proguard-rules.pro'</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">dependencies &#123;</div><div class="line">    <span class="function">compile <span class="title">fileTree</span><span class="params">(dir: <span class="string">'libs'</span>, include: [<span class="string">'*.jar'</span>])</span></span></div><div class="line">    <span class="title">androidTestCompile</span><span class="params">(<span class="string">'com.android.support.test.espresso:espresso-core:2.2.2'</span>, &#123;</span></div><div class="line">        exclude group: <span class="string">'com.android.support'</span>, <span class="keyword">module</span>: <span class="string">'support-annotations'</span></div><div class="line">    &#125;)</div><div class="line">    compile 'com.android.support:appcompat-v7:25.0.1'</div><div class="line">    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'</div><div class="line">    compile 'com.android.support:recyclerview-v7:25.0.1'</div><div class="line">    testCompile 'junit:junit:4.12'</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>咋一看，这个文件好复杂啊，别急，我们一行一行的看。</p>
-<p><code>com.android.application</code> 表示这是一个应用程序模块，<code>com.android.library</code> 表示这是一个库模块，他俩最大的区别就是，一个可以直接运行，一个只能作为代码库依附于别的应用程序模块来运行。</p>
-<p>接下来是一个大的android闭包，我们看看它都代表什么。</p>
-<p><code>compileSdkVersion</code>: 用于指定项目的编译版本，我们这里指定25，表示使用Android 7.1.1来编译，如果你不知道具体使用哪个版本来编译，你可以直接看此文章的第一张图，或者你也可以在Android Studio-&gt;Preferences 直接搜索Android SDK 来查看版本情况。</p>
-<p><code>buildToolsVersion</code>: 用来指定项目构建工具的版本，如果有新版本时，Android Studio会进行提升。</p>
-<p><code>applicationId</code>: 当前项目的包名</p>
-<p><code>minSdkVersion</code>: 最低支持的Android系统版本</p>
-<p><code>targetSdkVersion</code>: 这个表示你在该目标版本上已经做过充分的测试，系统将会为你的应用程序启用一些最新的功能和特性，比如你设置成23或者更高，系统会为你的应用程序启用运行时权限，如果你设置成22，那么Android 6.0的功能你就用不了。</p>
-<p><code>versionCode</code>: 当前版本号</p>
-<p><code>versionName</code>: 当前项目的版本名 </p>
-<p><code>testInstrumentationRunner</code>: 测试的一些东西</p>
-<p>我们再来看看<code>buildTypes</code>闭包，buildTypes闭包用于指定生成安装文件的相关配置，通常他包含两个子包：<code>release</code>和<code>debug</code>。一个表示生成环境，一个表示测试环境，debug默认可以不写。我们看看<code>release</code>包下的具体内容</p>
-<p><code>minifyEnabled</code>: 用于指定是否对代码进行混淆<br><code>proguardFiles</code>: 混淆时使用的文件</p>
-<p>我们再来看看<code>dependencies</code>包，它表示当前项目所有的依赖关系，通常Android Studio项目一共有3种依赖方式：<strong>本地依赖</strong>、<strong>库依赖</strong>、<strong>远程依赖</strong>。本地依赖就是jar包依赖，库依赖是在项目中添加模块，远程依赖是对jcenter库上开源项目的依赖。</p>
-<p><code>compile fileTree</code>: 它就是一个本地依赖声明，表示将libs目录下的所有的.jar后缀的文件都添加到构建路径中去。</p>
-<p><code>compile</code>: 这个则是远程依赖，</p>
-<p>还有一种库依赖，写法为<code>compile project(&#39;:helper&#39;)</code>，它表示添加一个名叫helper库的依赖，当然，前提是这个库已经添加到你的项目中。</p>
-<p>关于build.gradle的配置还有很多，我想在以后项目复杂了，会遇到的。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;由于前段时间使用ReactNative开发过一个项目，在开发的过程中，会使用到大量的非ReactNative提供的组件和功能。这时候就必须写原生桥接，iOS还好说，毕竟是靠这个吃饭的，可是android就捉襟见肘了。为了向大前端的目标更进一步，我计划开始学习android，为期6个月，我的目标是6个月内起码自己公司的android项目可以上手，当然，如果想成为真正的android开发者，光靠这6个月是不行。还需要大量的实际项目才能锻炼。&lt;/p&gt;
-&lt;p&gt;值得庆幸的是我在大学主攻的就是java(哈哈，现在也基本上忘的差不多了)。为了打好基础，我买了两本书，一本是《java编程思想》，一本是京东上销量很好的《第二行代码Android》，希望这两本书能够帮到我。另外我也会专门开一个专栏，讲解我学习java的过程。可能在接下来的博客中，我总结的都是基础知识，大神莫嘲笑。&lt;/p&gt;
     
     </summary>
     

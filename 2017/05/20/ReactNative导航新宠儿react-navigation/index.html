@@ -1,0 +1,981 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="贵大头的博客">
+    <title>ReactNative导航新宠儿react-navigation - 贵大头的博客</title>
+    <meta name="author" content="贵永冬">
+<link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta name="description" content="导航一直是App开发中比较重要的一个组件，ReactNative提供了两种导航组件供我们使用，分别是：NavigatorIOS和Navigator，但是前者只能用于iOS平台，后者在ReactNative0.44版本以后已经被移除了。好在有人提供了更好的导航组件，就是我们今天要讲的react-navigation，并且ReactNative官方更推荐我们使用此组件。">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="ReactNative导航新宠儿react-navigation">
+<meta property="og:url" content="http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/index.html">
+<meta property="og:site_name" content="贵大头的博客">
+<meta property="og:description" content="导航一直是App开发中比较重要的一个组件，ReactNative提供了两种导航组件供我们使用，分别是：NavigatorIOS和Navigator，但是前者只能用于iOS平台，后者在ReactNative0.44版本以后已经被移除了。好在有人提供了更好的导航组件，就是我们今天要讲的react-navigation，并且ReactNative官方更推荐我们使用此组件。">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android35.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android36.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android37.gif?raw=true">
+<meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android38.gif?raw=true">
+<meta property="og:updated_time" content="2017-05-22T07:22:07.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ReactNative导航新宠儿react-navigation">
+<meta name="twitter:description" content="导航一直是App开发中比较重要的一个组件，ReactNative提供了两种导航组件供我们使用，分别是：NavigatorIOS和Navigator，但是前者只能用于iOS平台，后者在ReactNative0.44版本以后已经被移除了。好在有人提供了更好的导航组件，就是我们今天要讲的react-navigation，并且ReactNative官方更推荐我们使用此组件。">
+<meta name="twitter:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android35.gif?raw=true">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-yrst5vo1nxaxbp2g3v9na2wg1lixlpr3ghbjdvskeixmu79deycecx3rh4bt.min.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">贵大头的博客</a>
+    </div>
+    
+        
+            <a  class="header-right-icon "
+                href="#about">
+        
+        
+            <i class="fa fa-lg fa-header.jpg"></i>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a href="/#about">
+                    <img class="sidebar-profile-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">贵永冬</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="https://github.com/guiyongdong" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="mailto:564024928@qq.com" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-envelope-o"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">订阅</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            ReactNative导航新宠儿react-navigation
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2017-05-20T09:24:19+08:00">
+	
+		    5月 20, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/ReactNative/">ReactNative</a>
+
+
+    
+</div>
+
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>导航一直是<code>App</code>开发中比较重要的一个组件，<code>ReactNative</code>提供了两种导航组件供我们使用，分别是：<code>NavigatorIOS</code>和<code>Navigator</code>，但是前者只能用于<code>iOS</code>平台，后者在<code>ReactNative</code>0.44版本以后已经被移除了。好在有人提供了更好的导航组件，就是我们今天要讲的<code>react-navigation</code>，并且<code>ReactNative</code>官方更推荐我们使用此组件。</p>
+<a id="more"></a>
+<p>本篇文章只讲解基础用法，如果你想了解更多，请戳这里-&gt;<a href="https://reactnavigation.org/docs/intro/" target="_blank" rel="external">戳我</a>。</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p><code>react-navigation</code>主要包括导航，底部<code>tab</code>，顶部<code>tab</code>，侧滑等，功能很强大，而且体验接近原生。今天我们介绍的组件分别为：</p>
+<p></p><p></p>
+<ul>
+<li>导航 -&gt; StackNavigator</li>
+<li>底部或者顶部<code>tab</code> -&gt; TabNavigator</li>
+<li>侧滑 -&gt; DrawerNavigator</li>
+</ul>
+<h3 id="DrawerNavigator"><a href="#DrawerNavigator" class="headerlink" title="DrawerNavigator"></a>DrawerNavigator</h3><p>先来看看运行效果：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android35.gif?raw=true"><br></div>
+
+<p>这里，我们定义三个界面，一个为根界面，一个主界面，一个侧滑界面，分别如下：</p>
+<p><strong>侧滑界面DrawerLeftPage.js：</strong></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> React, &#123;Component&#125; <span class="keyword">from</span> <span class="string">'react'</span>;</div><div class="line"><span class="keyword">import</span> &#123;</div><div class="line">    View,</div><div class="line">    Text,</div><div class="line">    TouchableOpacity,</div><div class="line">    StyleSheet,</div><div class="line">    Image</div><div class="line">&#125; <span class="keyword">from</span> <span class="string">'react-native'</span>;</div><div class="line"></div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">DrawerLeftPage</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</div><div class="line">    <span class="keyword">static</span> navigationOptions = &#123;</div><div class="line">        <span class="comment">//标题</span></div><div class="line">        drawerLabel:<span class="string">'购物车'</span>,</div><div class="line">        <span class="comment">//图标</span></div><div class="line">        drawerIcon:(&#123;tintColor&#125;) =&gt; &#123;</div><div class="line">            <span class="keyword">return</span> (</div><div class="line">                &lt;Image</div><div class="line">                    source=&#123;require('../images/car@3x.png')&#125;</div><div class="line">                    style=&#123;[&#123;width:24,height:24&#125;,&#123;tintColor:tintColor&#125;]&#125;</div><div class="line">                /&gt;</div><div class="line">            );</div><div class="line">        &#125;,</div><div class="line">    &#125;;</div><div class="line">    render() &#123;</div><div class="line">        return(</div><div class="line">            &lt;View style=&#123;styles.container&#125;&gt;</div><div class="line">                &lt;TouchableOpacity onPress=&#123;()=&gt;&#123;</div><div class="line">                    //点击关闭侧滑</div><div class="line">                    this.props.navigation.navigate('DrawerClose')</div><div class="line">                &#125;&#125;&gt;</div><div class="line">                    &lt;Text&gt;关闭侧滑栏&lt;/Text&gt;</div><div class="line">                &lt;/TouchableOpacity&gt;</div><div class="line">            &lt;/View&gt;</div><div class="line">        );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">const styles = StyleSheet.create(&#123;</div><div class="line">    container: &#123;</div><div class="line">        flex:1,</div><div class="line">        justifyContent:'center',</div><div class="line">        alignItems:'center'</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这个界面很简单，我们定义了一个按钮，点击按钮的时候，关闭侧滑页，这里关闭的参数为<code>DrawerClose</code>,通过<code>props</code>属性可以拿到当前<code>navigation</code>。另外我们又定义了一个静态属性，来配置侧滑显示的具体属性。注意，此属性名一定要写成<code>navigationOptions</code>。</p>
+<p><code>navigationOptions</code>主要有以下参数：</p>
+<p></p><p></p>
+<ul>
+<li><code>title</code>：通用标题，当你不写<code>drawerLabel</code>时，使用此参数作为侧滑标题，通常都不写</li>
+<li><code>drawerLabel</code>：侧滑标题</li>
+<li><code>drawerIcon</code>：侧滑的标题图标，这里会回传两个参数，<code>{focused: boolean, tintColor: string}</code>，<code>focused</code>表示是否是选中状态，<code>tintColor</code>表示选中的颜色，这个颜色是我们自己在根视图定义的。当然，你也可以使用其他的组件来作为图标，比如<code>Text</code>。</li>
+</ul>
+<p><strong>主界面 DrawerHomePage.js</strong></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> React, &#123;Component&#125; <span class="keyword">from</span> <span class="string">'react'</span>;</div><div class="line"><span class="keyword">import</span> &#123;</div><div class="line">    View,</div><div class="line">    Text,</div><div class="line">    TouchableOpacity,</div><div class="line">    StyleSheet,</div><div class="line">    Image</div><div class="line">&#125; <span class="keyword">from</span> <span class="string">'react-native'</span>;</div><div class="line"></div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">DrawerHomePage</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</div><div class="line">    <span class="keyword">static</span> navigationOptions = &#123;</div><div class="line">        drawerLabel:<span class="string">'首页'</span>,</div><div class="line">        drawerIcon:(&#123;tintColor&#125;) =&gt; &#123;</div><div class="line">            <span class="keyword">return</span> (</div><div class="line">                &lt;Image</div><div class="line">                    source=&#123;require('../images/home@3x.png')&#125;</div><div class="line">                    style=&#123;[&#123;width:24,height:24&#125;,&#123;tintColor:tintColor&#125;]&#125;</div><div class="line">                /&gt;</div><div class="line">            );</div><div class="line">        &#125;,</div><div class="line">    &#125;;</div><div class="line">    render() &#123;</div><div class="line">        return(</div><div class="line">              &lt;View style=&#123;styles.container&#125;&gt;</div><div class="line">                  &lt;TouchableOpacity onPress=&#123;()=&gt;&#123;</div><div class="line">                      //点击打开抽屉</div><div class="line">                      this.props.navigation.navigate('DrawerOpen')</div><div class="line">                  &#125;&#125;&gt;</div><div class="line">                      &lt;Text&gt;打开侧滑栏&lt;/Text&gt;</div><div class="line">                  &lt;/TouchableOpacity&gt;</div><div class="line">              &lt;/View&gt;</div><div class="line">        );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">const styles = StyleSheet.create(&#123;</div><div class="line">    container: &#123;</div><div class="line">        flex:1,</div><div class="line">        justifyContent:'center',</div><div class="line">        alignItems:'center'</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这个界面和上一个界面基本一样，只是这里的点击事件为打开抽屉，传的参数为<code>DrawerOpen</code>。<br>打开侧滑：<code>this.props.navigation.navigate(&#39;DrawerOpen&#39;)</code><br>关闭侧滑：<code>this.props.navigation.navigate(&#39;DrawerClose&#39;)</code></p>
+<p><strong>根视图 DrawerPage.js</strong></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> React, &#123;Component&#125; <span class="keyword">from</span> <span class="string">'react'</span>;</div><div class="line"><span class="keyword">import</span> &#123;</div><div class="line">    StyleSheet,</div><div class="line">    View</div><div class="line">&#125; <span class="keyword">from</span> <span class="string">'react-native'</span>;</div><div class="line"></div><div class="line"><span class="keyword">import</span> DrawerHomePage <span class="keyword">from</span> <span class="string">'./DrawerHomePage'</span>;</div><div class="line"><span class="keyword">import</span> DrawerLeftPage <span class="keyword">from</span> <span class="string">'./DrawerLeftPage'</span>;</div><div class="line"><span class="keyword">import</span> &#123;DrawerNavigator&#125; <span class="keyword">from</span> <span class="string">'react-navigation'</span>;</div><div class="line"></div><div class="line"><span class="keyword">const</span> Drawer = DrawerNavigator(</div><div class="line">    &#123;</div><div class="line">        Home:&#123;</div><div class="line">            screen:DrawerHomePage,</div><div class="line">        &#125;,</div><div class="line">        Left:&#123;</div><div class="line">            screen:DrawerLeftPage</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">        drawerWidth:<span class="number">300</span>,</div><div class="line">        drawerPosition:<span class="string">'left'</span>,</div><div class="line">    &#125;</div><div class="line">);</div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">DrawerPage</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</div><div class="line">    render() &#123;</div><div class="line">        <span class="keyword">return</span>(</div><div class="line">            &lt;Drawer/&gt;</div><div class="line">        );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">const</span> styles = StyleSheet.create(&#123;</div><div class="line">    container: &#123;</div><div class="line">        flex:<span class="number">1</span>,</div><div class="line">        justifyContent:<span class="string">'center'</span>,</div><div class="line">        alignItems:<span class="string">'center'</span></div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这里我们从<code>react-navigation</code>导入侧滑组件<code>DrawerNavigator</code>，这里我们定义一个常量<code>Drawer</code>，主要来配置侧滑的各种参数。首先，看<code>DrawerNavigator</code>的构造方法：<br><code>DrawerNavigator(RouteConfigs, DrawerNavigatorConfig)</code><br>这里接收两个参数，一个为页面路由配置，一个为显示的配置，我们分别来看，</p>
+<p><code>RouteConfigs</code>：</p>
+<p>这里你可以配置所有的界面，例如，当前例子配置了两个界面：<code>Home</code>和<code>Left</code>，指定界面分别为<code>DrawerHomePage</code>和<code>DrawerLeftPage</code>。你还可以配置其他界面，这些配置的界面都将显示在侧滑栏上。</p>
+<p><code>DrawerNavigatorConfig</code>：</p>
+<p></p><p></p>
+<ul>
+<li><code>drawerWidth</code>: 侧滑栏的宽度，如果你不想写死，可以使用<code>Dimensions</code>获取屏幕的宽度，动态计算</li>
+<li><code>drawerPosition</code>: 侧滑的方向，<code>left</code>和<code>right</code>，默认<code>left</code></li>
+<li><code>contentComponent</code>: 这个就比较重要了，可以自定义侧滑页，我们等会详细说。</li>
+<li><code>contentOptions</code>: 主要配置侧滑栏条目的属性，只对<code>DrawerItems</code>，例如我们刚才写的例子，就可以通过这个属性来配置颜色，背景色等。其主要属性有：<ul>
+<li><code>items</code>: 这个我也没弄清是什么意思，不影响</li>
+<li><code>activeItemKey</code>: 定义当前选中的页面的key</li>
+<li><code>activeTintColor</code>: 选中条目状态的文字颜色</li>
+<li><code>activeBackgroundColor</code>: 选中条目的背景色</li>
+<li><code>inactiveTintColor</code>: 未选中条目状态的文字颜色</li>
+<li><code>inactiveBackgroundColor</code>: 未选中条目的背景色</li>
+<li><code>onItemPress</code>: 选中条目的回调，这个参数属性为函数，会将当前路由回调过去</li>
+<li><code>style</code>: 定义条目的颜色</li>
+<li><code>labelStyle</code>: 定义条目文字的颜色</li>
+</ul>
+</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">&#123;</div><div class="line">    drawerWidth:<span class="number">300</span>,</div><div class="line">    drawerPosition:<span class="string">'left'</span>,</div><div class="line">    contentOptions:&#123;</div><div class="line">        activeTintColor: <span class="string">'#e91e63'</span>,</div><div class="line">        items:[<span class="string">"Home"</span>],</div><div class="line">        activeItemKey:<span class="string">'abc'</span>,</div><div class="line">        activeBackgroundColor:<span class="string">'yellow'</span>,</div><div class="line">        inactiveTintColor:<span class="string">'blue'</span>,</div><div class="line">        inactiveBackgroundColor:<span class="string">'red'</span>,</div><div class="line">        onItemPress:((route)=&gt;&#123;</div><div class="line">            <span class="built_in">console</span>.log(route);</div><div class="line">        &#125;),</div><div class="line">        labelStyle:&#123;</div><div class="line">            fontSize:<span class="number">30</span></div><div class="line">        &#125;,</div><div class="line">        style:&#123;</div><div class="line">            marginRight:<span class="number">30</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如此，<code>DrawerNavigator</code>的基本用法我们已经搞的差不多了，但是，这还不能满足我们的日常开发，因为我们的侧滑界面可不是这个样子的。</p>
+<p>刚才还有个参数没有介绍，就是<code>contentComponent</code>，他就是用来自定义侧滑界面的。</p>
+<p>上面的例子有一个问题，加入我们的<code>item</code>比较多，但是侧滑页面并不能滑动，这时，就要使用<code>contentComponent</code>来自定义界面，如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="comment">//导入DrawerItems 因为系统的条目就是DrawerItems</span></div><div class="line"><span class="keyword">import</span> &#123;DrawerNavigator,DrawerItems&#125; <span class="keyword">from</span> <span class="string">'react-navigation'</span>;</div><div class="line"></div><div class="line">&#123;</div><div class="line">    drawerWidth:<span class="number">300</span>,</div><div class="line">    drawerPosition:<span class="string">'left'</span>,</div><div class="line">    <span class="comment">//ScrollView作为我们的侧滑界面，内部依然是DrawerItems</span></div><div class="line">    contentComponent:((props)=&gt;&#123;</div><div class="line">        <span class="keyword">return</span>(</div><div class="line">            &lt;ScrollView style=&#123;styles.container&#125; &gt;</div><div class="line">                &lt;DrawerItems &#123;...props&#125;/&gt;</div><div class="line">            &lt;/ScrollView&gt;</div><div class="line">        )&#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行效果如下：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android36.gif?raw=true"><br></div>
+
+<p>当然，我们完全可以自定义侧滑界面，并且不使用<code>DrawerItems</code>条目。如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> DrawerHomePage <span class="keyword">from</span> <span class="string">'./DrawerHomePage'</span>;</div><div class="line"><span class="keyword">import</span> DrawerLeftPage <span class="keyword">from</span> <span class="string">'./DrawerLeftPage'</span>;</div><div class="line"></div><div class="line"><span class="keyword">import</span> &#123;DrawerNavigator&#125; <span class="keyword">from</span> <span class="string">'react-navigation'</span>;</div><div class="line"></div><div class="line"><span class="comment">//自定义侧滑界面 </span></div><div class="line"><span class="keyword">const</span> CustomDrawerContentComponent = (props)=&gt;&#123;</div><div class="line">    <span class="keyword">return</span>(</div><div class="line">        &lt;DrawerLeftPage style=&#123;styles.container&#125; &#123;...props&#125; /&gt;</div><div class="line">    );</div><div class="line">&#125;;</div><div class="line">const Drawer = DrawerNavigator(</div><div class="line">    &#123;</div><div class="line">        Home:&#123;</div><div class="line">            screen:DrawerHomePage,</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">        drawerWidth:300,</div><div class="line">        drawerPosition:'left',</div><div class="line">        contentComponent:(CustomDrawerContentComponent)</div><div class="line">    &#125;</div><div class="line">);</div><div class="line">export default class DrawerPage extends Component &#123;</div><div class="line">    render() &#123;</div><div class="line">        return(</div><div class="line">            &lt;Drawer/&gt;</div><div class="line">        );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">const styles = StyleSheet.create(&#123;</div><div class="line">    container: &#123;</div><div class="line">        flex:1</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>我们这里定义了一个常量，返回<code>DrawerLeftPage</code>作为我们的侧滑界面，在<code>DrawerLeftPage</code>中就可以随意定制了。注意，一定要将<code>props</code>传递到下一个界面，否则通过<code>props</code>拿不到<code>navigation</code>。最终运行效果：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android37.gif?raw=true"><br></div>
+
+<p>好了，<code>DrawerNavigator</code>我们已经了解完了。</p>
+<hr>
+<h3 id="StackNavigator"><a href="#StackNavigator" class="headerlink" title="StackNavigator"></a>StackNavigator</h3><p>这个组件就比较麻烦了，我们先来看他的构造函数：<br><code>StackNavigator(RouteConfigs, StackNavigatorConfig)</code></p>
+<p><strong>RouteConfigs:</strong> </p>
+<p>它主要是来配置页面路由的，类似与<code>Android</code>的<code>Manifest.xml</code>，所有的界面都必须配置在里面。如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">&#123;</div><div class="line">    First:&#123;</div><div class="line">        screen:FirstNavigation,</div><div class="line">        navigationOptions:(&#123;</div><div class="line">            title:<span class="string">'首页'</span></div><div class="line">        &#125;)</div><div class="line">    &#125;,</div><div class="line">    Second:&#123;</div><div class="line">        screen:SecondNavigation,</div><div class="line">        navigationOptions:(&#123;navigation&#125;) =&gt; (&#123;</div><div class="line">            title: <span class="string">"第二个界面"</span></div><div class="line">        &#125;)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里我们配置了首页和第二个页面，并且配置了标题参数。当然，如果你不想在路由里面配置页面的参数，你也可以在页面中配置，需要在页面中定义一个静态常量<code>navigationOptions</code>，和<code>DrawerNavigator</code>的使用方法类似。我们来看看<code>navigationOptions</code>有哪些可以配置的参数：</p>
+<p></p><p></p>
+<ul>
+<li><code>title</code>: 这个即可以作为头部标题，也可以作为返回标题和<code>Tab</code>标题</li>
+<li><code>header</code>: 自定义导航条，系统的导航条会隐藏</li>
+<li><code>headerTitle</code>: 标题</li>
+<li><code>headerBackTitle</code>: 回退标题</li>
+<li><code>headerTruncatedBackTitle</code>: 当回退标题不能显示的时候显示此属性的标题，比如回退标题太长了</li>
+<li><code>headerRight</code>: 定义导航栏右边视图</li>
+<li><code>headerLeft</code>: 定义导航栏左边视图</li>
+<li><code>headerStyle</code>: 定义导航栏的样式，比如背景色等</li>
+<li><code>headerTitleStyle</code>: 定义标题的样式</li>
+<li><code>headerBackTitleStyle</code>: 定义返回标题的样式</li>
+<li><code>headerTintColor</code>: 定义导航条的tintColor，会覆盖<code>headerTitleStyle</code>中的颜色</li>
+<li><code>gesturesEnabled</code>: 定义是否能侧滑返回，<code>iOS</code>默认<code>true</code>，<code>Android</code>默认<code>false</code></li>
+</ul>
+<p>示例如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">static</span> navigationOptions=(&#123;</div><div class="line">    title:<span class="string">'首页'</span>,</div><div class="line">    header:(</div><div class="line">        &lt;View style=&#123;&#123;width:Dimensions.get('window').width,height:64,backgroundColor:'red'&#125;&#125;/&gt;</div><div class="line">    ),</div><div class="line">    headerTitle:(</div><div class="line">        &lt;View style=&#123;&#123;width:60,height:20,backgroundColor:'red'&#125;&#125;/&gt;</div><div class="line">    ),</div><div class="line">    headerBackTitle:'哈哈哈哈哈',</div><div class="line">    headerTruncatedBackTitle:'你好',</div><div class="line">    headerRight:(</div><div class="line">        &lt;View&gt;</div><div class="line">            &lt;Text&gt;right&lt;/Text&gt;</div><div class="line">        &lt;/View&gt;</div><div class="line">    ),</div><div class="line">    headerLeft:(</div><div class="line">        &lt;View&gt;</div><div class="line">            &lt;Text&gt;left&lt;/Text&gt;</div><div class="line">        &lt;/View&gt;</div><div class="line">    ),</div><div class="line">    headerStyle: &#123;</div><div class="line">        backgroundColor:'yellow'</div><div class="line">    &#125;,</div><div class="line">    headerTitleStyle:&#123;</div><div class="line">        color:'red'</div><div class="line">    &#125;,</div><div class="line">    headerBackTitleStyle:&#123;</div><div class="line">        tintColor:'#789'</div><div class="line">    &#125;,</div><div class="line">    headerTintColor:'#956',</div><div class="line">    gesturesEnabled:false</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><strong>StackNavigatorConfig</strong></p>
+<p>这个参数主要是配置整个路由的，包括跳转动画，跳转方式等。先来看看它有哪些参数：</p>
+<p></p><p></p>
+<ul>
+<li><code>initialRouteName</code>: 初始化哪个界面为根界面，如果不配置，默认使用<code>RouteConfigs</code>中的第一个页面当做根界面</li>
+<li><code>initialRouteParams</code>: 初始化根界面参数，主要是给根视图传递一些参数，通过<code>this.props.navigation.state.params</code>可以取到</li>
+<li><code>navigationOptions</code>: 配置默认的<code>navigationOptions</code></li>
+<li><code>paths</code>: 官方意思是覆盖已经配置的路由，可是我没有试出来效果</li>
+<li><code>mode</code>: 跳转方式，一种是<code>card</code>，默认的，在<code>iOS</code>上是从右到左跳转，在<code>Android</code>上是从下到上，都是使用原生系统的默认跳转方式。一种是<code>modal</code>，只针对<code>iOS</code>平台，模态跳转。</li>
+<li><code>headerMode</code>: 跳转过程中，导航条的动画效果，有三个值，<code>float</code>表示会渐变，类似于<code>iOS</code>的原生效果，<code>screen</code>表示没有渐变。<code>none</code>表示隐藏导航条</li>
+<li><code>cardStyle</code>: 可以统一定义界面的颜色，例如背景色</li>
+<li><code>transitionConfig</code>：配置页面跳转的动画</li>
+<li><code>onTransitionStart</code>: 页面跳转动画即将开始的回调</li>
+<li><code>onTransitionEnd</code>: 页面跳转动画结束的回调</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">static</span> stackNavigatorConfig = (&#123;</div><div class="line">    initialRouteName:<span class="string">'First'</span>,</div><div class="line">    initialRouteParams:&#123;</div><div class="line">        data:<span class="string">'haha'</span></div><div class="line">    &#125;,</div><div class="line">    navigationOptions:&#123;</div><div class="line">        headerTintColor:<span class="string">'red'</span></div><div class="line">    &#125;,</div><div class="line">    mode:<span class="string">'card'</span>,</div><div class="line">    headerMode:<span class="string">'screen'</span>,</div><div class="line">    cardStyle:(&#123;backgroundColor:<span class="string">'blue'</span>&#125;),</div><div class="line">    onTransitionStart:((route)=&gt;&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'开始动画'</span>);</div><div class="line">    &#125;),</div><div class="line">    onTransitionEnd:((route)=&gt;&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'结束动画'</span>);</div><div class="line">    &#125;),</div><div class="line">    transitionConfig:(()=&gt;(&#123;</div><div class="line">        <span class="comment">//因为ios 的导航动画默认是从左到右，所以，这里配置一下动画，使用react-navigation已经实现的从左到右的动画，</span></div><div class="line">        <span class="comment">//适配Android，不过，需要导入动画 </span></div><div class="line">        <span class="comment">//import CardStackStyleInterpolator from 'react-navigation/src/views/CardStackStyleInterpolator';</span></div><div class="line">        screenInterpolator:CardStackStyleInterpolator.forHorizontal,</div><div class="line">    &#125;))</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="Navigation-Prop"><a href="#Navigation-Prop" class="headerlink" title="Navigation Prop"></a>Navigation Prop</h4><p>了解完路由配置以后，我们再来看看组件的属性，</p>
+<p></p><p></p>
+<ul>
+<li><code>navigate</code>：路由方法，主要来启动另一个页面</li>
+<li><code>state</code>：状态，其实<code>StackNavigator</code>内部维护了两个路由栈，一个名为<code>newState</code>，是当前显示页面之前的所有页面，包括当前界面。一个名为<code>lastState</code>，当然，通过<code>state</code>还能拿到很多参数。</li>
+<li><code>setParams</code>: 设置参数，记住，一定不要在<code>render</code>方法中调用此方法。</li>
+<li><code>goBack</code>: 返回</li>
+<li><code>dispatch</code>: 给当前界面设置action，会替换原来的跳转，回退等事件</li>
+</ul>
+<p><strong>navigate</strong></p>
+<p>此方法可以传三个参数：<code>navigate(routeName, params, action)</code></p>
+<p></p><p></p>
+<ul>
+<li><code>routeName</code>: 页面名称，一定要在路由配置中配置。</li>
+<li><code>params</code>: 传递参数到下一个页面</li>
+<li><code>action</code>: <code>action</code></li>
+</ul>
+<p>例如：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">this</span>.props.navigation.navigate(<span class="string">'Second'</span>,&#123;<span class="string">'data'</span>:<span class="string">'haha'</span>&#125;);</div></pre></td></tr></table></figure>
+<p><strong>state</strong></p>
+<p>通过<code>state</code>，我们能拿到传递过来的参数，通过打印<code>state</code>，得到如下结果：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line">state: </div><div class="line">   &#123; params: &#123;<span class="string">'data'</span>:<span class="string">'haha'</span>&#125;,</div><div class="line">     key: <span class="string">'id-1495292939049-1'</span>,</div><div class="line">     routeName: <span class="string">'Model'</span> &#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到，通过<code>state</code>，我们可以拿到传递过来的<code>params</code></p>
+<p><strong>setParams</strong></p>
+<p>设置当前页面的参数，记住，调用此方法一定要在<code>componentDidMount</code></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">componentDidMount() &#123;</div><div class="line">    <span class="keyword">var</span> &#123;setParams&#125; = <span class="keyword">this</span>.props.navigation;</div><div class="line">    setParams(&#123;<span class="string">'haha'</span>:<span class="string">'abc'</span>&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>goBack</strong></p>
+<p>回退到指定界面，如果什么都不传，回退到上一个界面，传<code>null</code>，回退到任意界面。传<code>key</code>，可以回退到指定界面。例如：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">this</span>.props.navigation.goBack();</div><div class="line"><span class="keyword">this</span>.props.navigation.goBack(<span class="literal">null</span>);</div><div class="line"><span class="keyword">this</span>.props.navigation.goBack(<span class="string">'Profile'</span>);</div></pre></td></tr></table></figure>
+<p>关于<code>react-navigation</code>的基本用法已经了解的差不多了，至于更详细的用法，可以看官方文档。</p>
+<p><strong>注意：</strong></p>
+<p>全屏侧滑返回手势：系统默认有侧滑返回手势，距离屏幕距离为35，为了使用全屏侧滑，需要修改源码：在<code>react-navigation/src/views/CardStack.js</code>类，修改常量<code>GESTURE_RESPONSE_DISTANCE_HORIZONTAL</code>为<code>Dimensions.get(&#39;window&#39;).width</code>即可。</p>
+<p>在<code>iOS</code>上，标题会居中，但是在<code>Android</code>上是居左的，想要<code>Android</code>上也居中，需要修改：<code>react-navigation/src/views/Header.js</code>中的<code>title</code>样式修改为<code>center</code>，并且在方法<code>_renderTitle</code>中注释掉</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> (Platform.OS === <span class="string">'android'</span>) &#123;</div><div class="line">      <span class="keyword">if</span> (!options.hasLeftComponent) &#123;</div><div class="line">        style.left = <span class="number">0</span>;</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">if</span> (!options.hasRightComponent) &#123;</div><div class="line">        style.right = <span class="number">0</span>;</div><div class="line">      &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>这几句代码。</p>
+<hr>
+<h3 id="TabNavigator"><a href="#TabNavigator" class="headerlink" title="TabNavigator"></a>TabNavigator</h3><p><code>tab</code>选项卡的功能，在<code>iOS</code>上默认类似于<code>TabBar</code>，在<code>Android</code>中类似于<code>TabLayout</code>，先来看看构造方法：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">TabNavigator(RouteConfigs, TabNavigatorConfig)</div></pre></td></tr></table></figure>
+<p><strong>RouteConfigs</strong></p>
+<p>同样的，还是配置路由，如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line">&#123;</div><div class="line">    Home:&#123;</div><div class="line">        screen:HomeTab,</div><div class="line">        <span class="comment">//navigationOptions:&#123;</span></div><div class="line">        <span class="comment">//    ....</span></div><div class="line">        <span class="comment">//&#125;</span></div><div class="line">    &#125;,</div><div class="line">    Car:&#123;</div><div class="line">        screen:CarTab</div><div class="line">    &#125;,</div><div class="line">    Profile:&#123;</div><div class="line">        screen:ProfileTab</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当然，你也可以配置<code>navigationOptions</code>，但是，在这里配置的优先级比在页面中配置的优先级高，所以，我们一般再单个页面中配置所有的<code>navigationOptions</code>。</p>
+<p><strong>TabNavigatorConfig</strong></p>
+<p></p><p></p>
+<ul>
+<li><code>tabBarComponent</code>: 默认两种方式，<code>TabBarBottom</code>和<code>TabBarTop</code>，可以通过如下代码导入：<code>import {TabBarBottom,TabBarTop} from &#39;react-navigation&#39;;</code>，这两者的区别主要是样式和位置的区别，<code>iOS</code>上默认使用<code>TabBarBottom</code>，<code>Android</code>上默认使用<code>TabBarTop</code>。</li>
+<li><code>tabBarPosition</code>: 配置<code>tab</code>的位置，<code>top</code>和<code>bottom</code></li>
+<li><code>swipeEnabled</code>: 是否可以滑动切换<code>tab</code></li>
+<li><code>animationEnabled</code>: 点击选项卡切换界面是否需要动画</li>
+<li><code>lazy</code>: 是否懒加载界面，默认一次加载所有的界面，我们最好设置为true</li>
+<li><code>tabBarOptions</code>: <code>tab</code>的样式等配置，我们下面详细说</li>
+<li><code>initialRouteName</code>，第一次初始化哪个界面，默认初始化第一个。</li>
+<li><code>order</code>，<code>tab</code>排序，默认使用配置路由的顺序</li>
+<li><code>paths</code>: 配置path</li>
+<li><code>backBehavior</code>，当<code>Android</code>点击返回键的时候，做的处理，<code>initialRoute</code>返回到初始化的界面，<code>none</code>退出应用</li>
+</ul>
+<p>例子如下：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">const</span> Tab = TabNavigator(</div><div class="line">    &#123;</div><div class="line">        Home:&#123;</div><div class="line">            screen:HomeTab</div><div class="line">        &#125;,</div><div class="line">        Car:&#123;</div><div class="line">            screen:CarTab</div><div class="line">        &#125;,</div><div class="line">        Profile:&#123;</div><div class="line">            screen:ProfileTab</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">        tabBarComponent:TabBarBottom,</div><div class="line">        tabBarPosition:<span class="string">'bottom'</span>,</div><div class="line">        swipeEnabled:<span class="literal">true</span>,</div><div class="line">        animationEnabled:<span class="literal">false</span>,</div><div class="line">        lazy:<span class="literal">true</span>,</div><div class="line">        initialRouteName:<span class="string">'Profile'</span>,</div><div class="line">        order:([<span class="string">'Profile'</span>,<span class="string">'Home'</span>,<span class="string">'Car'</span>]),</div><div class="line">        backBehavior:<span class="string">'none'</span></div><div class="line">    &#125;</div><div class="line">);</div></pre></td></tr></table></figure>
+<p><strong>tabBarOptions</strong></p>
+<p>这个参数主要配置样式，针对<code>TabBarBottom</code>和<code>TabBarTop</code>。</p>
+<p><code>TabBarBottom</code>:</p>
+<p></p><p></p>
+<ul>
+<li><code>activeTintColor</code>: 选中的文字颜色</li>
+<li><code>activeBackgroundColor</code>: 选中的背景色</li>
+<li><code>inactiveTintColor</code>： 未选中的文字颜色</li>
+<li><code>inactiveBackgroundColor</code>: 未选中的背景色</li>
+<li><code>showLabel</code>: 是否显示标题，默认显示</li>
+<li><code>style</code>: 定义item的样式</li>
+<li><code>labelStyle</code>: 标题的样式</li>
+</ul>
+<p>例如：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line">tabBarOptions:&#123;</div><div class="line">    activeTintColor:<span class="string">'red'</span>,</div><div class="line">    activeBackgroundColor:<span class="string">'blue'</span>,</div><div class="line">    inactiveTintColor:<span class="string">'yellow'</span>,</div><div class="line">    inactiveBackgroundColor:<span class="string">'#987'</span>,</div><div class="line">    showLabel:<span class="literal">true</span>,</div><div class="line">    labelStyle:&#123;</div><div class="line">        fontSize:<span class="number">12</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>TabBarTop</code>:</p>
+<p></p><p></p>
+<ul>
+<li><code>activeTintColor</code>: 选中的文字颜色</li>
+<li><code>inactiveTintColor</code>： 未选中的文字颜色</li>
+<li><code>showIcon</code>: 是否显示图标，默认显示</li>
+<li><code>showLabel</code>: 是否显示标题，默认显示</li>
+<li><code>upperCaseLabel</code>: 使用大写字母</li>
+<li><code>pressColor</code>: 定义颜色，大于<code>Android5.0</code>的一种按压效果</li>
+<li><code>pressOpacity</code>: 按压下去的透明度，在<code>iOS</code>或者<code>Android5.0</code>之前</li>
+<li><code>scrollEnabled</code>: 是否能够滚动，类似于今日头条的标题头</li>
+<li><code>tabStyle</code>: 定义<code>item</code>的样式</li>
+<li><code>indicatorStyle</code>: 指示器的颜色</li>
+<li><code>labelStyle</code>: 文字的样式</li>
+<li><code>iconStyle</code>: 图标的样式</li>
+<li><code>style</code>: 定义<code>tab</code>的样式</li>
+</ul>
+<p>例如：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line">tabBarOptions:&#123;</div><div class="line">    activeTintColor:<span class="string">'red'</span>,</div><div class="line">    inactiveTintColor:<span class="string">'yellow'</span>,</div><div class="line">    showIcon:<span class="literal">false</span>,</div><div class="line">    showLabel:<span class="literal">true</span>,</div><div class="line">    upperCaseLabel:<span class="literal">false</span>,</div><div class="line">    labelStyle:&#123;</div><div class="line">        fontSize:<span class="number">12</span></div><div class="line">    &#125;,</div><div class="line">    indicatorStyle:<span class="string">'green'</span>,</div><div class="line">    pressColor:<span class="string">'#823453'</span>,</div><div class="line">    pressOpacity:<span class="number">0.8</span>,</div><div class="line">    scrollEnabled:<span class="literal">true</span>,</div><div class="line">    tabStyle:&#123;</div><div class="line">        height:<span class="number">44</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><strong>NavigationOptions</strong></p>
+<p>当然，通过<code>NavigationOptions</code>来配置我们的<code>tabBarItem</code>:</p>
+<p>
+
+<ul>
+<li><code>title</code>: 标题</li>
+<li><code>tabBarVisible</code>: 是否可见</li>
+<li><code>tabBarIcon</code>: 配置图片，当然，完全可以不使用图片</li>
+<li><code>tabBarLabel</code>: 也是配置标题，只不过<code>title</code>既能配置<code>tab</code>的标题，也能配置<code>navigation</code>的标题</li>
+</ul>
+</p><p>例如：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line">Profile:&#123;</div><div class="line">    screen:ProfileTab,</div><div class="line">    navigationOptions:(&#123;navigation&#125;)=&gt;(&#123;</div><div class="line">        tabBarLabel:<span class="string">'我的'</span>,</div><div class="line">        tabBarIcon:(&#123;focused,tintColor&#125;)=&gt;(</div><div class="line">            &lt;Image</div><div class="line">                source=&#123;focused?require('../../images/user_hover@3x.png'):require('../../images/user@3x.png')&#125;</div><div class="line">                style=&#123;&#123;width:30,height:30,tintColor:tintColor&#125;&#125;</div><div class="line">            /&gt;</div><div class="line">        )</div><div class="line">    &#125;),</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>好了，<code>TabNavigator</code>也说的差不多了。当然，如果你想在某个界面切换<code>tab</code>，使用如下方法：<br><figure class="highlight js"><table><tr><td class="code"><pre><div class="line"><span class="keyword">this</span>.props.navigation.navigate(<span class="string">'Home'</span>)</div></pre></td></tr></table></figure></p>
+<h3 id="仿QQ主界面"><a href="#仿QQ主界面" class="headerlink" title="仿QQ主界面"></a>仿QQ主界面</h3><p>下面的例子是仿<code>QQ</code>主界面的，当然包括本篇文章的实例代码，请戳这里-&gt;<a href="http://git.oschina.net/guiyongdong/reactnavigationdemo" target="_blank" rel="external">戳我</a>。</p>
+<p>运行效果：</p>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android38.gif?raw=true"><br></div>
+
+
+
+
+
+
+
+
+
+
+
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/ReactNative/">ReactNative</a>
+
+            </div>
+        
+        <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/12/一天一Android之Service/" data-tooltip="一天一Android之Service">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/&amp;title=ReactNative导航新宠儿react-navigation">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+        
+            
+                
+<div class="duoshuo">
+<div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+<script src="https://img1.cache.netease.com/f2e/tie/yun/sdk/loader.js"></script>
+<script>
+var cloudTieConfig = {
+  url: document.location.href, 
+  sourceId: "",
+  productKey: "3b1a42e3f91145d197b9e8b6e2f2a144",
+  target: "cloud-tie-wrapper"
+};
+var yunManualLoad = true;
+Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true);
+</script>
+</div>
+
+
+
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2017 贵永冬. All Rights Reserved.
+    </span>
+</footer>
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/12/一天一Android之Service/" data-tooltip="一天一Android之Service">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/&amp;title=ReactNative导航新宠儿react-navigation">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <ul class="share-options">
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/">
+                <i class="fa fa-weibo"></i><span>微博</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/">
+                <i class="fa fa-qq"></i><span>QQ</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i><span>微信</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+
+
+
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">贵永冬</h4>
+        
+            <div id="about-card-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>郑州市时空隧道信息技术有限公司</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker"></i>
+                <br/>
+                河南 郑州
+            </div>
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    autofocus="autofocus"/>
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/11/初识ReactiveCocoa/">
+                            <h3 class="media-heading">初识ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月11日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/12/深入ReactiveCocoa/">
+                            <h3 class="media-heading">深入ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月12日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                            <h3 class="media-heading">ReactiveCocoa和RXSwift速查表</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/关于RAC的一些资料/">
+                            <h3 class="media-heading">关于RAC的一些资料</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+                            <h3 class="media-heading">RunLoop总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/13/聊一聊GCD的那些事/">
+                            <h3 class="media-heading">聊一聊GCD的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月13日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/">
+                            <h3 class="media-heading">聊一聊NSOperation的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/">
+                            <h3 class="media-heading">iOS动画篇之UIView动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                            <h3 class="media-heading">iOS动画篇之CoreAnimation动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
+                            <h3 class="media-heading">iOS动画之CATransition动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 50 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-rt08quwts7iav5x0cfd2ym0gb5qkd1lvrsmwrakxtkhefmaaes4ywkmnjnwf.min.js"></script>
+<script src="/assets/js/prism.js"></script>
+<!--SCRIPTS END-->
+
+    
+        <script type="text/javascript">
+            var duoshuoQuery = {short_name:'guiyongdong'};
+            (function() {
+                var ds = document.createElement('script');
+                ds.type = 'text/javascript';ds.async = true;
+                ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+                ds.charset = 'UTF-8';
+                (document.getElementsByTagName('head')[0]
+                || document.getElementsByTagName('body')[0]).appendChild(ds);
+            })();
+        </script>
+    
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('DWKE0MOOLY', '141d50cf933ece6dd635747973c4fe00');
+        var algoliaIndex = algoliaClient.initIndex('blog');
+    </script>
+
+    </body>
+</html>

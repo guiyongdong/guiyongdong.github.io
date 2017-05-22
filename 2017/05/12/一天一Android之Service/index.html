@@ -31,7 +31,7 @@ Service是Android四大组件之一，开发中会经常用到它，例如当检
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android29.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android33.gif?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android34.png?raw=true">
-<meta property="og:updated_time" content="2017-05-12T09:13:09.000Z">
+<meta property="og:updated_time" content="2017-05-12T09:23:22.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一天一Android之Service">
 <meta name="twitter:description" content="在Android系统中，知道为什么有些软件杀不死么？很大的原因就是Service。那Service是什么？
@@ -299,7 +299,7 @@ Service是Android四大组件之一，开发中会经常用到它，例如当检
 <p>新建了一个<code>DownloadService</code>，在里面启动了一个工作线程，在线程里下载图片，然后通过<code>BroadcastReceiver</code>通知<code>Activity</code>显示。</p>
 <p><code>Activity</code>的代码很简单，注册<code>BroadcastReceiver</code>，在<code>onReceiver</code>中显示图片就好了，代码如下：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServiceDemoActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> ImageView mImageView;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> BroadcastReceiver mReceiver = <span class="keyword">new</span> BroadcastReceiver() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</div><div class="line">            Bitmap bitmap = intent.getParcelableExtra(<span class="string">"bitmap"</span>);</div><div class="line">            mImageView.setImageBitmap(bitmap);</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_service_demo);</div><div class="line">        mImageView = (ImageView) findViewById(R.id.imageView);</div><div class="line"></div><div class="line">        <span class="comment">//注册广播</span></div><div class="line">        IntentFilter intentFilter = <span class="keyword">new</span> IntentFilter();</div><div class="line">        intentFilter.addAction(DownloadService.RECEIVER_ACTION);</div><div class="line">        LocalBroadcastManager.getInstance(<span class="keyword">this</span>).registerReceiver(mReceiver,intentFilter);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startDownload</span><span class="params">(View view)</span> </span>&#123;</div><div class="line">        Intent intent = <span class="keyword">new</span> Intent(<span class="keyword">this</span>,DownloadService.class);</div><div class="line">        intent.putExtra(<span class="string">"url"</span>,<span class="string">"http://www.8kmm.com/UploadFiles/2012/8/201208140920132659.jpg"</span>);</div><div class="line">        intent.setAction(DownloadService.ACTION_DOWNLOAD);</div><div class="line">        startService(intent);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android33.gif?raw=true"><br></div>
+<div align="center"><br><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/android/android33.gif?raw=true" width="375"><br></div>
 
 
 <h4 id="LocaService-使用Binder-和-服务通信"><a href="#LocaService-使用Binder-和-服务通信" class="headerlink" title="LocaService 使用Binder 和 服务通信"></a>LocaService 使用Binder 和 服务通信</h4><p>既然通过<code>startService</code>启动的服务与启动它的组件是独立的。相互通信比较麻烦，那么<code>Google</code>也提供了两者之间的通信方法，那就是组件绑定服务，也就是上文将的通过<code>bindService</code>将组件和服务绑定到一起。组件可以获取<code>Service</code>通过<code>onBind</code>返回的一个<code>IBinder</code>接口，这样两者就可以通信了，这也是<code>Service</code>应用类通信比较常用的方式。</p>
@@ -339,7 +339,7 @@ Service是Android四大组件之一，开发中会经常用到它，例如当检
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/20/ReactNative导航新宠儿react-navigation/"  data-tooltip="ReactNative导航新宠儿react-navigation">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -456,7 +456,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--disabled">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/20/ReactNative导航新宠儿react-navigation/"  data-tooltip="ReactNative导航新宠儿react-navigation">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -811,7 +811,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 49 篇文章
+                找到 50 篇文章
             </p>
         </div>
     </div>
