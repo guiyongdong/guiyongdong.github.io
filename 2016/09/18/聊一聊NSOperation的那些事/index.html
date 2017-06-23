@@ -22,7 +22,7 @@
 <meta property="og:url" content="http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。">
-<meta property="og:updated_time" content="2017-03-09T07:02:24.000Z">
+<meta property="og:updated_time" content="2017-06-23T01:33:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="聊一聊NSOperation的那些事">
 <meta name="twitter:description" content="在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。">
@@ -227,7 +227,8 @@
     
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
-            <p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br><a id="more"></a></p>
+            <p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。</p>
+<a id="more"></a>
 <h3 id="一、简介"><a href="#一、简介" class="headerlink" title="一、简介"></a>一、简介</h3><ul>
 <li>除了，NSThread和GCD实现多线程，配合使用NSOperation和NSOperationQueue也能实现多线程编程</li>
 </ul>
@@ -250,422 +251,72 @@
 <ul>
 <li>NSInvocationOperation</li>
 <li>NSBlockOperation</li>
-<li>自定义子类继承NSOperation，实现内部相应main的方法封装操作</li>
+<li>自定义子类继承NSOperation，实现NSOperation的某些方法</li>
 </ul>
-<blockquote>
-<p>1.1 NSInvocationOperation</p>
-</blockquote>
-<ul>
-<li><p>创建NSInvocationOperation对象<br><code>-(id)initWithTarget:(id)target selector:(SEL)selector object:(id)arg;</code></p>
-</li>
-<li><p>调用start方法开始执行操作</p>
-<ul>
-<li>默认情况下，调用了start方法后并不会开一条新线程去执行操作，而是在当前线程同步执行操作<pre><code>// 一旦执行操作，就会调用target的selector方法
--(void)start;
-</code></pre></li>
-<li>只有将NSOperation操作任务放到一个NSOperationQueue中，才会异步执行操作</li>
+<h5 id="NSInvocationOperation"><a href="#NSInvocationOperation" class="headerlink" title="NSInvocationOperation"></a>NSInvocationOperation</h5><ul>
+<li>创建NSInvocationOperation对象</li>
 </ul>
-</li>
-<li><p>使用</p>
-<pre><code>- (void)invocation
-{    
-  // 1.将操作封装到Operation中
-  NSInvocationOperation *op1 = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(demo) object:nil];
-  // 2.执行封装的操作
-  // 如果直接执行NSInvocationOperation中的操作, 那么默认会在主线程中执行
-  [op1 start];
-
-  NSInvocationOperation *op2 = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(test) object:nil];
-  [op2 start];
-}
-</code></pre>
-
-</li>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">-(<span class="keyword">id</span>)initWithTarget:(<span class="keyword">id</span>)target selector:(SEL)selector object:(<span class="keyword">id</span>)arg;</div></pre></td></tr></table></figure>
+<p><code>NSInvocationOperation</code>将操作封装成<code>SEL</code>，只有将<code>NSInvocationOperation</code>添加到<code>NSOperationQueue</code>中，才会异步执行操作。</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)test &#123;    </div><div class="line">    <span class="comment">// 1.将操作封装到Operation中</span></div><div class="line">    <span class="built_in">NSInvocationOperation</span> *op1 = [[<span class="built_in">NSInvocationOperation</span> alloc] initWithTarget:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(demo) object:<span class="literal">nil</span>];</div><div class="line">    <span class="comment">// 2.执行封装的操作</span></div><div class="line">    <span class="comment">// 如果直接执行NSInvocationOperation中的操作, 那么默认会在主线程中执行</span></div><div class="line">    <span class="comment">//[op1 start];</span></div><div class="line">	 <span class="comment">// 创建队列</span></div><div class="line">    <span class="built_in">NSOperationQueue</span> *queue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</div><div class="line">    <span class="comment">//将任务加入到队列 任务会自动开启</span></div><div class="line">    [queue addOperation:op1];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="NSBlockOperation"><a href="#NSBlockOperation" class="headerlink" title="NSBlockOperation"></a>NSBlockOperation</h5><ul>
+<li>创建NSBlockOperation 对象</li>
 </ul>
-<blockquote>
-<p>1.2 NSBlockOperation</p>
-</blockquote>
-<ul>
-<li>注意点：<code>只要NSBlockOperation封装的操作数 &gt;1，就会异步执行操作</code></li>
-<li>创建NSBlockOperation对象<pre><code>+(id)blockOperationWithBlock:(void(^)(void))block;</code></pre></li>
-<li>通过addExecutionBlock:方法添加更多的操作<pre><code>-(void)addExecutionBlock:(void(^)(void))block;</code></pre></li>
-<li><p>使用</p>
-<pre><code>- (void)blockOperation
-{
-  // 1.封装操作
-  NSBlockOperation *op1 = [NSBlockOperation blockOperationWithBlock:^{
-      NSLog(@"1- %@", [NSThread currentThread]);
-  }];
-
-  // 2.添加操作
-  [op1 addExecutionBlock:^{
-      NSLog(@"2- %@", [NSThread currentThread]);
-  }];
-  [op1 addExecutionBlock:^{
-      NSLog(@"3- %@", [NSThread currentThread]);
-  }];
-
-  // 2.执行操作
-  // 如果只封装了一个操作, 那么默认会在主线程中执行
-  // 如果封装了多个操作, 那么除了第一个操作以外, 其它的操作会在子线程中执行
-  [op1 start];
-}</code></pre>
-
-</li>
-</ul>
-<blockquote>
-<p>1.3 自定义 NSOperation，继承NSOperation</p>
-</blockquote>
-<ul>
-<li>如果是自定义类继承于NSOperation, 那么需要将操作写到自定义类的main方法中，重写main方法<ul>
-<li>重写-(void)main方法的注意点<ul>
-<li>自己创建自动释放池（因为如果是异步操作，无法访问主线程的自动释放池）</li>
-<li>经常通过-(BOOL)isCancelled方法检测操作是否被取消，对取消做出响应</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>这种实现方式封装操作, 可以提高代码的复用性</li>
-<li>1.创建类JPOperation，继承NSOperation</li>
-</ul>
-<pre><code>#import <foundation foundation.h="">
-@interface JPOperation : NSOperation
-
-@end
-
-#import "JPOperation.h"
-
-@implementation JPOperation
-
-// 我们要重写main方法，封装操作
-- (void)main
-{
-    NSLog(@"%s, %@", __func__,[NSThread currentThread]);
-}
-@end
-</foundation></code></pre>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+ (instancetype)blockOperationWithBlock:(void (^)(void))block;</div></pre></td></tr></table></figure>
+<p><code>NSBlockOperation</code>将任务封装成一个block，这种方式看起来更方便。当然，你还可以调用<code>-addExecutionBlock:</code>方法，添加另一个任务。</p>
+<p>注意点：只要<code>NSBlockOperation</code>封装的操作数 &gt;1，直接调用<code>start</code>方法，就会异步执行操作，但是默认的初始化的<code>block</code>任务是在主线程中执行。</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)test &#123;    </div><div class="line">    <span class="built_in">NSBlockOperation</span> *blockOperation = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"开始执行任务"</span>);</div><div class="line">    &#125;];</div><div class="line">    [blockOperation addExecutionBlock:^&#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"开始下一个执行任务"</span>);</div><div class="line">    &#125;];</div><div class="line">    <span class="comment">//如果不将NSBlockOperation添加到队列中，而是直接调用start方法，那么默认初始化时的任务执行在主线程中，而通过addExecutionBlock方法添加的任务都执行在子线程中。</span></div><div class="line">    <span class="comment">//[blockOperation start];</span></div><div class="line">    <span class="comment">// 创建队列</span></div><div class="line">    <span class="built_in">NSOperationQueue</span> *queue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</div><div class="line">    <span class="comment">//将任务加入到队列 任务会自动开启</span></div><div class="line">    [queue addOperation: blockOperation];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="自定义-NSOperation"><a href="#自定义-NSOperation" class="headerlink" title="自定义 NSOperation"></a>自定义 NSOperation</h5><p>首先需要继承<code>NSOperation</code>，然后实现某些方法。<br>我们有两种方法来实现自定义<code>operation</code>，一种是通过重写<code>main</code>方法，一种是通过重写<code>start</code>方法，前者实现起来更简单，我们不需要管理一些属性状态，例如<code>isExecuting</code>或者<code>isFinished</code>等。当<code>main</code>方法执行结束的时候，这个<code>operation</code>就结束了。另外一种是重写<code>start</code>方法，但是这种方法需要你管理各种属性的状态，虽然麻烦，但是相对灵活。如果你同时实现<code>start</code>和<code>main</code>方法，则优先使用<code>start</code>方法。因为第一种方法比较简单，我们这里以第二种方法来自定义<code>operation</code>。</p>
+<p>首先，父类提供了一系列的<code>getter</code>方法，用以获知任务的状态。</p>
+<p>
 
 <ul>
-<li>2.使用自定义的NSOperation</li>
-</ul>
-<pre><code>// 1.封装操作
-JPOperation *op1 = [[JPOperation alloc] init];
-// 2.执行操作
-[op1 start];
+<li><p><code>@property (readonly, getter=isReady) BOOL ready</code><br>此属性表明<code>NSOperation</code>是否已经准备好开始执行任务了，如果返回<code>false</code>，<code>NSOperation</code>的之后的方法都不会执行。通常情况下，自定义operation，我们可以利用它来让调用者必须满足一定的条件才能执行任务。</p>
+<p>
+</p></li>
+<li><p><code>@property (readonly, getter=isExecuting) BOOL executing</code><br>是否正在执行。</p>
+<p>
+</p></li>
+<li><p><code>@property (readonly, getter=isFinished) BOOL finished</code><br>任务是否完成</p>
+<p>
+</p></li>
+<li><p><code>@property (readonly, getter=isCancelled) BOOL cancelled</code><br>任务是否取消</p>
+<p>
+</p></li>
+<li><p><code>@property (readonly, getter=isConcurrent) BOOL concurrent</code><br>表示是否异步执行任务</p>
+<p>
 
-JPOperation *op2 = [[JPOperation alloc] init];
-[op2 start];
-</code></pre>
-
-
-<h3 id="三、NSOperationQueue"><a href="#三、NSOperationQueue" class="headerlink" title="三、NSOperationQueue"></a>三、NSOperationQueue</h3><ul>
-<li><code>NSOperationQueue的作用:</code><ul>
-<li>如上所述：NSOperation可以调用start方法来执行任务，但默认是同步执行的</li>
-<li>如果将NSOperation<code>添加到NSOperationQueue</code>（操作队列）中，<code>系统会自动异步执行NSOperation中的操作</code></li>
+</p></li>
 </ul>
-</li>
-<li>添加操作到NSOperationQueue：两个方法<ul>
-<li>只要将一个任务添加到alloc/init的队列(默认并发，可以设置其为串行)中, 那么队列内部会自动调用start</li>
-<li>如果想实现串行, 那么就设置队列的maxConcurrentOperationCount = 1</li>
-</ul>
-</li>
-</ul>
-<pre><code>-(void)addOperation:(NSOperation*)op;
--(void)addOperationWithBlock:(void(^)(void))block;
-</code></pre>
-
-<blockquote>
-<p>基本使用</p>
-</blockquote>
+</p><p>自定义<code>operation</code>如下</p>
+<p><code>MyOperation.h</code></p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyOperation</span> : <span class="title">NSOperation</span></span></div><div class="line"></div><div class="line">+ (<span class="keyword">instancetype</span>)crateOperationWithMoney:(<span class="keyword">int</span> )money;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p><code>MyOperation.m</code></p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">"MyOperation.h"</span></span></div><div class="line"><span class="meta">#import <span class="meta-string">&lt;objc/runtime.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyOperation</span> ()</span></div><div class="line"></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="keyword">int</span> money;</div><div class="line"></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> cancelled;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> executing;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> finished;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> concurrent;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> asynchronous;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">MyOperation</span></span></div><div class="line"></div><div class="line"><span class="keyword">@synthesize</span> cancelled;</div><div class="line"><span class="keyword">@synthesize</span> executing;</div><div class="line"><span class="keyword">@synthesize</span> finished;</div><div class="line"><span class="keyword">@synthesize</span> concurrent;</div><div class="line"><span class="keyword">@synthesize</span> asynchronous;</div><div class="line"></div><div class="line">+ (<span class="keyword">instancetype</span>)crateOperationWithMoney:(<span class="keyword">int</span> )money &#123;</div><div class="line">    MyOperation *operation = [[MyOperation alloc] init];</div><div class="line">    operation.money = money;</div><div class="line">    <span class="keyword">return</span> operation;</div><div class="line">&#125;</div><div class="line">- (<span class="built_in">BOOL</span>)isReady &#123;</div><div class="line">    <span class="comment">//只有当金额大于等于100的时候才执行任务</span></div><div class="line">    <span class="keyword">return</span> _money &gt;= <span class="number">100</span>;</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)start &#123;</div><div class="line">    <span class="comment">//判断任务状态</span></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.isExecuting || <span class="keyword">self</span>.isCancelled || <span class="keyword">self</span>.isFinished) &#123;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"%@--%@开始花钱"</span>,<span class="keyword">self</span>.name,[<span class="built_in">NSThread</span> currentThread]);</div><div class="line">    <span class="keyword">self</span>.executing = <span class="literal">YES</span>;</div><div class="line"></div><div class="line">    <span class="keyword">while</span> (<span class="keyword">self</span>.money &gt; <span class="number">0</span>)&#123;</div><div class="line">        <span class="keyword">self</span>.money--;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@花钱了%d"</span>,<span class="keyword">self</span>.name,<span class="keyword">self</span>.money);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//执行完毕</span></div><div class="line">    <span class="keyword">self</span>.finished = <span class="literal">YES</span>;</div><div class="line">    <span class="keyword">self</span>.executing = <span class="literal">NO</span>;</div><div class="line">&#125;</div><div class="line">- (<span class="built_in">BOOL</span>)isExecuting &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.executing;</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)cancel &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"%@%@取消"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.name);</div><div class="line">    <span class="keyword">self</span>.finished = <span class="literal">YES</span>;</div><div class="line">    <span class="keyword">self</span>.cancelled = <span class="literal">YES</span>;</div><div class="line">    <span class="keyword">self</span>.executing = <span class="literal">NO</span>;</div><div class="line">&#125;</div><div class="line">- (<span class="built_in">BOOL</span>)isCancelled &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.cancelled;</div><div class="line">&#125;</div><div class="line">- (<span class="built_in">BOOL</span>)isFinished &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.finished;</div><div class="line">&#125;</div><div class="line">- (<span class="built_in">BOOL</span>)isConcurrent &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.concurrent;</div><div class="line">&#125;</div><div class="line">- (<span class="built_in">BOOL</span>)isAsynchronous &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.asynchronous;</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)dealloc &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"%@dealloc"</span>,<span class="keyword">self</span>.name);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>这仅仅是一个简单的实例，真正的项目中还需要打磨，如果没有特殊的要求，还是使用系统提供的比较好。</p>
+<h5 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h5><p>目的 -&gt; NSOperation之间可以设置依赖来保证执行顺序<br>例如：一定要让操作A执行完后，才能执行操作B，可以这么写</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">[operationB addDependency:operationA];</div></pre></td></tr></table></figure>
+<p>例如我们通过不同的线程下载图片 当都下载完成以后在合成图片</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">"ViewController.h"</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">ViewController</span> ()</span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">weak</span>, <span class="keyword">nonatomic</span>) <span class="keyword">IBOutlet</span> <span class="built_in">UIImageView</span> *imageView;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ViewController</span></span></div><div class="line">- (<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span> *)touches withEvent:(<span class="built_in">UIEvent</span> *)event</div><div class="line">&#123;</div><div class="line">    <span class="built_in">NSOperationQueue</span> *queue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</div><div class="line">    <span class="built_in">NSOperationQueue</span> *queue2 = [[<span class="built_in">NSOperationQueue</span> alloc] init];</div><div class="line"></div><div class="line">    __block <span class="built_in">UIImage</span> *image1 = <span class="literal">nil</span>;</div><div class="line">    __block <span class="built_in">UIImage</span> *image2 = <span class="literal">nil</span>;</div><div class="line">    <span class="comment">// 1.开启一个线程下载第一张图片</span></div><div class="line">    <span class="built_in">NSOperation</span> *op1 = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</div><div class="line">        <span class="built_in">NSURL</span> *url = [<span class="built_in">NSURL</span> URLWithString:<span class="string">@"http://cdn.cocimg.com/assets/images/logo.png?v=201510272"</span>];</div><div class="line">        <span class="built_in">NSData</span> *data = [<span class="built_in">NSData</span> dataWithContentsOfURL:url];</div><div class="line">        <span class="comment">// 2.生成下载好的图片</span></div><div class="line">        <span class="built_in">UIImage</span> *image = [<span class="built_in">UIImage</span> imageWithData:data];</div><div class="line">        image1 = image;</div><div class="line">    &#125;];</div><div class="line"></div><div class="line">    <span class="comment">// 2.开启一个线程下载第二长图片</span></div><div class="line">    <span class="built_in">NSOperation</span> *op2 = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</div><div class="line">        <span class="built_in">NSURL</span> *url = [<span class="built_in">NSURL</span> URLWithString:<span class="string">@"https://www.baidu.com/img/bd_logo1.png"</span>];</div><div class="line">        <span class="built_in">NSData</span> *data = [<span class="built_in">NSData</span> dataWithContentsOfURL:url];</div><div class="line">        <span class="comment">// 2.生成下载好的图片</span></div><div class="line">        <span class="built_in">UIImage</span> *image = [<span class="built_in">UIImage</span> imageWithData:data];</div><div class="line">        image2 = image;</div><div class="line"></div><div class="line">    &#125;];</div><div class="line">    <span class="comment">// 3.开启一个线程合成图片</span></div><div class="line">    <span class="built_in">NSOperation</span> *op3 = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</div><div class="line">        <span class="built_in">UIGraphicsBeginImageContext</span>(<span class="built_in">CGSizeMake</span>(<span class="number">200</span>, <span class="number">200</span>));</div><div class="line">        [image1 drawInRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">200</span>)];</div><div class="line">        [image2 drawInRect:<span class="built_in">CGRectMake</span>(<span class="number">100</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">200</span>)];</div><div class="line">        <span class="built_in">UIImage</span> *newImage = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</div><div class="line">        <span class="built_in">UIGraphicsEndImageContext</span>();</div><div class="line"></div><div class="line">        <span class="comment">// 4.回到主线程更新UI</span></div><div class="line">        [[<span class="built_in">NSOperationQueue</span> mainQueue] addOperationWithBlock:^&#123;</div><div class="line">            <span class="built_in">NSLog</span>(<span class="string">@"回到主线程更新UI"</span>);</div><div class="line">            <span class="keyword">self</span>.imageView.image = newImage;</div><div class="line">        &#125;];</div><div class="line">    &#125;];</div><div class="line"></div><div class="line"></div><div class="line">    <span class="comment">// 监听任务是否执行完毕</span></div><div class="line">    op1.completionBlock = ^&#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"第一张图片下载完毕"</span>);</div><div class="line">    &#125;;</div><div class="line">    op2.completionBlock = ^&#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"第二张图片下载完毕"</span>);</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    <span class="comment">// 添加依赖</span></div><div class="line">    <span class="comment">// 只要添加了依赖, 那么就会等依赖的任务执行完毕, 才会执行当前任务</span></div><div class="line">    <span class="comment">// 注意:</span></div><div class="line">    <span class="comment">// 1.添加依赖, 不能添加循环依赖</span></div><div class="line">    <span class="comment">// 2.NSOperation可以跨队列添加依赖</span></div><div class="line">    [op3 addDependency:op1];</div><div class="line">    [op3 addDependency:op2];</div><div class="line"></div><div class="line">    <span class="comment">// 将任务添加到队列中</span></div><div class="line">    [queue addOperation:op1];</div><div class="line">    [queue addOperation:op2];</div><div class="line">    [queue2 addOperation:op3];</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<h3 id="三、NSOperationQueue"><a href="#三、NSOperationQueue" class="headerlink" title="三、NSOperationQueue"></a>三、NSOperationQueue</h3><p><code>NSOperation</code>可以调用<code>start</code>方法来执行操作，但是默认是同步执行的。将<code>NSOperation</code>添加到<code>NSOperationQueue</code>中，系统会自动异步调用<code>NSOperation</code>的<code>start</code>方法或者<code>main</code>方法来执行任务。</p>
+<p><code>NSOperationQueue</code>提供了三种添加任务的方法：</p>
+<p></p><p></p>
 <ul>
-<li>GCD队列:<ul>
-<li>串行: 自己创建, 主队列</li>
-<li>并发: 自己创建, 全局</li>
+<li><code>- (void)addOperation:(NSOperation *)op</code> 将NSOperation对象添加到队列中</li>
+<li><code>- (void)addOperations:(NSArray&lt;NSOperation *&gt; *)ops waitUntilFinished:(BOOL)wait</code> 将NSOperation对象数组添加到队列中，wait表示是否阻塞当前队列，YES表明以后添加的任务只能在ops中的所有任务执行完成以后才会执行，NO表示不阻塞当前队列</li>
+<li><code>- (void)addOperationWithBlock:(void (^)(void))block</code> 将一个block添加到任务中。</li>
 </ul>
-</li>
-<li>NSOperationQueue:<ul>
-<li>自己创建: alloc/init –&gt; 默认是并发 –&gt; 也可以让它串行</li>
-<li>主队列 : mainQueue</li>
-</ul>
-</li>
-</ul>
-<pre><code>#import "ViewController.h"
-#import "JPOperation.h"
-
-@interface ViewController ()
-
-@end
-
-@implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // 1.创建队列
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    // 2.封装任务
-    JPOperation *op1 = [[JPOperation alloc] init];
-    JPOperation *op2 = [[JPOperation alloc] init];
-
-    // 3.将任务添加到队列中
-    [queue addOperation:op1];
-    [queue addOperation:op2];
-}
-
-- (void)block
-{
-    // 1.创建队列
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-
-    // 2.将任务添加到队列中
-    // addOperationWithBlock方法会做两件事情
-    // 1.根据传入的block, 创建一个NSBlockOperation对象
-    // 2.将内部创建好的NSBlockOperation对象, 添加到队列中
-    [queue addOperationWithBlock:^{
-        NSLog(@"1 = %@", [NSThread currentThread]);
-    }];
-    [queue addOperationWithBlock:^{
-        NSLog(@"2 = %@", [NSThread currentThread]);
-    }];
-}
-
-- (void)invation
-{
-    /*
-     GCD队列:
-     串行: 自己创建, 主队列
-     并发: 自己创建, 全局
-
-     NSOperationQueue:
-     自己创建: alloc/init --> 默认是并发 --> 也可以让它串行
-     主队列  : mainQueue
-     */
-    // 1.创建队列
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    //    NSOperationQueue *queue = [NSOperationQueue mainQueue];
-
-    // 2.封装任务
-    NSInvocationOperation *op1 = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(demo) object:nil];
-    NSInvocationOperation *op2 = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(test) object:nil];
-
-    // 3.将任务添加到队列中
-    // 只要将一个任务添加到alloc/init的队列中, 那么队列内部会自动调用start
-    // 只要将一个任务添加到alloc/init的队列中, 就会开启一个新的线程执行队列
-    [queue addOperation:op1];
-    [queue addOperation:op2];
-}
-
-- (void)demo
-{
-    NSLog(@"demo = %@", [NSThread currentThread]);
-}
-- (void)test
-{
-    NSLog(@"test = %@", [NSThread currentThread]);
-}
-@end
-</code></pre>
-
-
-<h3 id="四、NSOperatinoQueue的串行和并发-：-最大并发数"><a href="#四、NSOperatinoQueue的串行和并发-：-最大并发数" class="headerlink" title="四、NSOperatinoQueue的串行和并发 ： 最大并发数"></a>四、NSOperatinoQueue的串行和并发 ： 最大并发数</h3><ul>
-<li>队列的maxConcurrentOperationCount最大并发数</li>
-<li>maxConcurrentOperationCount 默认等于 -1, 代表不限制, 可以创建N多线程</li>
-<li>alloc/init的NSOperatinoQueue队列默认就是并发， 如果想实现串行, 那么就设置maxConcurrentOperationCount = 1</li>
-<li>注意: 最大并发数, 不能设置为0, 否则任务不会被执行 </li>
-</ul>
-<pre><code>#import "ViewController.h"
-
-@interface ViewController ()
-
-@end
-
-@implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // 1.创建队列
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init
-                               ];
-    // maxConcurrentOperationCount 默认等于 -1, 代表不限制, 可以创建N多线程
-    // 默认就是并发
-    // 如果想实现串行, 那么就设置maxConcurrentOperationCount = 1
-    // 注意: 最大并发数, 不能设置为0, 否则任务不会被执行 \
-    如果想再主线程中执行任务, 那么直接创建mainQueu即可
-//    queue.maxConcurrentOperationCount = 1;
-
-    // 2.创建任务
-    NSBlockOperation *op1 = [NSBlockOperation blockOperationWithBlock:^{
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"1 = %@", [NSThread currentThread]);
-    }];
-    NSBlockOperation *op2 = [NSBlockOperation blockOperationWithBlock:^{
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"2 = %@", [NSThread currentThread]);
-    }];
-    NSBlockOperation *op3 = [NSBlockOperation blockOperationWithBlock:^{
-        [NSThread sleepForTimeInterval:1];
-        NSLog(@"3 = %@", [NSThread currentThread]);
-    }];
-
-    // 3.将任务添加到队列中
-    [queue addOperation:op1];
-    [queue addOperation:op2];
-    [queue addOperation:op3];   
-}
-@end
-</code></pre>
-
-<h3 id="五、NSOperationQueue的暂停-恢复-取消"><a href="#五、NSOperationQueue的暂停-恢复-取消" class="headerlink" title="五、NSOperationQueue的暂停-恢复-取消"></a>五、NSOperationQueue的暂停-恢复-取消</h3><blockquote>
-<p>1、取消队列的所有操作</p>
-</blockquote>
+<p>这里有几点需要注意的，添加的任务一定不能是正在执行的或者已经完成的，可通过<code>executing</code>和<code>finished</code>来判断。不能重复添加一个<code>operation</code>到同一个队列中，否则会报NSInvalidArgumentException异常。</p>
+<p>再来看看<code>NSOperationQueue</code>的属性：</p>
+<p></p><p></p>
 <ul>
-<li>也可以调用NSOperation的-(void)cancel方法取消单个操作</li>
-<li>注意点：<ul>
-<li>任务只要被取消, 就不会再恢复了</li>
-<li>取消任务和暂停任务一样, 不会取消当前正在执行的任务, 只能取消还未执行的任务<pre><code>-(void)cancelAllOperations;
-</code></pre>
-
-</li>
+<li><code>operations</code>当前正在执行或者等待执行的任务的集合，如果一个任务执行完毕，会从中删除。</li>
+<li><code>operationCount</code> 当前队列中的任务数（正在执行或者等待执行）</li>
+<li><code>maxConcurrentOperationCount</code> 最大并发数，默认是-1，即无限大，如果设置为1，那么当前队列即为串行队列，但不能设置成0，如果设置成0，那么当前的所有任务都不能执行。</li>
+<li><code>name</code> 队列的名字</li>
 </ul>
-</li>
-</ul>
-<blockquote>
-<p>2、暂停和恢复队列</p>
-</blockquote>
-<ul>
-<li>注意:<ul>
-<li>1.如果在任务执行的过程中暂停队列中的任务, 那么当前正在执行的任务并不会被暂停, 而是会暂停队列中的下一个任务</li>
-<li>2.恢复任务, 是从队列第一个没有被执行过的任务开始恢复<pre><code>-(void)setSuspended:(BOOL)b;//如果是YES, 代表需要暂停，NO代表代表不需要暂停 ==  恢复执行
--(BOOL)isSuspended;
-</code></pre>
-
-</li>
-</ul>
-</li>
-</ul>
-<h3 id="六、NSOperationQueue线程间通信"><a href="#六、NSOperationQueue线程间通信" class="headerlink" title="六、NSOperationQueue线程间通信"></a>六、NSOperationQueue线程间通信</h3><blockquote>
-<p>实例程序：开启子线程下载图片，下载好图片后，回到主线程进行更新UI</p>
-</blockquote>
-<pre><code>#import "ViewController.h"
-
-@interface ViewController ()
-@property (weak, nonatomic) IBOutlet UIImageView *imageView;
-
-@end
-
-@implementation ViewController
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    // 1.开启子线程下载图片
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    [queue addOperationWithBlock:^{
-     // 子线程
-        NSString *urlStr = @"https://www.baidu.com/img/bd_logo1.png";
-    // url中文编码，防止乱码
-    // urlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        NSURL *url = [NSURL URLWithString:urlStr];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        // 2.生成下载好的图片
-        UIImage *image = [UIImage imageWithData:data];
-
-        // 3.回到主线程更新UI
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            NSLog(@"更新UI");
-           // 主线程
-            self.imageView.image = image;
-        }];
-    }];
-}
-@end
-</code></pre>
-
-<h3 id="七、操作依赖"><a href="#七、操作依赖" class="headerlink" title="七、操作依赖"></a>七、操作依赖</h3><ul>
-<li>1、目的 -&gt; NSOperation之间可以设置依赖来保证执行顺序<ul>
-<li>例如：一定要让操作A执行完后，才能执行操作B，可以这么写</li>
-</ul>
-</li>
-<li>只要添加了依赖, 那么就会等依赖的任务执行完毕, 才会执行当前任务  <pre><code>[operationB addDependency:operationA];// 操作B依赖于操作A , A操作执行完才会执行操作B</code></pre></li>
-<li>2、除了同一quere操作间建立依赖关系，当然也可以在不同queue的NSOperation之间创建依赖关系</li>
-<li>注意点：<ul>
-<li>不能相互依赖 -&gt; 比如A依赖B，B依赖A</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>经典实例：合成图片</p>
-</blockquote>
-<pre><code>#import "ViewController.h"
-
-@interface ViewController ()
-@property (weak, nonatomic) IBOutlet UIImageView *imageView;
-
-@end
-
-@implementation ViewController
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    NSOperationQueue *queue2 = [[NSOperationQueue alloc] init];
-
-    __block UIImage *image1 = nil;
-    __block UIImage *image2 = nil;
-    // 1.开启一个线程下载第一张图片
-    NSOperation *op1 = [NSBlockOperation blockOperationWithBlock:^{
-        NSURL *url = [NSURL URLWithString:@"http://cdn.cocimg.com/assets/images/logo.png?v=201510272"];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        // 2.生成下载好的图片
-        UIImage *image = [UIImage imageWithData:data];
-        image1 = image;
-    }];
-
-    // 2.开启一个线程下载第二长图片
-    NSOperation *op2 = [NSBlockOperation blockOperationWithBlock:^{
-        NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/img/bd_logo1.png"];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        // 2.生成下载好的图片
-        UIImage *image = [UIImage imageWithData:data];
-        image2 = image;
-
-    }];
-    // 3.开启一个线程合成图片
-    NSOperation *op3 = [NSBlockOperation blockOperationWithBlock:^{
-        UIGraphicsBeginImageContext(CGSizeMake(200, 200));
-        [image1 drawInRect:CGRectMake(0, 0, 100, 200)];
-        [image2 drawInRect:CGRectMake(100, 0, 100, 200)];
-        UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-
-        // 4.回到主线程更新UI
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            NSLog(@"回到主线程更新UI");
-            self.imageView.image = newImage;
-        }];
-    }];
-
-
-    // 监听任务是否执行完毕
-    op1.completionBlock = ^{
-        NSLog(@"第一张图片下载完毕");
-    };
-    op2.completionBlock = ^{
-        NSLog(@"第二张图片下载完毕");
-    };
-
-    // 添加依赖
-    // 只要添加了依赖, 那么就会等依赖的任务执行完毕, 才会执行当前任务
-    // 注意:
-    // 1.添加依赖, 不能添加循环依赖
-    // 2.NSOperation可以跨队列添加依赖
-    [op3 addDependency:op1];
-    [op3 addDependency:op2];
-
-    // 将任务添加到队列中
-    [queue addOperation:op1];
-    [queue addOperation:op2];
-    [queue2 addOperation:op3];
-}
-@end</code></pre>
-
+<p>当然，<code>NSOperationQueue</code>也提供了取消操作，<br><code>- (void)cancelAllOperations</code>，此方法会取消所有未执行的操作。内部实现是分别调用任务的<code>cancel</code>方法。但是已经执行的操作将会继续执行。另外此方法并不会将取消的操作从队列中移除。但是实际却移除了，这是因为<code>NSInvocationOperation</code>和<code>NSBlockOperation</code>内部自己管理了<code>finish</code>状态，在<code>cancel</code>方法中会将当前任务的<code>finish</code>设置为<code>YES</code>。</p>
+<p><code>- (void)waitUntilAllOperationsAreFinished</code>阻塞当前任务队列。</p>
 
             
         </div>
@@ -1086,7 +737,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                                 
                             </span>
                         </span>
-                        <div class="media-content hide-xs font-merryweather"><p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。<br></div>
+                        <div class="media-content hide-xs font-merryweather"><p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。</p></div>
                     </div>
                     <div style="clear:both;"></div>
                     <hr>
