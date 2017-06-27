@@ -1,0 +1,805 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="贵大头的博客">
+    <title>iOS多线程之各种锁的简单介绍 - 贵大头的博客</title>
+    <meta name="author" content="贵永冬">
+<link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta name="description" content="iOS开发中，多线程开发是个头疼的问题，最大的问题就是资源竞争问题。同一时间，多个线程对资源的读或者写都有可能造成不可预知的问题。解决这种问题的手段就是在操作资源的时候加上锁，那么常用的锁都有哪几种呢？本篇博客就来简单的说一说。">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="iOS多线程之各种锁的简单介绍">
+<meta property="og:url" content="http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/index.html">
+<meta property="og:site_name" content="贵大头的博客">
+<meta property="og:description" content="iOS开发中，多线程开发是个头疼的问题，最大的问题就是资源竞争问题。同一时间，多个线程对资源的读或者写都有可能造成不可预知的问题。解决这种问题的手段就是在操作资源的时候加上锁，那么常用的锁都有哪几种呢？本篇博客就来简单的说一说。">
+<meta property="og:image" content="http://blog.ibireme.com/wp-content/uploads/2016/01/lock_benchmark.png">
+<meta property="og:updated_time" content="2017-06-27T06:24:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS多线程之各种锁的简单介绍">
+<meta name="twitter:description" content="iOS开发中，多线程开发是个头疼的问题，最大的问题就是资源竞争问题。同一时间，多个线程对资源的读或者写都有可能造成不可预知的问题。解决这种问题的手段就是在操作资源的时候加上锁，那么常用的锁都有哪几种呢？本篇博客就来简单的说一说。">
+<meta name="twitter:image" content="http://blog.ibireme.com/wp-content/uploads/2016/01/lock_benchmark.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-yrst5vo1nxaxbp2g3v9na2wg1lixlpr3ghbjdvskeixmu79deycecx3rh4bt.min.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">贵大头的博客</a>
+    </div>
+    
+        
+            <a  class="header-right-icon "
+                href="#about">
+        
+        
+            <i class="fa fa-lg fa-header.jpg"></i>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a href="/#about">
+                    <img class="sidebar-profile-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">贵永冬</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="https://github.com/guiyongdong" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-github"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link " href="mailto:564024928@qq.com" target="_blank">
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-envelope-o"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">订阅</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            iOS多线程之各种锁的简单介绍
+        </h1>
+    
+    <div class="post-meta">
+    <time itemprop="datePublished" datetime="2017-06-26T14:48:28+08:00">
+	
+		    6月 26, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
+
+
+    
+</div>
+
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>iOS开发中，多线程开发是个头疼的问题，最大的问题就是资源竞争问题。同一时间，多个线程对资源的读或者写都有可能造成不可预知的问题。解决这种问题的手段就是在操作资源的时候加上锁，那么常用的锁都有哪几种呢？本篇博客就来简单的说一说。</p>
+<a id="more"></a>number<br><br>### 多线程卖票<br><br><figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)sellTicket &#123;</div><div class="line">    <span class="keyword">self</span>.number = <span class="number">5</span>;</div><div class="line">    <span class="keyword">void</span>(^sellTicket)() = ^() &#123;</div><div class="line">        <span class="comment">//其他代码</span></div><div class="line"></div><div class="line">        [<span class="keyword">self</span>.lock lock];</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">0.1</span>];</div><div class="line">            <span class="keyword">self</span>.number--;</div><div class="line">            <span class="built_in">NSLog</span>(<span class="string">@"%@还有%ld张票"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.number);</div><div class="line">        &#125;</div><div class="line">        [<span class="keyword">self</span>.lock unlock];</div><div class="line">        </div><div class="line">        <span class="comment">//其他代码</span></div><div class="line">    &#125;;</div><div class="line">    </div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), sellTicket);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面的代码是典型的多线程问题，现在有5张票，开启了10个窗口（三条线程）,进行卖票（资源竞争），每个窗口只卖一张，卖票的时候判断了票的个数，但是输出结果依然有问题。输出如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164897</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x61000007bf80</span>&gt;&#123;number = <span class="number">22</span>, name = (null)&#125;还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164888</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x61000007ac80</span>&gt;&#123;number = <span class="number">16</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164893</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x60000007c980</span>&gt;&#123;number = <span class="number">17</span>, name = (null)&#125;还有<span class="number">2</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164894</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x600000076b00</span>&gt;&#123;number = <span class="number">19</span>, name = (null)&#125;还有<span class="number">2</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164895</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x608000262b80</span>&gt;&#123;number = <span class="number">20</span>, name = (null)&#125;还有<span class="number">2</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164896</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x600000077d40</span>&gt;&#123;number = <span class="number">21</span>, name = (null)&#125;还有<span class="number">2</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164427</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x608000262c40</span>&gt;&#123;number = <span class="number">15</span>, name = (null)&#125;还有<span class="number">-1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164892</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x608000262a40</span>&gt;&#123;number = <span class="number">18</span>, name = (null)&#125;还有<span class="number">2</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164891</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x61000007c280</span>&gt;&#123;number = <span class="number">14</span>, name = (null)&#125;还有<span class="number">-2</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-26</span> <span class="number">16</span>:<span class="number">03</span>:<span class="number">23.902</span> OCDemo[<span class="number">59833</span>:<span class="number">17164889</span>] &lt;<span class="built_in">NSThread</span>: <span class="number">0x60800007f600</span>&gt;&#123;number = <span class="number">13</span>, name = (null)&#125;还有<span class="number">-3</span>张票</div></pre></td></tr></table></figure>
+<p>这就是典型的多线程问题。在同一时间内多个线程共同操作一个数据，就会发生这种问题。那么解决这种问题最常用的手段就是加锁，当然，还有其他的解决办法，例如我们可以将操作数据的代码放到串行队列中，但这篇文章主要来说一说各种锁的用法。</p>
+<h3 id="锁的概念"><a href="#锁的概念" class="headerlink" title="锁的概念"></a>锁的概念</h3><p>锁是最常用的同步工具，一段代码在同一时间只能允许被一个线程访问，比如线程A进入加锁代码以后，线程会持有这个锁，当其他线程进入这段代码以后就无法访问，只有线程A释放掉锁以后其他线程才能继续访问这段代码。但是，通常情况下，我们不需要将整段代码放入到锁中，只需要将操作数据的部分代码加锁即可。</p>
+<h3 id="NSLock"><a href="#NSLock" class="headerlink" title="NSLock"></a>NSLock</h3><p><code>NSLock</code>是一个简单的互斥锁，实现了<code>NSLocking</code>协议，主要方法如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)lock; <span class="comment">//加锁</span></div><div class="line">- (<span class="keyword">void</span>)unlock; <span class="comment">//解锁</span></div><div class="line">- (<span class="built_in">BOOL</span>)tryLock; <span class="comment">//此方法会尝试加锁，如果锁不可用(已经被锁住)，则并不会阻塞线程，并返回NO。</span></div><div class="line">- (<span class="built_in">BOOL</span>)lockBeforeDate:(<span class="built_in">NSDate</span> *)limit; <span class="comment">//此方法会在所指定Date之前尝试加锁，如果在指定时间之前都不能加锁，则返回NO</span></div></pre></td></tr></table></figure>
+<p>具体用法如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSLock</span> *lock;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)sellTicket &#123;</div><div class="line">    <span class="keyword">self</span>.number = <span class="number">5</span>;</div><div class="line">    <span class="keyword">void</span>(^sellTicket)() = ^() &#123;</div><div class="line">        <span class="comment">//其他代码</span></div><div class="line"></div><div class="line">        [<span class="keyword">self</span>.lock lock];</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">            [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">0.1</span>];</div><div class="line">            <span class="keyword">self</span>.number--;</div><div class="line">            <span class="built_in">NSLog</span>(<span class="string">@"%@还有%ld张票"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.number);</div><div class="line">        &#125;</div><div class="line">        [<span class="keyword">self</span>.lock unlock];</div><div class="line">        </div><div class="line">        <span class="comment">//其他代码</span></div><div class="line"></div><div class="line">    &#125;;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), sellTicket);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="synchronized"><a href="#synchronized" class="headerlink" title="@synchronized"></a>@synchronized</h3><p>利用关键字<code>synchronized</code>将代码块同步，使用如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)sellTicket &#123;</div><div class="line">    <span class="keyword">self</span>.number = <span class="number">5</span>;</div><div class="line">    <span class="keyword">void</span>(^sellTicket)() = ^() &#123;</div><div class="line">        <span class="comment">//其他代码</span></div><div class="line"></div><div class="line">        <span class="keyword">@synchronized</span> (<span class="keyword">self</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">                [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">0.1</span>];</div><div class="line">                <span class="keyword">self</span>.number--;</div><div class="line">                <span class="built_in">NSLog</span>(<span class="string">@"%@还有%ld张票"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.number);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="comment">//其他代码</span></div><div class="line"></div><div class="line">    &#125;;</div><div class="line">    </div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), sellTicket);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>@synchronized</code>使用<code>self</code>作为锁，当然你也可以使用其他的对象。</p>
+<h3 id="NSCondition"><a href="#NSCondition" class="headerlink" title="NSCondition"></a>NSCondition</h3><p><code>NSCondition</code>是一个条件锁，同样实现了<code>NSLocking</code>协议，它和<code>NSLock</code>一样，也有<code>lock</code>和<code>unlock</code>方法。它的基本用法和<code>NSLock</code>一样，这里说一下<code>NSCondition</code>的特殊用法。</p>
+<p><code>NSCondition</code>提供更高级的用法，方法如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)wait; <span class="comment">//阻塞当前线程 直到等待唤醒 </span></div><div class="line">- (<span class="built_in">BOOL</span>)waitUntilDate:(<span class="built_in">NSDate</span> *)limit;  <span class="comment">//阻塞当前线程到一定时间 之后自动唤醒</span></div><div class="line">- (<span class="keyword">void</span>)signal; <span class="comment">//唤醒一条阻塞线程</span></div><div class="line">- (<span class="keyword">void</span>)broadcast; <span class="comment">//唤醒所有阻塞线程</span></div></pre></td></tr></table></figure>
+<p>我们修改上面的买票例子，依然是开启10个窗口，每个窗口只卖一张票，如果票卖完了，就阻塞，一直等待，直到有票。</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)sellTicket &#123;</div><div class="line">    <span class="keyword">self</span>.number = <span class="number">5</span>;</div><div class="line">    </div><div class="line">    <span class="keyword">void</span>(^sellTicket)() = ^() &#123;</div><div class="line">        <span class="comment">//其他代码</span></div><div class="line"></div><div class="line">        [<span class="keyword">self</span>.lock lock];</div><div class="line">        <span class="comment">//卖票</span></div><div class="line">        [<span class="keyword">self</span> loopTicket];</div><div class="line">        [<span class="keyword">self</span>.lock unlock];</div><div class="line">        <span class="comment">//其他代码</span></div><div class="line">        </div><div class="line">    &#125;;</div><div class="line">    </div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), sellTicket);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)loopTicket &#123;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">self</span>.number--;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@还有%ld张票"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.number);</div><div class="line">    &#125;<span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">//票没了 就阻塞 等待有票</span></div><div class="line">        [<span class="keyword">self</span>.lock wait];</div><div class="line">        <span class="comment">//我只等1秒 不管你有没有票我都要执行下面的代码</span></div><div class="line"><span class="comment">//        [self.lock waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:1000]];</span></div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">            [<span class="keyword">self</span> loopTicket];</div><div class="line">        &#125;<span class="keyword">else</span> &#123;</div><div class="line">            <span class="built_in">NSLog</span>(<span class="string">@"我不想等了"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)addTicket &#123;</div><div class="line">    <span class="comment">//模拟来票了</span></div><div class="line">    <span class="keyword">self</span>.number = <span class="number">2</span>;</div><div class="line">    <span class="comment">//唤醒所有阻塞的线程</span></div><div class="line">    [<span class="keyword">self</span>.lock broadcast];</div><div class="line">    <span class="comment">//唤醒一个</span></div><div class="line">    <span class="comment">//[self.lock signal];</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>调用<code>addTicket</code>方法增加票数 并唤醒所有的阻塞线程。</p>
+<h3 id="NSConditionLock"><a href="#NSConditionLock" class="headerlink" title="NSConditionLock"></a>NSConditionLock</h3><p><code>NSConditionLock</code>也实现了<code>NSLocking</code>协议，但是它内部维护了一个条件，只有当锁可用并且条件满足时才会持有锁，所以<code>NSConditionLock</code>既是条件锁也是互斥锁, 来看<code>NSConditionLock</code>的方法：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">instancetype</span>)initWithCondition:(<span class="built_in">NSInteger</span>)condition; <span class="comment">//根据条件初始化锁对象</span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>) <span class="built_in">NSInteger</span> condition; <span class="comment">//条件 </span></div><div class="line">- (<span class="keyword">void</span>)lockWhenCondition:(<span class="built_in">NSInteger</span>)condition; <span class="comment">// 根据条件 请求锁</span></div><div class="line">- (<span class="built_in">BOOL</span>)tryLock; <span class="comment">// 尝试锁 不会阻塞线程</span></div><div class="line">- (<span class="built_in">BOOL</span>)tryLockWhenCondition:(<span class="built_in">NSInteger</span>)condition; <span class="comment">//根据条件 尝试持有锁 不会阻塞线程</span></div><div class="line">- (<span class="keyword">void</span>)unlockWithCondition:(<span class="built_in">NSInteger</span>)condition; <span class="comment">// 解锁 并修改条件</span></div><div class="line">- (<span class="built_in">BOOL</span>)lockBeforeDate:(<span class="built_in">NSDate</span> *)limit; <span class="comment">// 在指定的时间之前尝试持有锁，之后不会阻塞线程</span></div><div class="line">- (<span class="built_in">BOOL</span>)lockWhenCondition:(<span class="built_in">NSInteger</span>)condition beforeDate:(<span class="built_in">NSDate</span> *)limit; <span class="comment">// 在指定的时间之前 并根据条件尝试 持有锁 ， 之后不会阻塞线程</span></div></pre></td></tr></table></figure>
+<p>我们现在来做这样一个例子，假如有10个卖票窗口，每个窗口只卖一张票。我们有十个加票员，只有票卖完了，才去加票，每次只加一张票。如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)addTicket &#123;</div><div class="line">    <span class="comment">//只有当前锁可用  并且内部条件是0才会持有锁 否则阻塞  因为卖票的会在卖完票以后将内部条件设置为0</span></div><div class="line">    [<span class="keyword">self</span>.lock lockWhenCondition:<span class="number">0</span>];</div><div class="line">    <span class="keyword">self</span>.number = <span class="number">1</span>;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"我加了一张票，还有%ld张票"</span>,<span class="keyword">self</span>.number);</div><div class="line">    <span class="comment">//释放锁  并且修改内部条件为1</span></div><div class="line">    [<span class="keyword">self</span>.lock unlockWithCondition:<span class="number">1</span>];</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)sellTicket &#123;</div><div class="line">    <span class="keyword">self</span>.number = <span class="number">1</span>;</div><div class="line">    </div><div class="line">    <span class="keyword">void</span>(^sellTicket)() = ^() &#123;</div><div class="line">        <span class="comment">//其他代码</span></div><div class="line"></div><div class="line">        <span class="comment">//只有当前锁可用  并且锁内部条件是1的时候 才能持有锁 否则阻塞</span></div><div class="line">        [<span class="keyword">self</span>.lock lockWhenCondition:<span class="number">1</span>];</div><div class="line">        <span class="comment">//卖票</span></div><div class="line">        [<span class="keyword">self</span> loopTicket];</div><div class="line">        <span class="comment">//释放锁 并且修改内部条件为0</span></div><div class="line">        [<span class="keyword">self</span>.lock unlockWithCondition:<span class="number">0</span>];</div><div class="line">        <span class="comment">//其他代码</span></div><div class="line">        </div><div class="line">    &#125;;</div><div class="line">    </div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">        <span class="comment">//10个卖票的</span></div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), sellTicket);</div><div class="line">        <span class="comment">//10个加票的</span></div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</div><div class="line">            [<span class="keyword">self</span> addTicket];</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)loopTicket &#123;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">self</span>.number--;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"我卖了一张票%@还有%ld张票"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.number);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>输出结果如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.454</span> OCDemo[<span class="number">71778</span>:<span class="number">17837792</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x6000000798c0</span>&gt;&#123;number = <span class="number">3</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.454</span> OCDemo[<span class="number">71778</span>:<span class="number">17838431</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.455</span> OCDemo[<span class="number">71778</span>:<span class="number">17838433</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x608000078bc0</span>&gt;&#123;number = <span class="number">4</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.455</span> OCDemo[<span class="number">71778</span>:<span class="number">17838436</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.455</span> OCDemo[<span class="number">71778</span>:<span class="number">17838437</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x60000007e340</span>&gt;&#123;number = <span class="number">5</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.455</span> OCDemo[<span class="number">71778</span>:<span class="number">17838434</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.456</span> OCDemo[<span class="number">71778</span>:<span class="number">17838441</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x60000007e400</span>&gt;&#123;number = <span class="number">6</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.456</span> OCDemo[<span class="number">71778</span>:<span class="number">17838431</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.456</span> OCDemo[<span class="number">71778</span>:<span class="number">17838442</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x61800006f900</span>&gt;&#123;number = <span class="number">7</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.457</span> OCDemo[<span class="number">71778</span>:<span class="number">17838438</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.457</span> OCDemo[<span class="number">71778</span>:<span class="number">17838444</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x60000007e440</span>&gt;&#123;number = <span class="number">8</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.457</span> OCDemo[<span class="number">71778</span>:<span class="number">17838436</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.457</span> OCDemo[<span class="number">71778</span>:<span class="number">17838445</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x618000072280</span>&gt;&#123;number = <span class="number">9</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.457</span> OCDemo[<span class="number">71778</span>:<span class="number">17838433</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.458</span> OCDemo[<span class="number">71778</span>:<span class="number">17838435</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x610000075040</span>&gt;&#123;number = <span class="number">10</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.458</span> OCDemo[<span class="number">71778</span>:<span class="number">17838434</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.458</span> OCDemo[<span class="number">71778</span>:<span class="number">17838446</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x61800006f800</span>&gt;&#123;number = <span class="number">11</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.458</span> OCDemo[<span class="number">71778</span>:<span class="number">17837792</span>] 我加了一张票，还有<span class="number">1</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.459</span> OCDemo[<span class="number">71778</span>:<span class="number">17838440</span>] 我卖了一张票&lt;<span class="built_in">NSThread</span>: <span class="number">0x608000078c80</span>&gt;&#123;number = <span class="number">12</span>, name = (null)&#125;还有<span class="number">0</span>张票</div><div class="line"><span class="number">2017</span><span class="number">-06</span><span class="number">-27</span> <span class="number">11</span>:<span class="number">07</span>:<span class="number">51.459</span> OCDemo[<span class="number">71778</span>:<span class="number">17838437</span>] 我加了一张票，还有<span class="number">1</span>张票</div></pre></td></tr></table></figure>
+<h3 id="NSRecursiveLock"><a href="#NSRecursiveLock" class="headerlink" title="NSRecursiveLock"></a>NSRecursiveLock</h3><p><code>NSRecursiveLock</code>是一个递归锁，有时候<code>加锁代码</code>中存在递归调用，递归开始前加锁，递归调用开始后，反复执行加锁代码会造成死锁，这个时候可以使用递归锁来解决问题。使用递归锁可以在一个线程中反复获取锁而不造成死锁，这个过程会记录获取锁和释放锁的次数，注意，只有两者平衡锁才会被最终释放。</p>
+<p>如下，我们先模拟一下递归死锁，我们使用<code>NSLock</code>锁：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">self</span>.lock = [<span class="built_in">NSLock</span> new];</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)loopLock &#123;</div><div class="line">    [<span class="keyword">self</span>.lock lock];</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">self</span>.number--;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"还有%ld张票"</span>,<span class="keyword">self</span>.number);</div><div class="line">        <span class="comment">//我还想卖</span></div><div class="line">        [<span class="keyword">self</span> loopLock];</div><div class="line">    &#125;</div><div class="line">    [<span class="keyword">self</span>.lock unlock];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里直接模拟主线程卖票，卖了一张以后 还想卖，结果造成死锁。如果我们使用<code>NSRecursiveLock</code>，<code>self.lock = [NSRecursiveLock new]</code>将不会造成死锁。一定要注意，加锁和解锁是成对出现的。</p>
+<h3 id="dispatch-semaphore-t"><a href="#dispatch-semaphore-t" class="headerlink" title="dispatch_semaphore_t"></a>dispatch_semaphore_t</h3><p>条件信号量，<code>dispatch_semaphore_t</code>是GCD中的信号量，也可以解决资源抢占问题，支持信号通知和信号等待。每当发送一个信号通知，则信号量+1，每当发送一个等待信号时，信号量-1.如果信号量为0则信号会处于等待状态，直到信号量大于0开始执行。 开如下方法：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">dispatch_semaphore_create(<span class="keyword">long</span> value);  创建一个信号  初始化信号量 这里你可以随意设置</div><div class="line"></div><div class="line">dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout); 等待信号 当信号的信号量为<span class="number">0</span>的时候会阻塞线程 直到信号的信号量大于<span class="number">0</span> 超时时间为timeout  当信号的信号量大于<span class="number">0</span> 会将信号量减<span class="number">1</span>。</div><div class="line"></div><div class="line">dispatch_semaphore_signal(dispatch_semaphore_t dsema); 发送一个信号量 此时信号的信号量会+<span class="number">1</span></div></pre></td></tr></table></figure>
+<p>示例如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) dispatch_semaphore_t semaphore;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</div><div class="line">    [<span class="keyword">super</span> viewDidLoad];</div><div class="line">    <span class="keyword">self</span>.number = <span class="number">10</span>;</div><div class="line">    <span class="comment">//创建一个信号量为1的信号</span></div><div class="line">    <span class="keyword">self</span>.semaphore = dispatch_semaphore_create(<span class="number">1</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)test &#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i&lt;<span class="number">10</span>; i++) &#123;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</div><div class="line">             [<span class="keyword">self</span> sellTicket];</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)sellTicket &#123;</div><div class="line">    <span class="comment">//wait之后 信号量-1  为0  此时再进来的线程都需要等待  等待时间为DISPATCH_TIME_FOREVER 永远</span></div><div class="line">    dispatch_semaphore_wait(<span class="keyword">self</span>.semaphore, DISPATCH_TIME_FOREVER);</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">self</span>.number--;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@还剩%ld张票"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.number);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">//发送一个信号通知 这时信号量+1  为1；</span></div><div class="line">    dispatch_semaphore_signal(<span class="keyword">self</span>.semaphore);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="POSIX"><a href="#POSIX" class="headerlink" title="POSIX"></a>POSIX</h3><p><code>POSIX</code>是互斥所，和<code>dispatch_semaphore_t</code>很像，但是完全不同，<code>POSIX</code>是<code>Unix/Linux</code>平台上提供的一套条件互斥锁的API。</p>
+<p>新建一个简单的<code>POSIX</code>互斥锁<code>pthread_mutex_t</code>，引入头文件<code>#import &lt;pthread.h&gt;</code>声明并初始化一个<code>pthread_mutex_t</code>的结构。使用<code>pthread_mutex_lock</code>和<code>pthread_mutex_unlock</code>函数。调用<code>pthread_mutex_destroy</code>来释放该锁的数据结构。</p>
+<p>如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">ViewController</span> ()</span></div><div class="line">&#123;</div><div class="line">    <span class="comment">//声明 pthread_mutex_t</span></div><div class="line">    pthread_mutex_t mutex;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ViewController</span></span></div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</div><div class="line">    [<span class="keyword">super</span> viewDidLoad];</div><div class="line">    <span class="comment">//初始化</span></div><div class="line">    pthread_mutex_init(&amp;mutex, <span class="literal">NULL</span>);  </div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)test &#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i&lt;<span class="number">10</span>; i++) &#123;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</div><div class="line">             [<span class="keyword">self</span> sellTicket];</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)sellTicket &#123;</div><div class="line">    <span class="comment">//加锁</span></div><div class="line">    pthread_mutex_lock(&amp;mutex);</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">self</span>.number--;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@还剩%ld张票"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.number);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//解锁</span></div><div class="line">    pthread_mutex_unlock(&amp;mutex);</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)dealloc &#123;</div><div class="line">    <span class="comment">//一定要释放</span></div><div class="line">    pthread_mutex_destroy(&amp;mutex);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>POSIX</code>还可以创建条件锁<code>pthread_cond_t</code>，提供了和<code>NSCondition</code>一样的条件控制，初始化互斥锁同时使用<code>pthread_cond_init</code>来初始化条件数据结构:</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 初始化</span></div><div class="line"><span class="keyword">int</span> pthread_cond_init (pthread_cond_t *cond, pthread_condattr_t *attr);</div><div class="line"></div><div class="line"><span class="comment">// 等待（会阻塞）</span></div><div class="line"><span class="keyword">int</span> pthread_cond_wait (pthread_cond_t *cond, pthread_mutex_t *mut);</div><div class="line"></div><div class="line"><span class="comment">// 定时等待</span></div><div class="line"><span class="keyword">int</span> pthread_cond_timedwait (pthread_cond_t *cond, pthread_mutex_t *mut, <span class="keyword">const</span> <span class="keyword">struct</span> timespec *abstime);</div><div class="line"></div><div class="line"><span class="comment">// 唤醒</span></div><div class="line"><span class="keyword">int</span> pthread_cond_signal (pthread_cond_t *cond);</div><div class="line"></div><div class="line"><span class="comment">// 广播唤醒</span></div><div class="line"><span class="keyword">int</span> pthread_cond_broadcast (pthread_cond_t *cond);</div><div class="line"></div><div class="line"><span class="comment">// 销毁</span></div><div class="line"><span class="keyword">int</span> pthread_cond_destroy (pthread_cond_t *cond);</div></pre></td></tr></table></figure>
+<p><code>POSIX</code>还提供了很多函数，有一套完整的API，包含<code>Pthreads</code>线程的创建控制等等，非常底层，可以手动处理线程的各个状态的转换即管理生命周期，甚至可以实现一套自己的多线程，感兴趣的可以继续深入了解。推荐一篇详细文章，但不是基于<code>iOS</code>的，是基于<code>Linux</code>的，但是介绍的非常详细<a href="http://blog.chinaunix.net/uid-26885237-id-3207962.html" target="_blank" rel="external">Linux 线程锁详解</a></p>
+<h3 id="OSSpinLock"><a href="#OSSpinLock" class="headerlink" title="OSSpinLock"></a>OSSpinLock</h3><p><code>OSSpinLock</code>是自旋锁，首先要声明的一点，<code>OSSpinLock</code>不再安全。主要原因发生在低优先级线程拿到锁时，高优先级线程进入忙等(busy-wait)状态，消耗大量 CPU 时间，从而导致低优先级线程拿不到 CPU 时间，也就无法完成任务并释放锁。这种问题被称为优先级反转。具体为什么不安全，请看这篇文章<a href="http://blog.ibireme.com/2016/01/16/spinlock_is_unsafe_in_ios/" target="_blank" rel="external">不再安全的 OSSpinLock</a>;</p>
+<p>玩法如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">&lt;libkern/OSAtomic.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">ViewController</span> ()</span></div><div class="line">&#123;</div><div class="line">    OSSpinLock spinlock;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ViewController</span></span></div><div class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</div><div class="line">    [<span class="keyword">super</span> viewDidLoad];</div><div class="line">    <span class="keyword">self</span>.number = <span class="number">10</span>;</div><div class="line">    spinlock = OS_SPINLOCK_INIT;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">IBAction</span>)test:(<span class="keyword">id</span>)sender &#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i&lt;<span class="number">10</span>; i++) &#123;</div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>), ^&#123;</div><div class="line">             [<span class="keyword">self</span> sellTicket];</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)sellTicket &#123;</div><div class="line">    OSSpinLockLock(&amp;spinlock);</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.number &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">self</span>.number--;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"%@还剩%ld张票"</span>,[<span class="built_in">NSThread</span> currentThread],<span class="keyword">self</span>.number);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    OSSpinLockUnlock(&amp;spinlock);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>最后放一张各个锁的性能对比图（摘自<a href="http://blog.ibireme.com/2016/01/16/spinlock_is_unsafe_in_ios/" target="_blank" rel="external">ibireme</a>）：</p>
+<div align="center"><br><img src="http://blog.ibireme.com/wp-content/uploads/2016/01/lock_benchmark.png" alt="image"><br></div>
+
+<p>从图中可以看出，<code>OSSpinLock</code>的性能最好，但是它已不再安全。推荐大家使用<code>dispatch_semaphore</code>。</p>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/多线程/">多线程</a>
+
+            </div>
+        
+        <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/20/ReactNative导航新宠儿react-navigation/" data-tooltip="ReactNative导航新宠儿react-navigation">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/&amp;title=iOS多线程之各种锁的简单介绍">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+        
+            
+                
+<div class="duoshuo">
+<div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+<script src="https://img1.cache.netease.com/f2e/tie/yun/sdk/loader.js"></script>
+<script>
+var cloudTieConfig = {
+  url: document.location.href, 
+  sourceId: "",
+  productKey: "3b1a42e3f91145d197b9e8b6e2f2a144",
+  target: "cloud-tie-wrapper"
+};
+var yunManualLoad = true;
+Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true);
+</script>
+</div>
+
+
+
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2017 贵永冬. All Rights Reserved.
+    </span>
+</footer>
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--disabled">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/05/20/ReactNative导航新宠儿react-navigation/" data-tooltip="ReactNative导航新宠儿react-navigation">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/&amp;title=iOS多线程之各种锁的简单介绍">
+                <i class="fa fa-weibo"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/">
+                <i class="fa fa-qq"></i>
+            </a>
+        </li>
+        <li class="post-action hide-xs">
+            <a class="post-action-btn btn btn--default"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i>
+            </a>
+        </li>
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+
+
+
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <ul class="share-options">
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/">
+                <i class="fa fa-weibo"></i><span>微博</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/">
+                <i class="fa fa-qq"></i><span>QQ</span>
+            </a>
+        </li>
+        <li class="share-option">
+            <a class="share-option-btn"  href="javascript:show();" >
+                <i class="fa fa-wechat (alias)"></i><span>微信</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+
+
+
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+
+<script charset="utf-8">
+    function show(){
+        $("#jiathis_weixin_modal").css("display", "block")
+    }
+    function hidden(){
+        $("#jiathis_weixin_modal").css("display", "none")
+    } 
+</script>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/header.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">贵永冬</h4>
+        
+            <div id="about-card-bio"><p>iOS开发者<br> 会一点RN和android,  十足的海贼迷</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>郑州市时空隧道信息技术有限公司</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker"></i>
+                <br/>
+                河南 郑州
+            </div>
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    autofocus="autofocus"/>
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/11/初识ReactiveCocoa/">
+                            <h3 class="media-heading">初识ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月11日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC), 是由Github开源的一个应用于iOS和OS开发的新框架, RAC具有函数式编程和响应式编程的特性, 通过这篇文章对RAC有一个简单的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/12/深入ReactiveCocoa/">
+                            <h3 class="media-heading">深入ReactiveCocoa</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年8月12日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">ReactiveCocoa</a>(简称为RAC),上一篇文章，我们简单的对RAC有个初步的了解，在开发中，我们实际用到的基本都是上一篇所介绍的知识，这篇文章我们对RAC有个深入的了解。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                            <h3 class="media-heading">ReactiveCocoa和RXSwift速查表</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/关于RAC的一些资料/">
+                            <h3 class="media-heading">关于RAC的一些资料</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+                            <h3 class="media-heading">RunLoop总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/13/聊一聊GCD的那些事/">
+                            <h3 class="media-heading">聊一聊GCD的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月13日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/">
+                            <h3 class="media-heading">聊一聊NSOperation的那些事</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/">
+                            <h3 class="media-heading">iOS动画篇之UIView动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                            <h3 class="media-heading">iOS动画篇之CoreAnimation动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
+                            <h3 class="media-heading">iOS动画之CATransition动画</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年9月22日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 51 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-rt08quwts7iav5x0cfd2ym0gb5qkd1lvrsmwrakxtkhefmaaes4ywkmnjnwf.min.js"></script>
+<script src="/assets/js/prism.js"></script>
+<!--SCRIPTS END-->
+
+    
+        <script type="text/javascript">
+            var duoshuoQuery = {short_name:'guiyongdong'};
+            (function() {
+                var ds = document.createElement('script');
+                ds.type = 'text/javascript';ds.async = true;
+                ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+                ds.charset = 'UTF-8';
+                (document.getElementsByTagName('head')[0]
+                || document.getElementsByTagName('body')[0]).appendChild(ds);
+            })();
+        </script>
+    
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('DWKE0MOOLY', '141d50cf933ece6dd635747973c4fe00');
+        var algoliaIndex = algoliaClient.initIndex('blog');
+    </script>
+
+    </body>
+</html>
