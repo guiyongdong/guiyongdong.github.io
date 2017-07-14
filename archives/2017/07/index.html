@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>归档 - 贵大头的博客</title>
+    <title>归档: 2017/7 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -19,7 +19,7 @@
     <meta name="description" content="iOS开发者">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="贵大头的博客">
-<meta property="og:url" content="http://www.guiyongdong.com/archives/page/5/index.html">
+<meta property="og:url" content="http://www.guiyongdong.com/archives/2017/07/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="iOS开发者">
 <meta name="twitter:card" content="summary">
@@ -207,15 +207,15 @@
             <div class="postShorten-header">
                 <h1 class="postShorten-title" itemprop="headline">
                     
-                        <a class="link-unstyled" href="/2016/10/12/iOS照片开发之UIImagePickerController/">
-                            iOS照片开发之UIImagePickerController
+                        <a class="link-unstyled" href="/2017/07/14/load-方法全程跟踪/">
+                            load 方法全程跟踪
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-10-12T10:37:08+08:00">
+    <time itemprop="datePublished" datetime="2017-07-14T12:00:41+08:00">
 	
-		    10月 12, 2016
+		    7月 14, 2017
     	
     </time>
     
@@ -230,396 +230,10 @@
             </div>
             
                 <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>iOS开发中，通常获取照片的方式有三种，1.直接调用摄像头拍照 2.从相册中选择 3.从图库中选择。 通常使用到的类或框架有UIImagePickerController,AssetsLibrary,PhotoKit(iOS8later)。本篇博客主要讲解UIImagePickerController，其他的后续会讲解到。</p>
+                    <h3 id="load方法的调用时机"><a href="#load方法的调用时机" class="headerlink" title="load方法的调用时机"></a>load方法的调用时机</h3><p>我们都知道，每个类都有两个初始化方法，其中一个就是<code>load</code>方法，对于没一个<code>Class</code>和<code>Category</code>来说，必定会调用此方法，而且仅调用一次。当包含<code>Class</code>和<code>Category</code>的程序被库载入系统时，就会执行此方法，并且此过程通常是在程序启动的时候执行。</p>
+<p>不同的是，现在<code>iOS</code>系统中已经加入了动态加载特性，这是从<code>macOS</code>应用程序中迁移而来的特性，等应用程序启动好之后再去加载程序库。如果<code>Class</code>和其<code>Category</code>中都重写了<code>load</code>方法，则先调用<code>Class</code>中的。那么为什么会先调用<code>Class</code>的<code>load</code>方法呢？通过这篇文章想必你会有个答案。</p>
                     
-                        <a href="/2016/10/12/iOS照片开发之UIImagePickerController/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/22/UIBezierPath详解/">
-                            UIBezierPath详解
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-22T15:51:31+08:00">
-	
-		    9月 22, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>我在写本篇文章之前，也没有系统学习过贝塞尔曲线，只是曾经某一次的需求需要使用到，才临时百度看了一看而且使用最基本的功能。现在总算有时间停下来好好研究研究这个神奇而伟大的贝塞尔先生！</p>
-                    
-                        <a href="/2016/09/22/UIBezierPath详解/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/22/iOS动画之CATransition动画/">
-                            iOS动画之CATransition动画
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-22T15:35:15+08:00">
-	
-		    9月 22, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>今天主要用到的动画类是CALayer下的CATransition至于各种动画类中如何继承的在这也不做赘述，网上的资料是一抓一大把。好废话少说切入今天的正题。</p>
-                    
-                        <a href="/2016/09/22/iOS动画之CATransition动画/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/22/iOS动画篇之CoreAnimation动画/">
-                            iOS动画篇之CoreAnimation动画
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-22T14:08:56+08:00">
-	
-		    9月 22, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>App如果想被大众喜欢，漂亮的UI和精美的动画都是必不可少的，苹果虽然为UIView提供了一些常用动画，但是大部分看起来比较不错的效果都是通过操作Layer层实现的，因此了解核心动画是必要的.CoreAnimation是直接作用在CALayer上的(并非UIView上)非常强大的跨Mac OS X和iOS平台的动画处理API，Core Animation的动画执行过程都是在后台操作的，不会阻塞主线程。<br>
-                    
-                        <a href="/2016/09/22/iOS动画篇之CoreAnimation动画/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/21/iOS动画篇-transfrom/">
-                            iOS动画篇之UIView动画
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-21T11:38:37+08:00">
-	
-		    9月 21, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>UIKit直接将动画集成到UIView类中，当内部的一些属性发生改变时，UIView将为这些改变提供动画支持。<br>
-                    
-                        <a href="/2016/09/21/iOS动画篇-transfrom/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/18/聊一聊NSOperation的那些事/">
-                            聊一聊NSOperation的那些事
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-18T16:23:05+08:00">
-	
-		    9月 18, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>在iOS开发中，多线程技术用到最多的就是GCD和NSOperation，上一篇文章已经对GCD有了全面的了解，这篇文章简单的聊一聊NSOperation。</p>
-                    
-                        <a href="/2016/09/18/聊一聊NSOperation的那些事/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/13/聊一聊GCD的那些事/">
-                            聊一聊GCD的那些事
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-13T16:56:07+08:00">
-	
-		    9月 13, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>GCD是iOS开发中经常使用到的技术，最近工作比较悠闲，有时间对GCD做一个全面的学习，这篇文章将对GCD做一个全面的解析。</p>
-                    
-                        <a href="/2016/09/13/聊一聊GCD的那些事/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/08/RunLoop总结/">
-                            RunLoop总结
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-08T17:05:52+08:00">
-	
-		    9月 08, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Objective-C/">Objective-C</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>最近研究了一下RunLoop，在这里对RunLoop做一个总结，主要是对<code>&lt;CoreFoundation/CFRunLoop.h&gt;</code>的头文件函数总结。</p>
-                    
-                        <a href="/2016/09/08/RunLoop总结/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/06/关于RAC的一些资料/">
-                            关于RAC的一些资料
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T14:47:26+08:00">
-	
-		    9月 06, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>看了这么多RAC资料，在这里我整理了一下，以备学习。</p>
-                    
-                        <a href="/2016/09/06/关于RAC的一些资料/" class="postShorten-excerpt_link link">
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title" itemprop="headline">
-                    
-                        <a class="link-unstyled" href="/2016/09/06/ReactiveCocoa和RXSwift速查表/">
-                            ReactiveCocoa和RXSwift速查表
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time itemprop="datePublished" datetime="2016-09-06T09:55:48+08:00">
-	
-		    9月 06, 2016
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/ReactiveCocoa/">ReactiveCocoa</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt" itemprop="articleBody">
-                    <p>在接触了RAC以后,对RAC有了一个基本的了解，这里整理了一下RAC脑图，方便日后查看。ps(<a href="https://github.com/aiqiuqiu/FRPCheatSheeta">转载</a>)</p>
-                    
-                        <a href="/2016/09/06/ReactiveCocoa和RXSwift速查表/" class="postShorten-excerpt_link link">
+                        <a href="/2017/07/14/load-方法全程跟踪/" class="postShorten-excerpt_link link">
                             阅读全文
                         </a>
                         
@@ -633,24 +247,8 @@
     <div class="pagination-bar">
     <ul class="pagination">
         
-        <li class="pagination-prev">
-            
-                <a class="btn btn--default btn--small" href="/archives/page/4/">
-            
-                <i class="fa fa-angle-left text-base icon-mr"></i>
-                    <span>上一页</span>
-            </a>
-        </li>
         
-        
-        <li class="pagination-next">
-            <a class="btn btn--default btn--small" href="/archives/page/6/">
-                    <span>下一页</span>
-                <i class="fa fa-angle-right text-base icon-ml"></i>
-            </a>
-        </li>
-        
-        <li class="pagination-number">第 5 页 共 6 页</li>
+        <li class="pagination-number">第 1 页 共 1 页</li>
     </ul>
 </div>
 
