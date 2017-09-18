@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="贵大头的博客">
-    <title>Objective-C-Runtime运行时之五：协议与分类 - 贵大头的博客</title>
+    <title>iOS强大的泛型 - 贵大头的博客</title>
     <meta name="author" content="贵永冬">
 <link rel="icon" href="https://github.com/guiyongdong/Resource/blob/master/hexoImage/favicon.ico?raw=true">
     
@@ -16,19 +16,19 @@
     
         <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
     
-    <meta name="description" content="Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。
-Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过@protocol定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，@protocol声明了可以被其他任何类实现的方法，协议仅仅是定义一个接">
+    <meta name="description" content="在学习安卓的过程中，发现java的泛型机制特别的好用，Objective-C是一门动态性弱类型语言，例如毫无关系的两个类A和B，A *a = [[B alloc] init]在Objective-C编译和运行中都不会出错。但是A a = new B()在java中编译失败。这样，可以强制编程人员注意类型转换。
+在不了解Objective-C的泛型之前，我一直以为Objective-C的泛型是鸡肋，">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="Objective-C-Runtime运行时之五：协议与分类">
-<meta property="og:url" content="http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/index.html">
+<meta property="og:title" content="iOS强大的泛型">
+<meta property="og:url" content="http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。
-Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过@protocol定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，@protocol声明了可以被其他任何类实现的方法，协议仅仅是定义一个接">
-<meta property="og:updated_time" content="2017-03-09T07:03:56.000Z">
+<meta property="og:description" content="在学习安卓的过程中，发现java的泛型机制特别的好用，Objective-C是一门动态性弱类型语言，例如毫无关系的两个类A和B，A *a = [[B alloc] init]在Objective-C编译和运行中都不会出错。但是A a = new B()在java中编译失败。这样，可以强制编程人员注意类型转换。
+在不了解Objective-C的泛型之前，我一直以为Objective-C的泛型是鸡肋，">
+<meta property="og:updated_time" content="2017-09-18T06:28:29.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Objective-C-Runtime运行时之五：协议与分类">
-<meta name="twitter:description" content="Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。
-Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过@protocol定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，@protocol声明了可以被其他任何类实现的方法，协议仅仅是定义一个接">
+<meta name="twitter:title" content="iOS强大的泛型">
+<meta name="twitter:description" content="在学习安卓的过程中，发现java的泛型机制特别的好用，Objective-C是一门动态性弱类型语言，例如毫无关系的两个类A和B，A *a = [[B alloc] init]在Objective-C编译和运行中都不会出错。但是A a = new B()在java中编译失败。这样，可以强制编程人员注意类型转换。
+在不了解Objective-C的泛型之前，我一直以为Objective-C的泛型是鸡肋，">
     
     
         
@@ -208,13 +208,13 @@ Objective-C中的协议是普遍存在的接口定义方式，即在一个类中
         <div class="post-header main-content-wrap text-left">
     
         <h1 class="post-title" itemprop="headline">
-            Objective-C-Runtime运行时之五：协议与分类
+            iOS强大的泛型
         </h1>
     
     <div class="post-meta">
-    <time itemprop="datePublished" datetime="2016-12-18T14:25:59+08:00">
+    <time itemprop="datePublished" datetime="2017-09-15T17:19:31+08:00">
 	
-		    12月 18, 2016
+		    9月 15, 2017
     	
     </time>
     
@@ -230,30 +230,48 @@ Objective-C中的协议是普遍存在的接口定义方式，即在一个类中
     
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
-            <p>Objective-C中的分类允许我们通过一个类添加方法来扩充它（但是通过category不能添加新的实例变量），并且我们不需要访问类中的代码就可以做到。</p>
-<p>Objective-C中的协议是普遍存在的接口定义方式，即在一个类中通过<code>@protocol</code>定义接口，在另外类中实现接口，这种接口定义方式也成为“delegation”模式，<code>@protocol</code>声明了可以被其他任何类实现的方法，协议仅仅是定义一个接口，而由其他的类去负责实现。</p>
-<p>在本章中，我们来看看runtime对分类与协议的支持。</p>
+            <p>在学习安卓的过程中，发现<code>java</code>的泛型机制特别的好用，<code>Objective-C</code>是一门动态性弱类型语言，例如毫无关系的两个类<code>A</code>和<code>B</code>，<code>A *a = [[B alloc] init]</code>在<code>Objective-C</code>编译和运行中都不会出错。但是<code>A a = new B()</code>在<code>java</code>中编译失败。这样，可以强制编程人员注意类型转换。</p>
+<p>在不了解<code>Objective-C</code>的泛型之前，我一直以为<code>Objective-C</code>的泛型是鸡肋，例如：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSMutableArray</span>&lt;<span class="built_in">NSString</span> *&gt; *times;</div><div class="line"></div><div class="line">[<span class="keyword">self</span>.times addObject:[[<span class="built_in">NSObject</span> alloc] init]];</div></pre></td></tr></table></figure>
+<p>我声明一个<code>NSString</code>类型的泛型数组，但是我往数组中添加的是一个<code>NSObject</code>类型的对象，虽然编译器会警告，但并不会报错(大部分程序猿也会忽略这个警告)。所以，我认为<code>Objective-C</code>的泛型是鸡肋。当然，这只是我之前的自以为(还是自己学的不深入)。但是今天看过一篇介绍<code>Objective-C</code>的泛型以后，才发现<code>Objective-C</code>也能做到编译时报错。</p>
 <a id="more"></a>
-<h4 id="基础数据类型"><a href="#基础数据类型" class="headerlink" title="基础数据类型"></a>基础数据类型</h4><h5 id="Category"><a href="#Category" class="headerlink" title="Category"></a>Category</h5><p>Category是表示一个指向分类的结构体的指针，其定义如下：</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_category *Category;</div><div class="line"><span class="keyword">struct</span> objc_category &#123;</div><div class="line">    <span class="keyword">char</span> *category_name                          OBJC2_UNAVAILABLE;	<span class="comment">// 分类名</span></div><div class="line">    <span class="keyword">char</span> *class_name                             OBJC2_UNAVAILABLE;	<span class="comment">// 分类所属的类名</span></div><div class="line">    <span class="keyword">struct</span> objc_method_list *instance_methods    OBJC2_UNAVAILABLE;	<span class="comment">// 实例方法列表</span></div><div class="line">    <span class="keyword">struct</span> objc_method_list *class_methods       OBJC2_UNAVAILABLE;	<span class="comment">// 类方法列表</span></div><div class="line">    <span class="keyword">struct</span> objc_protocol_list *protocols         OBJC2_UNAVAILABLE;	<span class="comment">// 分类所实现的协议列表</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这个结构体主要包含了分类定义的实例方法与类方法，其中<code>instance_methods</code>列表是元类方法列表的一个子集。</p>
-<h5 id="Protocol"><a href="#Protocol" class="headerlink" title="Protocol"></a>Protocol</h5><p>Protocol的定义如下：</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> objc_object Protocol;</div></pre></td></tr></table></figure>
-<p>我们可以看到，Protocol其实就是一个对象结构体。</p>
-<h5 id="操作函数"><a href="#操作函数" class="headerlink" title="操作函数"></a>操作函数</h5><p>Runtime并没有在<code>&lt;objc/runtime.h&gt;</code>头文件中提供针对分类的操作函数。因为这些分类中的信息都包含在<code>objc_class</code>中，我们可以通过针对<code>objc_class</code>的操作函数来获取分类的信息。如下里所示：</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RuntimeCategoryClass</span> : <span class="title">NSObject</span></span></div><div class="line">- (<span class="keyword">void</span>)method1;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">RuntimeCategoryClass</span> (<span class="title">Category</span>)</span></div><div class="line">- (<span class="keyword">void</span>)method2;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">RuntimeCategoryClass</span></span></div><div class="line">- (<span class="keyword">void</span>)method1 &#123;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">RuntimeCategoryClass</span> (<span class="title">Category</span>)</span></div><div class="line">- (<span class="keyword">void</span>)method2 &#123;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"><span class="meta">#pragma mark -</span></div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"测试objc_class中的方法列表是否包含分类中的方法"</span>);</div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> outCount = <span class="number">0</span>;</div><div class="line">Method *methodList = class_copyMethodList(RuntimeCategoryClass.class, &amp;outCount);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; outCount; i++) &#123;</div><div class="line">    Method method = methodList[i];</div><div class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name = sel_getName(method_getName(method));</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"RuntimeCategoryClass's method: %s"</span>, name);</div><div class="line">    <span class="keyword">if</span> (strcmp(name, sel_getName(<span class="keyword">@selector</span>(method2)))) &#123;</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"分类方法method2在objc_class的方法列表中"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>其输出是：</p>
-<figure class="highlight"><table><tr><td class="code"><pre><div class="line">2014-11-08 10:36:39.213 [561:151847] 测试objc_class中的方法列表是否包含分类中的方法</div><div class="line">2014-11-08 10:36:39.215 [561:151847] RuntimeCategoryClass's method: method2</div><div class="line">2014-11-08 10:36:39.215 [561:151847] RuntimeCategoryClass's method: method1</div><div class="line">2014-11-08 10:36:39.215 [561:151847] 分类方法method2在objc_class的方法列表中</div></pre></td></tr></table></figure>
-<p>而对于Protocol，runtime提供了一系列函数来对其进行操作，这些函数包括：</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 返回指定的协议</span></div><div class="line">Protocol * objc_getProtocol ( <span class="keyword">const</span> <span class="keyword">char</span> *name );</div><div class="line"><span class="comment">// 获取运行时所知道的所有协议的数组</span></div><div class="line">Protocol ** objc_copyProtocolList ( <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 创建新的协议实例</span></div><div class="line">Protocol * objc_allocateProtocol ( <span class="keyword">const</span> <span class="keyword">char</span> *name );</div><div class="line"><span class="comment">// 在运行时中注册新创建的协议</span></div><div class="line"><span class="keyword">void</span> objc_registerProtocol ( Protocol *proto );</div><div class="line"><span class="comment">// 为协议添加方法</span></div><div class="line"><span class="keyword">void</span> protocol_addMethodDescription ( Protocol *proto, SEL name, <span class="keyword">const</span> <span class="keyword">char</span> *types, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod );</div><div class="line"><span class="comment">// 添加一个已注册的协议到协议中</span></div><div class="line"><span class="keyword">void</span> protocol_addProtocol ( Protocol *proto, Protocol *addition );</div><div class="line"><span class="comment">// 为协议添加属性</span></div><div class="line"><span class="keyword">void</span> protocol_addProperty ( Protocol *proto, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> objc_property_attribute_t *attributes, <span class="keyword">unsigned</span> <span class="keyword">int</span> attributeCount, <span class="built_in">BOOL</span> isRequiredProperty, <span class="built_in">BOOL</span> isInstanceProperty );</div><div class="line"><span class="comment">// 返回协议名</span></div><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> * protocol_getName ( Protocol *p );</div><div class="line"><span class="comment">// 测试两个协议是否相等</span></div><div class="line"><span class="built_in">BOOL</span> protocol_isEqual ( Protocol *proto, Protocol *other );</div><div class="line"><span class="comment">// 获取协议中指定条件的方法的方法描述数组</span></div><div class="line"><span class="keyword">struct</span> objc_method_description * protocol_copyMethodDescriptionList ( Protocol *p, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 获取协议中指定方法的方法描述</span></div><div class="line"><span class="keyword">struct</span> objc_method_description protocol_getMethodDescription ( Protocol *p, SEL aSel, <span class="built_in">BOOL</span> isRequiredMethod, <span class="built_in">BOOL</span> isInstanceMethod );</div><div class="line"><span class="comment">// 获取协议中的属性列表</span></div><div class="line">objc_property_t * protocol_copyPropertyList ( Protocol *proto, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 获取协议的指定属性</span></div><div class="line">objc_property_t protocol_getProperty ( Protocol *proto, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="built_in">BOOL</span> isRequiredProperty, <span class="built_in">BOOL</span> isInstanceProperty );</div><div class="line"><span class="comment">// 获取协议采用的协议</span></div><div class="line">Protocol ** protocol_copyProtocolList ( Protocol *proto, <span class="keyword">unsigned</span> <span class="keyword">int</span> *outCount );</div><div class="line"><span class="comment">// 查看协议是否采用了另一个协议</span></div><div class="line"><span class="built_in">BOOL</span> protocol_conformsToProtocol ( Protocol *proto, Protocol *other );</div></pre></td></tr></table></figure>
-<ul>
-<li><code>objc_getProtocol</code>函数，需要注意的是如果仅仅是声明了一个协议，而未在任何类中实现这个协议，则该函数返回的是nil。</li>
-<li><code>objc_copyProtocolList</code>函数，获取的数值需要使用free来释放。</li>
-<li><code>objc_allcateProtocol</code>函数，如果同名的协议已经存在，则返回nil.</li>
-<li><code>objc_registerProtocol</code>函数，创建一个新的协议后，必须调用该函数以在运行时钟注册新的协议。协议注册后便可以使用，但不能再做修改，即注册完后不能再向协议添加方法或协议。</li>
-</ul>
-<p>需要强调的是，协议一旦注册后就不能修改，即无法再通过调用<code>protocol_addMethodDescription</code>、<code>protocol_addProtocol</code>和<code>protocol_addProperty</code>往协议中添加方法等。</p>
-<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>Runtime并没有提供过多的函数来处理分类。对于协议，我们可以动态地创建协议，并向其添加方法、属性及继承的协议，并在运行时动态地获取这些信息。</p>
+<h3 id="这篇文章就来说说泛型"><a href="#这篇文章就来说说泛型" class="headerlink" title="这篇文章就来说说泛型"></a>这篇文章就来说说泛型</h3><ol>
+<li>泛型是什么</li>
+<li>为什么要用泛型</li>
+<li>泛型怎么用</li>
+<li>泛型进阶</li>
+<li>泛型的延伸使用</li>
+</ol>
+<h5 id="泛型是什么"><a href="#泛型是什么" class="headerlink" title="泛型是什么"></a>泛型是什么</h5><p>泛型可以让你使用定义的类型来编写灵活的、可重用的函数和类型,可以避免重复，以清晰，抽象的方式表达其意图。用人话来说，泛型给予我们更抽象的封装函数或类的能力，不严谨的来讲，一门语言越抽象使用越方便。<code>Objective-C</code>中的<code>NSArray</code>和<code>NSDictionary</code>都是基于泛型编写的集合类型，如果不太理解也没关系，下面讲几个例子理解下。</p>
+<h6 id="1-Objective-C中的泛型"><a href="#1-Objective-C中的泛型" class="headerlink" title="1. Objective-C中的泛型"></a>1. Objective-C中的泛型</h6><p>在2015年<code>WWDC</code>上苹果推出了<code>Swift2.0</code>版本，为了让开发者从<code>Objective-C</code>更好得过度到<code>Swift</code>上，苹果也为<code>Objective-C</code>带来了<code>Generics</code>泛型支持</p>
+<p>所以，我们经常看到的<code>OC</code>中的泛型比如：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 实例化一个元素类型为`NSString`的数组</span></div><div class="line"><span class="built_in">NSArray</span> &lt;<span class="built_in">NSString</span> *&gt; *array = [<span class="built_in">NSArray</span> new];</div><div class="line"></div><div class="line"><span class="comment">// 或者字典</span></div><div class="line"><span class="built_in">NSDictionary</span> &lt;<span class="built_in">NSString</span> *, <span class="built_in">NSNumber</span> *&gt; *dict = @&#123;<span class="string">@"manoboo"</span>: @<span class="number">1</span>&#125;</div></pre></td></tr></table></figure>
+<p>或者：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)touchesBegan:(<span class="built_in">NSSet</span>&lt;<span class="built_in">UITouch</span> *&gt; *)touches withEvent:(<span class="built_in">UIEvent</span> *)event &#123;</div><div class="line">	</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们先看看<code>OC</code>中的泛型大概做了些什么：<br>打开<code>NSArray.h</code>可以看到：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">NSArray</span>&lt;<span class="title">__covariant</span> <span class="title">ObjectType</span>&gt; : <span class="title">NSObject</span> &lt;<span class="title">NSCopying</span>, <span class="title">NSMutableCopying</span>, <span class="title">NSSecureCoding</span>, <span class="title">NSFastEnumeration</span>&gt;</span></div><div class="line"></div><div class="line">- (ObjectType)objectAtIndex:(<span class="built_in">NSUInteger</span>)index;</div><div class="line">- (<span class="keyword">instancetype</span>)initWithObjects:(<span class="keyword">const</span> ObjectType _Nonnull [_Nullable])objects count:(<span class="built_in">NSUInteger</span>)cnt <span class="built_in">NS_DESIGNATED_INITIALIZER</span>;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>我们会发现，无论是查找还是初始化，都使用了<code>ObjectType</code>。</p>
+<p>声明一个<code>Generics</code>的格式如下：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> 类名 &lt;占位类型名称&gt;</span></div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>占位类型后也可以加入类型限制，比如：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MBCollection</span> &lt;<span class="title">T</span>: <span class="title">NSString</span> *&gt;</span></div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>若不加入类型限制，则表示接受id即任意类型。我们先来看看一个简单使用泛型的例子：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">MyCollection</span> &lt;<span class="title">__covariant</span> <span class="title">T</span>&gt; : <span class="title">NSObject</span></span></div><div class="line"></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">strong</span>) <span class="built_in">NSArray</span>&lt;T&gt; *elements;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)addObject:(T)object;</div><div class="line"></div><div class="line">- (T)getObjectInIndex:(<span class="built_in">NSInteger</span>)index;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>其中T为我们提现声明好的占位类型名称，可自定义(如ObjectType等等)，需要注意的是该T的作用域只限于<code>@interface MyCollection</code>到<code>@end</code>之间，<code>.m</code>文件则不能使用。至于泛型占位名称之前的修饰符则可分为两种：<code>__covariant（协变）</code>和<code>__contravariant(逆变)</code></p>
+<p>两者的区别如下：</p>
+<p><code>__covariant</code>意味协变，意思是指子类可以强制转换为父类，遵从的是<code>SOLID</code>中的<code>L</code>即里氏替换原则，大概可以描述为：程序中的对象应该是可以在不改变程序正确性的前提下被它的子类所替换的。</p>
+<p><code>__contravariant</code>意为逆变，意思是指父类可以强制转换为子类。</p>
+<p>用我们上面自定义的泛型来解释：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">MyCollection *collection;</div><div class="line"></div><div class="line">MyCollection &lt;<span class="built_in">NSString</span> *&gt; *string_collection;</div><div class="line"></div><div class="line">MyCollection &lt;<span class="built_in">NSMutableString</span> *&gt; *mString_collection;</div><div class="line"></div><div class="line">collection = string_collection;</div><div class="line"></div><div class="line">string_collection = collection;</div><div class="line"></div><div class="line">collection = mString_collection;</div></pre></td></tr></table></figure>
+<p>默认不指定泛型类型的情况下，不同类型的泛型可以相互转换。</p>
+<p>这个时候就可以在占位泛型名称之前加入修饰符<code>__covariant</code>或<code>__contravariant</code>来控制转换关系，像<code>NSArray</code>就使用了<code>__covariant</code>修饰符。</p>
+<p>引申：</p>
+<p>在上面的这个例子中，声明属性时，还可以在泛型钱添加<code>__kindof</code>关键词，表示其中的类型为该类型或者其子类，如：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">strong</span>) <span class="built_in">NSArray</span>&lt;__kindof T&gt; *elements;</div></pre></td></tr></table></figure>
+<p>之后就可以这样调用了</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">MyCollection&lt;<span class="built_in">NSString</span> *&gt; *c = [[MyCollection alloc] init];</div><div class="line"><span class="built_in">NSMutableString</span> *d = c.elements.lastObject;</div></pre></td></tr></table></figure>
+<p>也就不会有警告了。</p>
+<hr>
 
             
         </div>
@@ -263,7 +281,7 @@ Objective-C中的协议是普遍存在的接口定义方式，即在一个类中
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">标签</span><br/>
                 
-    <a class="tag tag--primary tag--small t-link" href="/tags/Runtime/">Runtime</a>
+    <a class="tag tag--primary tag--small t-link" href="/tags/Objective-C/">Objective-C</a>
 
             </div>
         
@@ -272,7 +290,7 @@ Objective-C中的协议是普遍存在的接口定义方式，即在一个类中
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/01/03/Objective-C-Runtime-运行时之六：拾遗/"  data-tooltip="Objective-C Runtime 运行时之六：拾遗">
+                    <a class="post-action-btn btn btn--disabled">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -280,7 +298,7 @@ Objective-C中的协议是普遍存在的接口定义方式，即在一个类中
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/" data-tooltip="Objective-C Runtime 运行时之四：Method Swizzling">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/09/13/深入理解Block/" data-tooltip="深入理解Block">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -295,12 +313,12 @@ Objective-C中的协议是普遍存在的接口定义方式，即在一个类中
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/&amp;title=Objective-C-Runtime运行时之五：协议与分类">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/&amp;title=iOS强大的泛型">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -318,7 +336,7 @@ Objective-C中的协议是普遍存在的接口定义方式，即在一个类中
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -389,7 +407,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/01/03/Objective-C-Runtime-运行时之六：拾遗/"  data-tooltip="Objective-C Runtime 运行时之六：拾遗">
+                    <a class="post-action-btn btn btn--disabled">
                 
                     <i class="fa fa-angle-left"></i>
                     <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
@@ -397,7 +415,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2016/12/09/Objective-C-Runtime-运行时之四：Method-Swizzling/" data-tooltip="Objective-C Runtime 运行时之四：Method Swizzling">
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/09/13/深入理解Block/" data-tooltip="深入理解Block">
                 
                     <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                     <i class="fa fa-angle-right"></i>
@@ -412,12 +430,12 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/&amp;title=Objective-C-Runtime运行时之五：协议与分类">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/&amp;title=iOS强大的泛型">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -435,7 +453,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -456,12 +474,12 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div id="share-options-bar" class="share-options-bar" data-behavior="4">
     <ul class="share-options">
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/">
                 <i class="fa fa-weibo"></i><span>微博</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/">
                 <i class="fa fa-qq"></i><span>QQ</span>
             </a>
         </li>
@@ -476,7 +494,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
 
 
 
-<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2016/12/18/Objective-C-Runtime运行时之五：协议与分类/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://s.jiathis.com/qrcode.php?url=http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
