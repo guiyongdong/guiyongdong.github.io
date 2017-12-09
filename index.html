@@ -200,7 +200,7 @@
                 <section class="postShorten-group main-content-wrap">
     
     
-    <article class="postShorten postShorten--thumbnailimg-bottom" itemscope itemType="http://schema.org/BlogPosting">
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
         <div class="postShorten-wrap">
             
             <div class="postShorten-header">
@@ -228,128 +228,13 @@
 
             </div>
             
-                <div class="postShorten-content" itemprop="articleBody">
+                <div class="postShorten-excerpt" itemprop="articleBody">
                     <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。</p>
-<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>有一部分企业，出于安全考虑或者某些原因，员工的上网环境必须走代理，通常服务器会被配置成一个HTTP代理，但是HTTP是基于TCP的，走UDP的数据则不行，所以，像直播或者视频都不行，为了解决这些问题，我们可以将服务器配置成socks5代理，这样就能满足我们的需求。</p>
-<p>首先，我们要知道什么是代理，其实代理就是帮你干活的。例如跑腿，你想到楼下的便利店买包烟，但是你的腿被别人打断了，不能下楼，这时，你叫了一个跑腿的，告诉他到楼下的便利店买包烟，他买完以后，又给你送到楼上，你就开始愉快的抽烟。这就是一个完整的代理过程。</p>
-<p><img src="https://pic1.zhimg.com/50/v2-d110c54278c699e63724e614743b0d87_hd.jpg" alt=""></p>
-<h3 id="认证"><a href="#认证" class="headerlink" title="认证"></a>认证</h3><p>通常，socks5代理服务器都会配置在1080端口，他是基于TCP的，客户端要连接到代理服务器，首先要经过三次握手，之后需要和服务器进行认证，格式如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+----+----------+----------+</div><div class="line">|VER | NMETHODS | METHODS  |</div><div class="line">+----+----------+----------+</div><div class="line">| 1  |    1     | 1 to 255 |</div><div class="line">+----+----------+----------+</div></pre></td></tr></table></figure>
-<ul>
-<li>VER 字段是当前协议的版本号，也就是5</li>
-<li>NMETHODS 字段是代表客户端支持的认证方式的个数</li>
-<li>METHODS 字段代表客户端支持的认证方式，每一位字节表示一种认证方式。</li>
-</ul>
-<p>服务器在客户端发送的认证方式中选择一种进行匹配，返回数据如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+----+----------+</div><div class="line">|VER |  METHODS |</div><div class="line">+----+----------+</div><div class="line">| 1  |    1     |</div><div class="line">+----+----------+</div></pre></td></tr></table></figure>
-<ul>
-<li>METHOD  即为服务器端匹配的结果，如果服务器返回的是OxFF，则表明客户端所支持的认证方式，服务器端都不支持。那么认证失败。</li>
-</ul>
-<p>认证方式有如下几种：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">0x00: 无验证需求</div><div class="line">0x01: 通用安全服务应用程序接口(GSSAPI)</div><div class="line">0x02: 用户名/密码(USERNAME/PASSWORD)</div><div class="line">0x03: 至 0x7F IANA 分配(IANA ASSIGNED)</div><div class="line">0x80: 至 0xFE 私人方法保留(RESERVED FOR PRIVATE METHODS)</div><div class="line">0xFF: 无可接受方法(NO ACCEPTABLE METHODS)</div></pre></td></tr></table></figure>
-<p>下面通过WireShark分析socks5认证过程：</p>
-<p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_1.png?raw=true" alt=""></p>
-<p>首先，客户端和服务器的三次握手建立连接，之后，客户端发送认证请求，我们可以看到，客户端发送的数据为：</p>
-<ul>
-<li>VER:05  即版本为5</li>
-<li>NMETHODS:02  即支持两种认证方式</li>
-<li>METHODS: 00 02 两种认证方式分别为 无须认证和用户名密码认证</li>
-</ul>
-<p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_2.png?raw=true" alt=""></p>
-<p>服务器回的数据为：</p>
-<ul>
-<li>VER:05  即版本为5</li>
-<li>METHODS:00  即和客户端商议使用无须认证方式</li>
-</ul>
-<p>当然，这里我配置的代理服务器没有使用用户名密码认证方式，假如需要此种方式的认证，客户端还需要发送用户名密码进行认证，有兴趣的同学可以试试。</p>
-<h3 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h3><p>认证通过以后，客户端就需要告诉代理，需要它做什么，即需要给代理发命令，具体的格式如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+----+-----+-------+------+----------+----------+</div><div class="line">|VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |</div><div class="line">+----+-----+-------+------+----------+----------+</div><div class="line">| 1  |  1  |   1   |  1   | Variable |    2     |</div><div class="line">+----+-----+-------+------+----------+----------+</div></pre></td></tr></table></figure>
-<ul>
-<li>VER: 协议版本</li>
-<li>CMD: 命令，有三种命令：</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">0x01：CONNECT 建立 TCP 连接 </div><div class="line">0x02: BIND 上报反向连接地址</div><div class="line">0x03：关联 UDP 请求</div></pre></td></tr></table></figure>
-<ul>
-<li>RSV: 保留字段，值为 0x00</li>
-<li>ATYP: 地址类型，取值为：</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">0x01：IPv4</div><div class="line">0x03: 域名</div><div class="line">0x04：IPv6</div></pre></td></tr></table></figure>
-<ul>
-<li>DST.ADDR 目的地，取值随ATYP的类型不同而不同，如下：</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">ATYP == 0x01：4 个字节的 IPv4 地址</div><div class="line">ATYP == 0x03：1 个字节表示域名长度，紧随其后的是对应的域名</div><div class="line">ATYP == 0x04：16 个字节的 IPv6 地址</div></pre></td></tr></table></figure>
-<ul>
-<li>DST.PORT 目的地端口</li>
-</ul>
-<p>服务器返回的数据如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+----+-----+-------+------+----------+----------+</div><div class="line">|VER | REP |  RSV  | ATYP | BND.ADDR | BND.PORT |</div><div class="line">+----+-----+-------+------+----------+----------+</div><div class="line">| 1  |  1  |   1   |  1   | Variable |    2     |</div><div class="line">+----+-----+-------+------+----------+----------+</div></pre></td></tr></table></figure>
-<ul>
-<li>VER: 版本号</li>
-<li>REP: 服务器返回的结果</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">* X&apos;00&apos; succeeded</div><div class="line">* X&apos;01&apos; general SOCKS server failure</div><div class="line">* X&apos;02&apos; connection not allowed by ruleset</div><div class="line">* X&apos;03&apos; Network unreachable</div><div class="line">* X&apos;04&apos; Host unreachable</div><div class="line">* X&apos;05&apos; Connection refused</div><div class="line">* X&apos;06&apos; TTL expired</div><div class="line">* X&apos;07&apos; Command not supported</div><div class="line">* X&apos;08&apos; Address type not supported</div><div class="line">* X&apos;09&apos; to X&apos;FF&apos; unassigned</div></pre></td></tr></table></figure>
-<ul>
-<li>RSV 保留字段</li>
-<li>ATYP: 地址类型</li>
-<li>BND.ADDR: 服务器地址</li>
-<li>BND.PORT: 服务器端口</li>
-</ul>
-<p><strong>CMD</strong></p>
-<p><strong>CONNECT</strong></p>
-<p>CONNECT表示要和目的主机建立TCP连接，在服务器回应中，BND.ADDR包含了关联的IP地址。此处所提供的BND.ADDR通常情况下不同于客户端连接到socks5代理服务器的IP地址，因为有可能代理服务器是一个集群，当然我这里只是一个服务器，所以返回的和代理的IP一样，BND.PORT表示服务器分配的连接到目标主机的端口号，即代理服务器接下来会使用BND.PORT这个端口与目标主机进行TCP通信。</p>
-<p><strong>BIND</strong><br>BIND请求被用在那些需要客户机接收到服务器连接的协议中。FTP就是一个众所周知的例子。在实际应用场景中，一般用不到，这里不再细说。</p>
-<p><strong>UDP ASSOCIATE</strong></p>
-<p>此命令表示需要进行UDP转发，BND.ADDR和CONNECT中的含义一样，而BND.PORT表示服务器提供给客户端的UDP转发端口，接下来客户端的所有UDP都需要往代理的此端口发送。</p>
-<p>因为我这次遇到的主要是UDP转发的问题，那么接下就着重分析一下UDP ASSOCIATE。</p>
-<h3 id="UDP-ASSOCIATE"><a href="#UDP-ASSOCIATE" class="headerlink" title="UDP ASSOCIATE"></a>UDP ASSOCIATE</h3><p>当客户端发送UDP ASSOCIATE命名时，代理服务器会返回相应的断端口，如下：</p>
-<p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_3.png?raw=true" alt=""></p>
-<p>服务器响应如下：</p>
-<p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_4.png?raw=true" alt=""></p>
-<p>那么，客户端知道服务器地址以后，是如何发送到代理服务器呢？</p>
-<p>一个UDP数据报如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">+----+------+------+----------+----------+----------+</div><div class="line">|RSV | FRAG | ATYP | DST.ADDR | DST.PORT |　　DATA　|</div><div class="line">+----+------+------+----------+----------+----------+</div><div class="line">|　2  |　 1　| 　1　 | Variable | 　2　　　 | Variable |</div><div class="line">+----+------+------+----------+----------+----------+</div></pre></td></tr></table></figure>
-<ul>
-<li>RSV 占两个字节 即 0x0000</li>
-<li>FRAG Current fragment number</li>
-<li>ATYP  目的地址类型 </li>
-<li>DST.ADDR 目的地址</li>
-<li>DST.PORT  目的端口</li>
-<li>DATA  真正的数据</li>
-</ul>
-<p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_5.png?raw=true" alt=""></p>
-<p>如此，客户端开始不断的发送UDP数据到代理服务器，代理服务器接收到数据后，又会如何呢？</p>
-<p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_6.png?raw=true" alt=""></p>
-<p>我们可以看到，客户端与代理之间的数据要比代理与目的主机之间的数据大10个字节，而这10个字节正是socks5协议头。</p>
-<p>完整的UDP转发流程为：</p>
-<p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_7.jpg?raw=true" alt=""></p>
-<p>现在，大家是不是对socks5有了一个全面的认识呢！</p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><p>一般情况下，类似于QQ支持socks5代理配置，但是大部分应用并不支持socks5代理，这时候我们可以使用一些代理工具，这里使用SocksCap64这个工具，他会使你的应用支持socks5协议。但是它只支持Windows，在Mac下你可以直接在网络中配置。</p>
-<h3 id="服务器"><a href="#服务器" class="headerlink" title="服务器"></a>服务器</h3><p>服务器可以使用dante软件。</p>
-<ul>
-<li>安装Dante</li>
-</ul>
-<p>从源码安装</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">tar -xzf dante-1.4.2.tar.gz</div><div class="line">cd dante-1.4.2</div><div class="line">./configure</div><div class="line">make</div><div class="line">make install</div></pre></td></tr></table></figure>
-<ul>
-<li>配置</li>
-</ul>
-<p>dante的默认配置文件时/etc/sockd.conf。具体的配置为：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">logoutput: /var/log/sockd.log  # 配置log文件</div><div class="line">internal: eth0  port = 1080  # 配置内网 这里直接写eth0  端口可以配置成1080</div><div class="line">external: 45.77.242.213 #外网ip</div><div class="line">socksmethod: none </div><div class="line">clientmethod:  none</div><div class="line">#method: username  </div><div class="line">#user.privileged: root</div><div class="line">user.notprivileged: root</div><div class="line">#user.libwrap: nobody</div><div class="line"></div><div class="line">client pass &#123;</div><div class="line">from: 0.0.0.0/0 to: 0.0.0.0/0  #客户端过滤规则</div><div class="line">log:error</div><div class="line">&#125;</div><div class="line">socks pass &#123;</div><div class="line">from: 0.0.0.0/0 to: 0.0.0.0/0</div><div class="line">command: connect udpassociate # 支持的CMD</div><div class="line">udp.portrange: 6000-6400  # 指定UDP转发接口范围</div><div class="line">log: connect error</div><div class="line">&#125;</div><div class="line">socks pass &#123;</div><div class="line">from: 0.0.0.0/0 to: 0.0.0.0/0</div><div class="line">command: bindreply udpreply  # UDP回转</div><div class="line">log: error</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<ul>
-<li>启动</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">sockd</div></pre></td></tr></table></figure>
-<p>关于更详细的配置，请参考dante官网<a href="http://www.inet.no/dante/doc/" target="_blank" rel="external">dante</a></p>
-
                     
+                        <a href="/2017/12/09/Socks5代理分析/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
                         
-                    
-                    
-                        <p>
-                            <a href="/2017/12/09/Socks5代理分析/#post-footer" class="postShorten-excerpt_link link">
-                                阅读全文
-                            </a>
-                        </p>
                     
                 </div>
             

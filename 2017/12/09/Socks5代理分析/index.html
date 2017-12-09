@@ -16,14 +16,12 @@
     
         <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
     
-    <meta name="description" content="概述项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。
-原理使用场景有一部分企业，出于安全考虑或者某些原因，员工的上网环境必须走代理，通常服务器会被配置成一个HTTP代理，但是HTTP是基于TCP的，走UDP的数据则不行，所以，像直播或者视频都不行，为了解决这些问题，我们可以将服务器配置成s">
+    <meta name="description" content="概述项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Socks5代理分析">
 <meta property="og:url" content="http://www.guiyongdong.com/2017/12/09/Socks5代理分析/index.html">
 <meta property="og:site_name" content="贵大头的博客">
-<meta property="og:description" content="概述项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。
-原理使用场景有一部分企业，出于安全考虑或者某些原因，员工的上网环境必须走代理，通常服务器会被配置成一个HTTP代理，但是HTTP是基于TCP的，走UDP的数据则不行，所以，像直播或者视频都不行，为了解决这些问题，我们可以将服务器配置成s">
+<meta property="og:description" content="概述项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。">
 <meta property="og:image" content="https://pic1.zhimg.com/50/v2-d110c54278c699e63724e614743b0d87_hd.jpg">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_1.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_2.png?raw=true">
@@ -32,11 +30,10 @@
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_5.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_6.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_7.jpg?raw=true">
-<meta property="og:updated_time" content="2017-12-09T14:00:15.000Z">
+<meta property="og:updated_time" content="2017-12-09T14:02:08.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Socks5代理分析">
-<meta name="twitter:description" content="概述项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。
-原理使用场景有一部分企业，出于安全考虑或者某些原因，员工的上网环境必须走代理，通常服务器会被配置成一个HTTP代理，但是HTTP是基于TCP的，走UDP的数据则不行，所以，像直播或者视频都不行，为了解决这些问题，我们可以将服务器配置成s">
+<meta name="twitter:description" content="概述项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。">
 <meta name="twitter:image" content="https://pic1.zhimg.com/50/v2-d110c54278c699e63724e614743b0d87_hd.jpg">
     
     
@@ -240,6 +237,7 @@
     <div class="post-content markdown" itemprop="articleBody">
         <div class="main-content-wrap">
             <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。</p>
+<a id="more"></a>
 <h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>有一部分企业，出于安全考虑或者某些原因，员工的上网环境必须走代理，通常服务器会被配置成一个HTTP代理，但是HTTP是基于TCP的，走UDP的数据则不行，所以，像直播或者视频都不行，为了解决这些问题，我们可以将服务器配置成socks5代理，这样就能满足我们的需求。</p>
 <p>首先，我们要知道什么是代理，其实代理就是帮你干活的。例如跑腿，你想到楼下的便利店买包烟，但是你的腿被别人打断了，不能下楼，这时，你叫了一个跑腿的，告诉他到楼下的便利店买包烟，他买完以后，又给你送到楼上，你就开始愉快的抽烟。这就是一个完整的代理过程。</p>
 <p><img src="https://pic1.zhimg.com/50/v2-d110c54278c699e63724e614743b0d87_hd.jpg" alt=""></p>
