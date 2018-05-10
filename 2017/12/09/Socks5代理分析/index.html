@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_5.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_6.png?raw=true">
 <meta property="og:image" content="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_7.jpg?raw=true">
-<meta property="og:updated_time" content="2017-12-09T14:02:08.000Z">
+<meta property="og:updated_time" content="2018-01-10T11:30:04.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Socks5代理分析">
 <meta name="twitter:description" content="概述项目中遇到了socks5代理环境下UDP不通的问题，在解决问题的过程中，也学习了socks5到底是如何通信的，下面就原理、客户端、服务器三个方面来详细说一下。">
@@ -331,12 +331,13 @@
 <p>完整的UDP转发流程为：</p>
 <p><img src="https://github.com/guiyongdong/Resource/blob/master/hexoImage/oc/socks5_7.jpg?raw=true" alt=""></p>
 <p>现在，大家是不是对socks5有了一个全面的认识呢！</p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><p>一般情况下，类似于QQ支持socks5代理配置，但是大部分应用并不支持socks5代理，这时候我们可以使用一些代理工具，这里使用SocksCap64这个工具，他会使你的应用支持socks5协议。但是它只支持Windows，在Mac下你可以直接在网络中配置。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><p>一般情况下，类似于QQ支持socks5代理配置，但是大部分应用并不支持socks5代理，这时候我们可以使用一些代理工具，这里使用SocksCap64这个工具，他会使你的应用支持socks5协议。但是它只支持Windows，在Mac下你可以在网络上搜索其他的全局代理软件。</p>
 <h3 id="服务器"><a href="#服务器" class="headerlink" title="服务器"></a>服务器</h3><p>服务器可以使用dante软件。</p>
 <ul>
 <li>安装Dante</li>
 </ul>
 <p>从源码安装</p>
+<p>首先要下载源码-&gt;<a href="http://www.inet.no/dante/files/dante-1.4.2.tar.gz" target="_blank" rel="external"></a></p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">tar -xzf dante-1.4.2.tar.gz</div><div class="line">cd dante-1.4.2</div><div class="line">./configure</div><div class="line">make</div><div class="line">make install</div></pre></td></tr></table></figure>
 <ul>
 <li>配置</li>
@@ -347,6 +348,7 @@
 <li>启动</li>
 </ul>
 <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">sockd</div></pre></td></tr></table></figure>
+<p><strong>注意</strong>：当Socks5协议不使用1080端口时，WireShark是识别不出Socks5代理的，WireShark会将Socks5协议直接识别成TCP或者UDP。这点要注意。</p>
 <p>关于更详细的配置，请参考dante官网<a href="http://www.inet.no/dante/doc/" target="_blank" rel="external">dante</a></p>
 
             
@@ -458,7 +460,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2017 贵永冬. All Rights Reserved.
+        Copyrights &copy; 2018 贵永冬. All Rights Reserved.
     </span>
 </footer>
 <script>
@@ -608,7 +610,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>郑州市时空隧道信息技术有限公司</p>
+                <p>河南信悦通网络科技有限公司</p>
 
             </div>
         
