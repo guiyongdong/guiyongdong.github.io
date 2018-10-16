@@ -4,9 +4,9 @@
   <subtitle>贵大头的博客</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://www.guiyongdong.com/"/>
+  <link href="https://guiyongdong.github.io/"/>
   <updated>2018-10-16T05:10:04.349Z</updated>
-  <id>http://www.guiyongdong.com/</id>
+  <id>https://guiyongdong.github.io/</id>
   
   <author>
     <name>贵永冬</name>
@@ -17,8 +17,8 @@
   
   <entry>
     <title>【转】iOS Memory Deep Dive</title>
-    <link href="http://www.guiyongdong.com/2018/10/16/%E3%80%90%E8%BD%AC%E3%80%91iOS-Memory-Deep-Dive/"/>
-    <id>http://www.guiyongdong.com/2018/10/16/【转】iOS-Memory-Deep-Dive/</id>
+    <link href="https://guiyongdong.github.io/2018/10/16/%E3%80%90%E8%BD%AC%E3%80%91iOS-Memory-Deep-Dive/"/>
+    <id>https://guiyongdong.github.io/2018/10/16/【转】iOS-Memory-Deep-Dive/</id>
     <published>2018-10-16T05:06:45.000Z</published>
     <updated>2018-10-16T05:10:04.349Z</updated>
     
@@ -459,17 +459,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/tags/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/tags/Objective-C/"/>
     
   </entry>
   
   <entry>
     <title>AVFoundation之AVAudioRecorder</title>
-    <link href="http://www.guiyongdong.com/2018/07/22/AVFoundation%E4%B9%8BAVAudioRecorder/"/>
-    <id>http://www.guiyongdong.com/2018/07/22/AVFoundation之AVAudioRecorder/</id>
+    <link href="https://guiyongdong.github.io/2018/07/22/AVFoundation%E4%B9%8BAVAudioRecorder/"/>
+    <id>https://guiyongdong.github.io/2018/07/22/AVFoundation之AVAudioRecorder/</id>
     <published>2018-07-22T06:44:25.000Z</published>
     <updated>2018-07-23T08:31:41.007Z</updated>
     
@@ -497,17 +497,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="AVFoundation" scheme="http://www.guiyongdong.com/tags/AVFoundation/"/>
+      <category term="AVFoundation" scheme="https://guiyongdong.github.io/tags/AVFoundation/"/>
     
   </entry>
   
   <entry>
     <title>AVFoundation之AVAudioPlayer</title>
-    <link href="http://www.guiyongdong.com/2018/07/21/AVFoundation%E4%B9%8BAVAudioPlayer/"/>
-    <id>http://www.guiyongdong.com/2018/07/21/AVFoundation之AVAudioPlayer/</id>
+    <link href="https://guiyongdong.github.io/2018/07/21/AVFoundation%E4%B9%8BAVAudioPlayer/"/>
+    <id>https://guiyongdong.github.io/2018/07/21/AVFoundation之AVAudioPlayer/</id>
     <published>2018-07-21T05:16:11.000Z</published>
     <updated>2018-07-22T06:54:42.371Z</updated>
     
@@ -586,17 +586,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="AVFoundation" scheme="http://www.guiyongdong.com/tags/AVFoundation/"/>
+      <category term="AVFoundation" scheme="https://guiyongdong.github.io/tags/AVFoundation/"/>
     
   </entry>
   
   <entry>
     <title>Socks5代理分析</title>
-    <link href="http://www.guiyongdong.com/2017/12/09/Socks5%E4%BB%A3%E7%90%86%E5%88%86%E6%9E%90/"/>
-    <id>http://www.guiyongdong.com/2017/12/09/Socks5代理分析/</id>
+    <link href="https://guiyongdong.github.io/2017/12/09/Socks5%E4%BB%A3%E7%90%86%E5%88%86%E6%9E%90/"/>
+    <id>https://guiyongdong.github.io/2017/12/09/Socks5代理分析/</id>
     <published>2017-12-09T06:56:26.000Z</published>
     <updated>2018-01-10T11:30:04.000Z</updated>
     
@@ -722,17 +722,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="网络" scheme="http://www.guiyongdong.com/categories/%E7%BD%91%E7%BB%9C/"/>
+      <category term="网络" scheme="https://guiyongdong.github.io/categories/%E7%BD%91%E7%BB%9C/"/>
     
     
-      <category term="Socks5" scheme="http://www.guiyongdong.com/tags/Socks5/"/>
+      <category term="Socks5" scheme="https://guiyongdong.github.io/tags/Socks5/"/>
     
   </entry>
   
   <entry>
     <title>WebSocket WebRTC Scoket的理解</title>
-    <link href="http://www.guiyongdong.com/2017/10/16/WebSocket-WebRTC-Scoket%E7%9A%84%E7%90%86%E8%A7%A3/"/>
-    <id>http://www.guiyongdong.com/2017/10/16/WebSocket-WebRTC-Scoket的理解/</id>
+    <link href="https://guiyongdong.github.io/2017/10/16/WebSocket-WebRTC-Scoket%E7%9A%84%E7%90%86%E8%A7%A3/"/>
+    <id>https://guiyongdong.github.io/2017/10/16/WebSocket-WebRTC-Scoket的理解/</id>
     <published>2017-10-16T06:59:44.000Z</published>
     <updated>2017-10-24T08:07:13.000Z</updated>
     
@@ -806,17 +806,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="网络" scheme="http://www.guiyongdong.com/categories/%E7%BD%91%E7%BB%9C/"/>
+      <category term="网络" scheme="https://guiyongdong.github.io/categories/%E7%BD%91%E7%BB%9C/"/>
     
     
-      <category term="网络" scheme="http://www.guiyongdong.com/tags/%E7%BD%91%E7%BB%9C/"/>
+      <category term="网络" scheme="https://guiyongdong.github.io/tags/%E7%BD%91%E7%BB%9C/"/>
     
   </entry>
   
   <entry>
     <title>iOS强大的泛型</title>
-    <link href="http://www.guiyongdong.com/2017/09/15/iOS%E5%BC%BA%E5%A4%A7%E7%9A%84%E6%B3%9B%E5%9E%8B/"/>
-    <id>http://www.guiyongdong.com/2017/09/15/iOS强大的泛型/</id>
+    <link href="https://guiyongdong.github.io/2017/09/15/iOS%E5%BC%BA%E5%A4%A7%E7%9A%84%E6%B3%9B%E5%9E%8B/"/>
+    <id>https://guiyongdong.github.io/2017/09/15/iOS强大的泛型/</id>
     <published>2017-09-15T09:19:31.000Z</published>
     <updated>2017-09-18T06:28:29.000Z</updated>
     
@@ -873,17 +873,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/tags/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/tags/Objective-C/"/>
     
   </entry>
   
   <entry>
     <title>深入理解Block</title>
-    <link href="http://www.guiyongdong.com/2017/09/13/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Block/"/>
-    <id>http://www.guiyongdong.com/2017/09/13/深入理解Block/</id>
+    <link href="https://guiyongdong.github.io/2017/09/13/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Block/"/>
+    <id>https://guiyongdong.github.io/2017/09/13/深入理解Block/</id>
     <published>2017-09-13T07:40:30.000Z</published>
     <updated>2017-09-15T06:45:05.000Z</updated>
     
@@ -1005,17 +1005,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/tags/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/tags/Objective-C/"/>
     
   </entry>
   
   <entry>
     <title>深入理解KVC、KVO</title>
-    <link href="http://www.guiyongdong.com/2017/08/31/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3KVC%E3%80%81KVO/"/>
-    <id>http://www.guiyongdong.com/2017/08/31/深入理解KVC、KVO/</id>
+    <link href="https://guiyongdong.github.io/2017/08/31/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3KVC%E3%80%81KVO/"/>
+    <id>https://guiyongdong.github.io/2017/08/31/深入理解KVC、KVO/</id>
     <published>2017-08-31T03:11:40.000Z</published>
     <updated>2017-09-06T01:55:51.000Z</updated>
     
@@ -1087,17 +1087,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/tags/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/tags/Objective-C/"/>
     
   </entry>
   
   <entry>
     <title>load 方法全程跟踪</title>
-    <link href="http://www.guiyongdong.com/2017/07/14/load-%E6%96%B9%E6%B3%95%E5%85%A8%E7%A8%8B%E8%B7%9F%E8%B8%AA/"/>
-    <id>http://www.guiyongdong.com/2017/07/14/load-方法全程跟踪/</id>
+    <link href="https://guiyongdong.github.io/2017/07/14/load-%E6%96%B9%E6%B3%95%E5%85%A8%E7%A8%8B%E8%B7%9F%E8%B8%AA/"/>
+    <id>https://guiyongdong.github.io/2017/07/14/load-方法全程跟踪/</id>
     <published>2017-07-14T04:00:41.000Z</published>
     <updated>2017-07-15T06:45:48.000Z</updated>
     
@@ -1140,7 +1140,7 @@ int main(int argc, char * argv[]) {
 <p>在<code>Apple</code>的官方文档中，我们可以在<code>__DATA</code>段中查询到<code>__objc_classlist</code>的用途，主要是用在访问<code>Objective-C</code>的类列表，而<code>__objc_nlcatlist</code>用于访问<code>Objective-C</code>的分类列表。这一块对类信息的解析是由<code>dyld</code>处理时期完成的，也就是我们上文提到的<code>map_images</code>方法的解析工作。而且从侧面可以看出，<code>Objective-C</code>的强大动态性，与<code>dyld</code>前期处理密不可分。</p>
 <p>通过这一步，会将<code>image</code>中的类列表和分类列表的个数快速的查询出来，只要满足其中一个条件就能继续进行，否则<code>image</code>中连类列表和分类列表都没有，就一定不会有<code>load</code>方法。</p>
 <h3 id="可递归锁"><a href="#可递归锁" class="headerlink" title="可递归锁"></a>可递归锁</h3><p>接下来需要定义锁，然后加锁。在<code>load_image</code>方法所在的<code>objc-runtime-new.mm</code>中，全局<code>loadMethodLock</code>是一个<code>recursive_mutex_t</code>类型的变量。这个是苹果通过<code>C</code>实现的一个互斥递归锁<code>Class</code>，来解决多次上锁而不会发生死锁的问题。之所以用递归锁，是因为接下来会递归类的父类直到<code>NSObject</code>。</p>
-<p><code>recursive_mutex_t</code>其作用与<code>NSRecursiveLock</code>相同，但不是由<code>NSLock</code>再封装，而是通过<code>C</code>为<code>runtime</code>的使用场景而写的一个<code>Class</code>。更多关于线程锁的知识，可以看看我这篇<a href="http://www.guiyongdong.com/2017/06/26/iOS%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B9%8B%E5%90%84%E7%A7%8D%E9%94%81%E7%9A%84%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D/">iOS多线程之各种锁的简单介绍</a></p>
+<p><code>recursive_mutex_t</code>其作用与<code>NSRecursiveLock</code>相同，但不是由<code>NSLock</code>再封装，而是通过<code>C</code>为<code>runtime</code>的使用场景而写的一个<code>Class</code>。更多关于线程锁的知识，可以看看我这篇<a href="http://www.guiyongdong.com/2017/06/26/iOS%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B9%8B%E5%90%84%E7%A7%8D%E9%94%81%E7%9A%84%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D/" target="_blank" rel="external">iOS多线程之各种锁的简单介绍</a></p>
 <h3 id="准备-load-运行的从属Class"><a href="#准备-load-运行的从属Class" class="headerlink" title="准备 load 运行的从属Class"></a>准备 load 运行的从属Class</h3><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">prepare_load_methods</span><span class="params">(<span class="keyword">const</span> headerType *mhdr)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">size_t</span> count, i;</div><div class="line"></div><div class="line">    runtimeLock.assertWriting();</div><div class="line"></div><div class="line">    <span class="comment">//收集有load方法的Class</span></div><div class="line">    <span class="comment">//获取所有的类的列表</span></div><div class="line">    <span class="keyword">classref_t</span> *classlist = </div><div class="line">        <span class="number">_</span>getObjc2NonlazyClassList(mhdr, &amp;count);</div><div class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</div><div class="line">        <span class="comment">// 通过remapClass 获取类指针</span></div><div class="line">        <span class="comment">// schedule_class_load 递归到父类逐层载入</span></div><div class="line">        schedule_class_load(remapClass(classlist[i]));</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 收集有load方法的Category</span></div><div class="line">    <span class="comment">// 获取所有的Category列表</span></div><div class="line">    <span class="keyword">category_t</span> **categorylist = <span class="number">_</span>getObjc2NonlazyCategoryList(mhdr, &amp;count);</div><div class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) &#123;</div><div class="line">        <span class="keyword">category_t</span> *cat = categorylist[i];</div><div class="line">        <span class="comment">// 通过remapClass 获取Category对象存有的Class对象</span></div><div class="line">        Class cls = remapClass(cat-&gt;cls);</div><div class="line">        <span class="keyword">if</span> (!cls) <span class="keyword">continue</span>;</div><div class="line">        <span class="comment">// 对类进行第一次初始化，主要用来分配可读写数据空间并返回真正的类结构</span></div><div class="line">        realizeClass(cls);</div><div class="line">        assert(cls-&gt;ISA()-&gt;isRealized());</div><div class="line">        <span class="comment">// 将需要执行load的Category添加到一个全局列表中</span></div><div class="line">        add_category_to_loadable_list(cat);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><code>prepare_load_methods</code>作用是为load方法做准备，从代码中可以看出<code>Class</code>的<code>load</code>方法是优先于<code>Category</code>。其中在收集<code>Class</code>的<code>load</code>方法中，因为需要对<code>Class</code>关系树的根节点逐层遍历运行，在<code>schedule_class_load</code>方法中使用深层递归的方式递归到根节点，优先进行收集。</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 用来递归检查Class是否有load方法，包括父类</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">schedule_class_load</span><span class="params">(Class cls)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (!cls) <span class="keyword">return</span>;</div><div class="line">    <span class="comment">// 查看 RW_REALIZED 是否被标记</span></div><div class="line">    assert(cls-&gt;isRealized());</div><div class="line">    <span class="comment">// 查看 RW_LOADED 是否被标记</span></div><div class="line">    <span class="keyword">if</span> (cls-&gt;data()-&gt;flags &amp; RW_LOADED) <span class="keyword">return</span>;</div><div class="line"></div><div class="line">    <span class="comment">// 如果有父类 递归到深层运行</span></div><div class="line">    schedule_class_load(cls-&gt;superclass);</div><div class="line">    </div><div class="line">    <span class="comment">// 将有load方法的Class添加到一个全局列表中</span></div><div class="line">    add_class_to_loadable_list(cls);</div><div class="line">    <span class="comment">// 标记 RW_LOADED 符号</span></div><div class="line">    cls-&gt;setInfo(RW_LOADED); </div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -1200,17 +1200,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="Runtime" scheme="http://www.guiyongdong.com/tags/Runtime/"/>
+      <category term="Runtime" scheme="https://guiyongdong.github.io/tags/Runtime/"/>
     
   </entry>
   
   <entry>
     <title>iOS多线程之各种锁的简单介绍</title>
-    <link href="http://www.guiyongdong.com/2017/06/26/iOS%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B9%8B%E5%90%84%E7%A7%8D%E9%94%81%E7%9A%84%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D/"/>
-    <id>http://www.guiyongdong.com/2017/06/26/iOS多线程之各种锁的简单介绍/</id>
+    <link href="https://guiyongdong.github.io/2017/06/26/iOS%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B9%8B%E5%90%84%E7%A7%8D%E9%94%81%E7%9A%84%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D/"/>
+    <id>https://guiyongdong.github.io/2017/06/26/iOS多线程之各种锁的简单介绍/</id>
     <published>2017-06-26T06:48:28.000Z</published>
     <updated>2017-06-27T06:30:17.000Z</updated>
     
@@ -1270,17 +1270,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="多线程" scheme="http://www.guiyongdong.com/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
+      <category term="多线程" scheme="https://guiyongdong.github.io/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
     
   </entry>
   
   <entry>
     <title>ReactNative导航新宠儿react-navigation</title>
-    <link href="http://www.guiyongdong.com/2017/05/20/ReactNative%E5%AF%BC%E8%88%AA%E6%96%B0%E5%AE%A0%E5%84%BFreact-navigation/"/>
-    <id>http://www.guiyongdong.com/2017/05/20/ReactNative导航新宠儿react-navigation/</id>
+    <link href="https://guiyongdong.github.io/2017/05/20/ReactNative%E5%AF%BC%E8%88%AA%E6%96%B0%E5%AE%A0%E5%84%BFreact-navigation/"/>
+    <id>https://guiyongdong.github.io/2017/05/20/ReactNative导航新宠儿react-navigation/</id>
     <published>2017-05-20T01:24:19.000Z</published>
     <updated>2017-05-22T07:22:07.000Z</updated>
     
@@ -1512,17 +1512,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="ReactNative" scheme="http://www.guiyongdong.com/categories/ReactNative/"/>
+      <category term="ReactNative" scheme="https://guiyongdong.github.io/categories/ReactNative/"/>
     
     
-      <category term="ReactNative" scheme="http://www.guiyongdong.com/tags/ReactNative/"/>
+      <category term="ReactNative" scheme="https://guiyongdong.github.io/tags/ReactNative/"/>
     
   </entry>
   
   <entry>
     <title>一天一Android之Service</title>
-    <link href="http://www.guiyongdong.com/2017/05/12/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BService/"/>
-    <id>http://www.guiyongdong.com/2017/05/12/一天一Android之Service/</id>
+    <link href="https://guiyongdong.github.io/2017/05/12/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BService/"/>
+    <id>https://guiyongdong.github.io/2017/05/12/一天一Android之Service/</id>
     <published>2017-05-12T04:00:17.000Z</published>
     <updated>2017-05-12T09:23:22.000Z</updated>
     
@@ -1619,17 +1619,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+      <category term="Android" scheme="https://guiyongdong.github.io/categories/Android/"/>
     
     
-      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+      <category term="android" scheme="https://guiyongdong.github.io/tags/android/"/>
     
   </entry>
   
   <entry>
     <title>一天一Android之WebView</title>
-    <link href="http://www.guiyongdong.com/2017/05/12/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BWebView/"/>
-    <id>http://www.guiyongdong.com/2017/05/12/一天一Android之WebView/</id>
+    <link href="https://guiyongdong.github.io/2017/05/12/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BWebView/"/>
+    <id>https://guiyongdong.github.io/2017/05/12/一天一Android之WebView/</id>
     <published>2017-05-12T01:55:54.000Z</published>
     <updated>2017-05-12T03:47:49.000Z</updated>
     
@@ -1678,17 +1678,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+      <category term="Android" scheme="https://guiyongdong.github.io/categories/Android/"/>
     
     
-      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+      <category term="android" scheme="https://guiyongdong.github.io/tags/android/"/>
     
   </entry>
   
   <entry>
     <title>一天一Android之ViewPager</title>
-    <link href="http://www.guiyongdong.com/2017/05/10/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BViewPager/"/>
-    <id>http://www.guiyongdong.com/2017/05/10/一天一Android之ViewPager/</id>
+    <link href="https://guiyongdong.github.io/2017/05/10/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BViewPager/"/>
+    <id>https://guiyongdong.github.io/2017/05/10/一天一Android之ViewPager/</id>
     <published>2017-05-10T03:19:04.000Z</published>
     <updated>2017-05-11T07:26:50.000Z</updated>
     
@@ -1733,17 +1733,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+      <category term="Android" scheme="https://guiyongdong.github.io/categories/Android/"/>
     
     
-      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+      <category term="android" scheme="https://guiyongdong.github.io/tags/android/"/>
     
   </entry>
   
   <entry>
     <title>一天一Android之Glide详解</title>
-    <link href="http://www.guiyongdong.com/2017/05/09/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BGlide%E8%AF%A6%E8%A7%A3/"/>
-    <id>http://www.guiyongdong.com/2017/05/09/一天一Android之Glide详解/</id>
+    <link href="https://guiyongdong.github.io/2017/05/09/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BGlide%E8%AF%A6%E8%A7%A3/"/>
+    <id>https://guiyongdong.github.io/2017/05/09/一天一Android之Glide详解/</id>
     <published>2017-05-09T09:12:03.000Z</published>
     <updated>2017-05-10T03:14:42.000Z</updated>
     
@@ -1801,17 +1801,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+      <category term="Android" scheme="https://guiyongdong.github.io/categories/Android/"/>
     
     
-      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+      <category term="android" scheme="https://guiyongdong.github.io/tags/android/"/>
     
   </entry>
   
   <entry>
     <title>一天一Android之存储目录</title>
-    <link href="http://www.guiyongdong.com/2017/05/05/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E5%AD%98%E5%82%A8%E7%9B%AE%E5%BD%95/"/>
-    <id>http://www.guiyongdong.com/2017/05/05/一天一Android之存储目录/</id>
+    <link href="https://guiyongdong.github.io/2017/05/05/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E5%AD%98%E5%82%A8%E7%9B%AE%E5%BD%95/"/>
+    <id>https://guiyongdong.github.io/2017/05/05/一天一Android之存储目录/</id>
     <published>2017-05-05T03:47:05.000Z</published>
     <updated>2017-05-05T07:42:05.000Z</updated>
     
@@ -1876,17 +1876,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+      <category term="Android" scheme="https://guiyongdong.github.io/categories/Android/"/>
     
     
-      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+      <category term="android" scheme="https://guiyongdong.github.io/tags/android/"/>
     
   </entry>
   
   <entry>
     <title>一天一Android之运行时权限</title>
-    <link href="http://www.guiyongdong.com/2017/05/04/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90/"/>
-    <id>http://www.guiyongdong.com/2017/05/04/一天一Android之运行时权限/</id>
+    <link href="https://guiyongdong.github.io/2017/05/04/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8B%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90/"/>
+    <id>https://guiyongdong.github.io/2017/05/04/一天一Android之运行时权限/</id>
     <published>2017-05-04T01:32:33.000Z</published>
     <updated>2017-05-05T02:25:54.000Z</updated>
     
@@ -1936,17 +1936,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+      <category term="Android" scheme="https://guiyongdong.github.io/categories/Android/"/>
     
     
-      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+      <category term="android" scheme="https://guiyongdong.github.io/tags/android/"/>
     
   </entry>
   
   <entry>
     <title>一天一Android之Material Desisgn</title>
-    <link href="http://www.guiyongdong.com/2017/04/15/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BMaterial%20Desisgn/"/>
-    <id>http://www.guiyongdong.com/2017/04/15/一天一Android之Material Desisgn/</id>
+    <link href="https://guiyongdong.github.io/2017/04/15/%E4%B8%80%E5%A4%A9%E4%B8%80Android%E4%B9%8BMaterial%20Desisgn/"/>
+    <id>https://guiyongdong.github.io/2017/04/15/一天一Android之Material Desisgn/</id>
     <published>2017-04-15T03:32:11.000Z</published>
     <updated>2017-04-19T03:54:36.000Z</updated>
     
@@ -2053,17 +2053,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Android" scheme="http://www.guiyongdong.com/categories/Android/"/>
+      <category term="Android" scheme="https://guiyongdong.github.io/categories/Android/"/>
     
     
-      <category term="android" scheme="http://www.guiyongdong.com/tags/android/"/>
+      <category term="android" scheme="https://guiyongdong.github.io/tags/android/"/>
     
   </entry>
   
   <entry>
     <title>说一说JS和Objective-C的交互</title>
-    <link href="http://www.guiyongdong.com/2017/04/14/%E8%AF%B4%E4%B8%80%E8%AF%B4JS%E5%92%8CObjective-C%E7%9A%84%E4%BA%A4%E4%BA%92/"/>
-    <id>http://www.guiyongdong.com/2017/04/14/说一说JS和Objective-C的交互/</id>
+    <link href="https://guiyongdong.github.io/2017/04/14/%E8%AF%B4%E4%B8%80%E8%AF%B4JS%E5%92%8CObjective-C%E7%9A%84%E4%BA%A4%E4%BA%92/"/>
+    <id>https://guiyongdong.github.io/2017/04/14/说一说JS和Objective-C的交互/</id>
     <published>2017-04-14T08:39:35.000Z</published>
     <updated>2017-04-14T10:35:32.000Z</updated>
     
@@ -2126,17 +2126,17 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="Objective-C" scheme="http://www.guiyongdong.com/categories/Objective-C/"/>
+      <category term="Objective-C" scheme="https://guiyongdong.github.io/categories/Objective-C/"/>
     
     
-      <category term="js交互" scheme="http://www.guiyongdong.com/tags/js%E4%BA%A4%E4%BA%92/"/>
+      <category term="js交互" scheme="https://guiyongdong.github.io/tags/js%E4%BA%A4%E4%BA%92/"/>
     
   </entry>
   
   <entry>
     <title>ReactNative利用CodePush实现热更新</title>
-    <link href="http://www.guiyongdong.com/2017/04/07/ReactNative%E5%88%A9%E7%94%A8CodePush%E5%AE%9E%E7%8E%B0%E7%83%AD%E6%9B%B4%E6%96%B0/"/>
-    <id>http://www.guiyongdong.com/2017/04/07/ReactNative利用CodePush实现热更新/</id>
+    <link href="https://guiyongdong.github.io/2017/04/07/ReactNative%E5%88%A9%E7%94%A8CodePush%E5%AE%9E%E7%8E%B0%E7%83%AD%E6%9B%B4%E6%96%B0/"/>
+    <id>https://guiyongdong.github.io/2017/04/07/ReactNative利用CodePush实现热更新/</id>
     <published>2017-04-07T02:55:30.000Z</published>
     <updated>2017-06-26T06:50:29.000Z</updated>
     
@@ -2282,10 +2282,10 @@ int main(int argc, char * argv[]) {
     
     </summary>
     
-      <category term="ReactNative" scheme="http://www.guiyongdong.com/categories/ReactNative/"/>
+      <category term="ReactNative" scheme="https://guiyongdong.github.io/categories/ReactNative/"/>
     
     
-      <category term="ReactNative" scheme="http://www.guiyongdong.com/tags/ReactNative/"/>
+      <category term="ReactNative" scheme="https://guiyongdong.github.io/tags/ReactNative/"/>
     
   </entry>
   

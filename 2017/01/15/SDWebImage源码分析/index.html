@@ -30,7 +30,7 @@
 从githu">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="SDWebImage源码分析">
-<meta property="og:url" content="http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/index.html">
+<meta property="og:url" content="https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/index.html">
 <meta property="og:site_name" content="贵大头的博客">
 <meta property="og:description" content="SDWebImage是一个开源的第三方库，它提供了UIImageView的一个分类，以支持从远程服务器下载并缓存图片的功能。它具有以下功能：
 
@@ -64,7 +64,7 @@
         
     
     
-        <meta property="og:image" content="http://www.guiyongdong.com/assets/images/header.jpg"/>
+        <meta property="og:image" content="https://guiyongdong.github.io/assets/images/header.jpg"/>
     
     
     
@@ -294,7 +294,7 @@
 <p>SDWebImage定义了一个协议，即SDWebImageOperation作为图片下载操作的基础协议。它只声明了一个cancel方法，用于取消操作。协议的具体声明如下：</p>
 <figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">SDWebImageOperation</span> &lt;<span class="title">NSObject</span>&gt;</span></div><div class="line">- (<span class="keyword">void</span>)cancel;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
 <p>SDWebImage还定义了一个下载协议，即SDWebImageDownloaderOperationInterface，它允许用户自定义下载操作，当然，SDWebImage也提供了自己的下载类，即<code>SDWebImageDownloaderOperation</code>，它继承自NSOperation，并采用了<code>SDWebImageOperation</code>和<code>SDWebImageDownloaderOperationInterface</code>协议。并且实现他们的代理方法。</p>
-<p>对于图片的下载，SDWebImageDownloaderOperation完全依赖于URL加载系统中的NSURLSession类。我们先来分析一下SDWebImageDownloaderOperation类中对于图片实际数据的下载处理，即NSURLSessionDataDelegate和NSURLSessionDataDelegate各个代理方法的实现。(ps 有关NSURLSession类的具体介绍<a href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/">请戳这里</a>)</p>
+<p>对于图片的下载，SDWebImageDownloaderOperation完全依赖于URL加载系统中的NSURLSession类。我们先来分析一下SDWebImageDownloaderOperation类中对于图片实际数据的下载处理，即NSURLSessionDataDelegate和NSURLSessionDataDelegate各个代理方法的实现。(ps 有关NSURLSession类的具体介绍<a href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/" target="_blank" rel="external">请戳这里</a>)</p>
 <p>我们前面说过SDWebImageDownloaderOperation类是继承自NSOperation类。它没有简单的实现main方法，而是采用更加灵活的start方法，以便自己管理下载的状态。</p>
 <p>在start方法中，创建了我们下载所使用的NSURLSession对象，开启了图片的下载，同时抛出一个下载开始的通知。当然，如果我们期望下载在后台处理，则只需要配置我们的下载选项，使其包含SDWebImageDownloaderContinueInBackground选项。start方法的具体实现如下：</p>
 <figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">- (<span class="keyword">void</span>)start &#123;</div><div class="line">    <span class="keyword">@synchronized</span> (<span class="keyword">self</span>) &#123;</div><div class="line">    	<span class="comment">// 管理下载状态，如果已取消，则重置当前下载并设置完成状态为YES</span></div><div class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.isCancelled) &#123;</div><div class="line">            <span class="keyword">self</span>.finished = <span class="literal">YES</span>;</div><div class="line">            [<span class="keyword">self</span> reset];</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">		...</div><div class="line"></div><div class="line">        <span class="built_in">NSURLSession</span> *session = <span class="keyword">self</span>.unownedSession;</div><div class="line">        <span class="keyword">if</span> (!<span class="keyword">self</span>.unownedSession) &#123;</div><div class="line">        		<span class="comment">//如果session为空，创建session</span></div><div class="line">            <span class="built_in">NSURLSessionConfiguration</span> *sessionConfig = [<span class="built_in">NSURLSessionConfiguration</span> defaultSessionConfiguration];</div><div class="line">            sessionConfig.timeoutIntervalForRequest = <span class="number">15</span>;</div><div class="line">            </div><div class="line">            <span class="keyword">self</span>.ownedSession = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:sessionConfig</div><div class="line">                                                              delegate:<span class="keyword">self</span></div><div class="line">                                                         delegateQueue:<span class="literal">nil</span>];</div><div class="line">            session = <span class="keyword">self</span>.ownedSession;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//创建下载任务</span></div><div class="line">        <span class="keyword">self</span>.dataTask = [session dataTaskWithRequest:<span class="keyword">self</span>.request];</div><div class="line">        <span class="keyword">self</span>.executing = <span class="literal">YES</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//开启下载任务</span></div><div class="line">    [<span class="keyword">self</span>.dataTask resume];</div><div class="line">	</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.dataTask) &#123;</div><div class="line">        <span class="keyword">for</span> (SDWebImageDownloaderProgressBlock progressBlock <span class="keyword">in</span> [<span class="keyword">self</span> callbacksForKey:kProgressCallbackKey]) &#123;</div><div class="line">            progressBlock(<span class="number">0</span>, <span class="built_in">NSURLResponseUnknownLength</span>, <span class="keyword">self</span>.request.URL);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 2. 在主线程抛出下载开始通知</span></div><div class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</div><div class="line">            [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:SDWebImageDownloadStartNotification object:<span class="keyword">self</span>];</div><div class="line">        &#125;);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        [<span class="keyword">self</span> callCompletionBlocksWithError:[<span class="built_in">NSError</span> errorWithDomain:<span class="built_in">NSURLErrorDomain</span> code:<span class="number">0</span> userInfo:@&#123;<span class="built_in">NSLocalizedDescriptionKey</span> : <span class="string">@"Connection can't be initialized"</span>&#125;]];</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -343,8 +343,8 @@
 <ul>
 <li><code>dispatch_barrier_sync</code>函数：该方法用于对操作设置等待，确保在执行完任务后才会执行后续操作。该方法常用于确保类的线程安全性操作。</li>
 <li><code>NSMutableURLRequest</code>：用于创建一个网络请求对象，我们可以根据需要来配置请求报头等信息。</li>
-<li><code>NSOperation</code>及<code>NSOperationQueue</code>：操作队列是Objective-C中一种高级的并发处理方法，现在它是基于GCD来实现的。相对于GCD来说，操作队列的优点是可以取消在任务处理队列中的任务，另外在管理操作间的依赖关系方面也容易一些。对SDWebImage中我们就看到了如何使用依赖将下载顺序设置成后进先出的顺序。(有兴趣的同学可以看看我这篇博客-&gt;<a href="http://www.guiyongdong.com/2016/09/18/%E8%81%8A%E4%B8%80%E8%81%8ANSOperation%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/">聊一聊NSOperation的那些事</a>)</li>
-<li>NSURLSession：用于网络请求及响应处理。在iOS7.0后，苹果推出了一套新的网络请求接口，即NSURLSession类。(有兴趣的同学可以看看我这篇博客-&gt;<a href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/">NSURLSession与NSURLConnection区别</a>)</li>
+<li><code>NSOperation</code>及<code>NSOperationQueue</code>：操作队列是Objective-C中一种高级的并发处理方法，现在它是基于GCD来实现的。相对于GCD来说，操作队列的优点是可以取消在任务处理队列中的任务，另外在管理操作间的依赖关系方面也容易一些。对SDWebImage中我们就看到了如何使用依赖将下载顺序设置成后进先出的顺序。(有兴趣的同学可以看看我这篇博客-&gt;<a href="http://www.guiyongdong.com/2016/09/18/%E8%81%8A%E4%B8%80%E8%81%8ANSOperation%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/" target="_blank" rel="external">聊一聊NSOperation的那些事</a>)</li>
+<li>NSURLSession：用于网络请求及响应处理。在iOS7.0后，苹果推出了一套新的网络请求接口，即NSURLSession类。(有兴趣的同学可以看看我这篇博客-&gt;<a href="http://www.guiyongdong.com/2016/11/18/NSURLSession%E4%B8%8ENSURLConnection%E5%8C%BA%E5%88%AB/" target="_blank" rel="external">NSURLSession与NSURLConnection区别</a>)</li>
 <li>开启一个后台任务。</li>
 <li><code>NSCache</code>类：一个类似于集合的容器。它存储key-value对，这一点类似于NSDictionary类。我们通常用使用缓存来临时存储短时间使用但创建昂贵的对象。重用这些对象可以优化性能，因为它们的值不需要重新计算。另外一方面，这些对象对于程序来说不是紧要的，在内存紧张时会被丢弃。</li>
 <li>清理缓存图片的策略：特别是最大缓存空间大小的设置。如果所有缓存文件的总大小超过这一大小，则会按照文件最后修改时间的逆序，以每次一半的递归来移除那些过早的文件，直到缓存的实际大小小于我们设置的最大使用空间。</li>
@@ -395,12 +395,12 @@
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/&amp;title=SDWebImage源码分析">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/&amp;title=SDWebImage源码分析">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -418,7 +418,7 @@
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://b.bshare.cn/barCode?site=weixin&amp;url=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://b.bshare.cn/barCode?site=weixin&amp;url=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -512,12 +512,12 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/&amp;title=SDWebImage源码分析">
+            <a class="post-action-btn btn btn--default" target="new" href="http://v.t.sina.com.cn/share/share.php?url=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/&amp;title=SDWebImage源码分析">
                 <i class="fa fa-weibo"></i>
             </a>
         </li>
         <li class="post-action hide-xs">
-            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/">
+            <a class="post-action-btn btn btn--default" target="new" href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/">
                 <i class="fa fa-qq"></i>
             </a>
         </li>
@@ -535,7 +535,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
         </li>
     </ul>
 </div>
-<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://b.bshare.cn/barCode?site=weixin&amp;url=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="z-index:1000;display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://b.bshare.cn/barCode?site=weixin&amp;url=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -556,12 +556,12 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div id="share-options-bar" class="share-options-bar" data-behavior="4">
     <ul class="share-options">
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/">
+            <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/">
                 <i class="fa fa-weibo"></i><span>微博</span>
             </a>
         </li>
         <li class="share-option">
-            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/">
+            <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/">
                 <i class="fa fa-qq"></i><span>QQ</span>
             </a>
         </li>
@@ -576,7 +576,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
 
 
 
-<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://pan.baidu.com/share/qrcode?url=http://www.guiyongdong.com/2017/01/15/SDWebImage源码分析/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
+<div id="jiathis_weixin_modal" style="display:none; background-clip: padding-box;background-color: #FFFFFF;border: 1px solid rgba(0, 0, 0, 0.3);  border-radius: 6px 6px 6px 6px;  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); left: 50%; margin: -200px 0 0 -200px;overflow: hidden; position: fixed; top: 50%; width:360px;height:370px; overflow:hidden;" class="jiathis_weixin_modal"><div class="jiathis_modal_header" id="jiathis_modal_header" style="border-bottom: 1px solid #EEEEEE; padding: 9px 15px;"><a style="text-decoration:none;  margin-top: 2px; color: #000000; float: right;  font-size: 20px;  font-weight: bold; cursor:pointer;line-height: 20px; opacity: 0.2; text-shadow: 0 1px 0 #FFFFFF;" class="jiathis_weixin_close" id="jiathis_weixin_close" href="javascript:hidden();" target="_self">×</a><h3 id="jiathis_weixin_h3" style=" line-height: 30px; margin: 0; font-weight:normal; font-family:" 微软雅黑";"="">分享到微信朋友圈</h3></div><div class="jiathis_modal_body" id="jiathis_modal_body" style="text-align:center;height:251px;"><p id="jiathis_webchat"><img alt="二维码加载失败..." style="margin-top: 15px;" src="http://pan.baidu.com/share/qrcode?url=https://guiyongdong.github.io/2017/01/15/SDWebImage源码分析/" height="220" width="220"></p></div><div class="jiathis_modal_footer" id="jiathis_modal_footer" style="border-radius: 0 0 6px 6px; border-top: 1px solid #DDDDDD; box-shadow: 0 1px 0 #FFFFFF inset; height:100%;padding:0 10px;padding-top:11px;text-align: right; font-size:12px;"><div id="jiathis_weixin_tip" style="text-align:left;margin:0; padding:0;font-size:12px;background-color: #FFFFFF;">打开微信，点击底部的“发现”，使用 “扫一扫” 即可将网页分享到我的朋友圈。</div></div></div>
 
 <script charset="utf-8">
     function show(){
@@ -650,7 +650,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/11/初识ReactiveCocoa/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/08/11/初识ReactiveCocoa/">
                             <h3 class="media-heading">初识ReactiveCocoa</h3>
                         </a>
                         <span class="media-meta">
@@ -669,7 +669,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/08/12/深入ReactiveCocoa/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/08/12/深入ReactiveCocoa/">
                             <h3 class="media-heading">深入ReactiveCocoa</h3>
                         </a>
                         <span class="media-meta">
@@ -688,7 +688,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/ReactiveCocoa和RXSwift速查表/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/09/06/ReactiveCocoa和RXSwift速查表/">
                             <h3 class="media-heading">ReactiveCocoa和RXSwift速查表</h3>
                         </a>
                         <span class="media-meta">
@@ -707,7 +707,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/06/关于RAC的一些资料/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/09/06/关于RAC的一些资料/">
                             <h3 class="media-heading">关于RAC的一些资料</h3>
                         </a>
                         <span class="media-meta">
@@ -726,7 +726,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/08/RunLoop总结/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/09/08/RunLoop总结/">
                             <h3 class="media-heading">RunLoop总结</h3>
                         </a>
                         <span class="media-meta">
@@ -745,7 +745,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/13/聊一聊GCD的那些事/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/09/13/聊一聊GCD的那些事/">
                             <h3 class="media-heading">聊一聊GCD的那些事</h3>
                         </a>
                         <span class="media-meta">
@@ -764,7 +764,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/18/聊一聊NSOperation的那些事/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/09/18/聊一聊NSOperation的那些事/">
                             <h3 class="media-heading">聊一聊NSOperation的那些事</h3>
                         </a>
                         <span class="media-meta">
@@ -783,7 +783,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/21/iOS动画篇-transfrom/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/09/21/iOS动画篇-transfrom/">
                             <h3 class="media-heading">iOS动画篇之UIView动画</h3>
                         </a>
                         <span class="media-meta">
@@ -802,7 +802,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画篇之CoreAnimation动画/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/09/22/iOS动画篇之CoreAnimation动画/">
                             <h3 class="media-heading">iOS动画篇之CoreAnimation动画</h3>
                         </a>
                         <span class="media-meta">
@@ -821,7 +821,7 @@ Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true)
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://www.guiyongdong.com/2016/09/22/iOS动画之CATransition动画/">
+                        <a class="link-unstyled" href="https://guiyongdong.github.io/2016/09/22/iOS动画之CATransition动画/">
                             <h3 class="media-heading">iOS动画之CATransition动画</h3>
                         </a>
                         <span class="media-meta">
