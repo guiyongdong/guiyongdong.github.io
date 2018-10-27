@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://guiyongdong.github.io/"/>
-  <updated>2018-10-27T11:07:53.859Z</updated>
+  <updated>2018-10-27T11:09:37.341Z</updated>
   <id>https://guiyongdong.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="https://guiyongdong.github.io/2018/10/27/%E3%80%90%E8%BD%AC%E3%80%91iOS%E7%B3%BB%E7%BB%9F%E4%B8%AD%E5%AF%BC%E8%88%AA%E6%A0%8F%E7%9A%84%E8%BD%AC%E5%9C%BA%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"/>
     <id>https://guiyongdong.github.io/2018/10/27/【转】iOS系统中导航栏的转场解决方案与最佳实践/</id>
     <published>2018-10-27T11:00:48.000Z</published>
-    <updated>2018-10-27T11:07:53.859Z</updated>
+    <updated>2018-10-27T11:09:37.341Z</updated>
     
     <content type="html"><![CDATA[<p> <strong>前言</strong>  </p>
 <p>目前，开源社区和业界内已经存在一些 iOS 导航栏转场的解决方案，但对于历史包袱沉重的美团 App<br>而言，这些解决方案并不完美。有的方案不能满足复杂的页面跳转场景，有的方案迁移成本较大，为此我们提出了一套解决方案并开发了相应的转场库，目前该转场库已经成为美团点评多个<br>App 的基础组件之一。</p>
@@ -397,7 +397,7 @@ UIBarButtonItem-perfect-match-in-iOS/" target="_blank" rel="external">UIBarButto
     <link href="https://guiyongdong.github.io/2018/10/16/%E3%80%90%E8%BD%AC%E3%80%91iOS-Memory-Deep-Dive/"/>
     <id>https://guiyongdong.github.io/2018/10/16/【转】iOS-Memory-Deep-Dive/</id>
     <published>2018-10-16T05:06:45.000Z</published>
-    <updated>2018-10-16T05:10:04.349Z</updated>
+    <updated>2018-10-27T11:09:05.832Z</updated>
     
     <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>仅以此文解答自己大学以来多年对内存管理的疑惑。</p>
 <h2 id="经典操作系统的虚拟内存"><a href="#经典操作系统的虚拟内存" class="headerlink" title="经典操作系统的虚拟内存"></a>经典操作系统的虚拟内存</h2><h3 id="为什么要有虚拟内存？"><a href="#为什么要有虚拟内存？" class="headerlink" title="为什么要有虚拟内存？"></a>为什么要有虚拟内存？</h3><p>随着计算机的发展，我们的计算机处理的任务也变得越来越繁多，但是对于某台固定的计算机，CPU 和 Memory<br>都是固定的，如果有些直接使用物理内存地址的话会带来很多问题。首先编译器不能以一种抽象的角度来描绘内存，在执行的过程中如果某个进程占据的内存过大，这个进程可能就无法运行，即便运行了，内存相对来说是非常不安全的，一个不小心操作到了别的进程的内存，可能导致进程的崩溃，如果写入了内核使用的内存可能导致操作系统的崩溃。</p>
