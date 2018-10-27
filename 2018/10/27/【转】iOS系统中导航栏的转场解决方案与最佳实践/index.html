@@ -26,7 +26,7 @@
 <meta property="og:description" content="前言  
 目前，开源社区和业界内已经存在一些 iOS 导航栏转场的解决方案，但对于历史包袱沉重的美团 App而言，这些解决方案并不完美。有的方案不能满足复杂的页面跳转场景，有的方案迁移成本较大，为此我们提出了一套解决方案并开发了相应的转场库，目前该转场库已经成为美团点评多个App 的基础组件之一。
 在美团 App开发的早期，涉及到导航栏样式改变的需求时，经常会遇到转场效果不佳或者与预期样式不符的">
-<meta property="og:updated_time" content="2018-10-27T11:05:20.984Z">
+<meta property="og:updated_time" content="2018-10-27T11:07:53.859Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【转】iOS系统中导航栏的转场解决方案与最佳实践">
 <meta name="twitter:description" content="前言  
@@ -246,6 +246,7 @@
 </ol>
 <p>从各个角度来看，硬编码的方式已经不能很好的解决此类问题，美团 App 需要一个更加合理、更加持久、更加简单易行的解决方案来处理导航栏转场问题。</p>
 <p>本文将从导航栏的概念入手，通过讲解转场过程中的状态管理、转换时机和样式变化等内容，引出了在大型应用中导航栏转场的三种常见解决方案，并对美团的解决方案进行剖析，同时介绍了我们总结的最佳实践。</p>
+<a id="more"></a>
 <p> <strong>重新认识导航栏</strong></p>
 <h3 id="导航栏里的-MVC"><a href="#导航栏里的-MVC" class="headerlink" title="导航栏里的 MVC"></a><strong>导航栏里的 MVC</strong></h3><p>在 iOS 系统中， 苹果公司不仅建议开发者遵循 MVC 开发框架，在他们的代码里也可以看到 MVC 的影子，导航栏组件的构成就是一个类似 MVC<br>的结构，让我们先看看下面这张图：</p>
 <p>在这张图里，我们可以将 UINavigationController 看做是 C，UINavigationBar 看做是 V，而<br>UIViewController 和 UINavigationItem 组成的 Stack 可以看做是 M。这里要说明的是，每个<br>UIViewController 都有一个属于自己的 UINavigationItem，也就是说它们是一一对应的。</p>

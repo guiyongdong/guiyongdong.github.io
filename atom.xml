@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://guiyongdong.github.io/"/>
-  <updated>2018-10-27T11:05:20.984Z</updated>
+  <updated>2018-10-27T11:07:53.859Z</updated>
   <id>https://guiyongdong.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="https://guiyongdong.github.io/2018/10/27/%E3%80%90%E8%BD%AC%E3%80%91iOS%E7%B3%BB%E7%BB%9F%E4%B8%AD%E5%AF%BC%E8%88%AA%E6%A0%8F%E7%9A%84%E8%BD%AC%E5%9C%BA%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"/>
     <id>https://guiyongdong.github.io/2018/10/27/【转】iOS系统中导航栏的转场解决方案与最佳实践/</id>
     <published>2018-10-27T11:00:48.000Z</published>
-    <updated>2018-10-27T11:05:20.984Z</updated>
+    <updated>2018-10-27T11:07:53.859Z</updated>
     
     <content type="html"><![CDATA[<p> <strong>前言</strong>  </p>
 <p>目前，开源社区和业界内已经存在一些 iOS 导航栏转场的解决方案，但对于历史包袱沉重的美团 App<br>而言，这些解决方案并不完美。有的方案不能满足复杂的页面跳转场景，有的方案迁移成本较大，为此我们提出了一套解决方案并开发了相应的转场库，目前该转场库已经成为美团点评多个<br>App 的基础组件之一。</p>
@@ -35,6 +35,7 @@
 </ol>
 <p>从各个角度来看，硬编码的方式已经不能很好的解决此类问题，美团 App 需要一个更加合理、更加持久、更加简单易行的解决方案来处理导航栏转场问题。</p>
 <p>本文将从导航栏的概念入手，通过讲解转场过程中的状态管理、转换时机和样式变化等内容，引出了在大型应用中导航栏转场的三种常见解决方案，并对美团的解决方案进行剖析，同时介绍了我们总结的最佳实践。</p>
+<a id="more"></a>
 <p> <strong>重新认识导航栏</strong></p>
 <h3 id="导航栏里的-MVC"><a href="#导航栏里的-MVC" class="headerlink" title="导航栏里的 MVC"></a><strong>导航栏里的 MVC</strong></h3><p>在 iOS 系统中， 苹果公司不仅建议开发者遵循 MVC 开发框架，在他们的代码里也可以看到 MVC 的影子，导航栏组件的构成就是一个类似 MVC<br>的结构，让我们先看看下面这张图：</p>
 <p>在这张图里，我们可以将 UINavigationController 看做是 C，UINavigationBar 看做是 V，而<br>UIViewController 和 UINavigationItem 组成的 Stack 可以看做是 M。这里要说明的是，每个<br>UIViewController 都有一个属于自己的 UINavigationItem，也就是说它们是一一对应的。</p>
@@ -369,7 +370,18 @@ UIBarButtonItem-perfect-match-in-iOS/" target="_blank" rel="external">UIBarButto
     <summary type="html">
     
       &lt;p&gt; &lt;strong&gt;前言&lt;/strong&gt;  &lt;/p&gt;
-&lt;p&gt;目前，开源社区和业界内已经存在一些 iOS 导航栏转场的解决方案，但对于历史包袱沉重的美团 App&lt;br&gt;而言，这些解决方案并不完美。有的方案不能满足复杂的页面跳转场景，有的方案迁移成本较大，为此我们提出了一套解决
+&lt;p&gt;目前，开源社区和业界内已经存在一些 iOS 导航栏转场的解决方案，但对于历史包袱沉重的美团 App&lt;br&gt;而言，这些解决方案并不完美。有的方案不能满足复杂的页面跳转场景，有的方案迁移成本较大，为此我们提出了一套解决方案并开发了相应的转场库，目前该转场库已经成为美团点评多个&lt;br&gt;App 的基础组件之一。&lt;/p&gt;
+&lt;p&gt;在美团 App&lt;br&gt;开发的早期，涉及到导航栏样式改变的需求时，经常会遇到转场效果不佳或者与预期样式不符的“小问题”。在业务体量较小的情况下，为了满足快速的业务迭代，通常会使用硬编码的方式来解决这一类“小问题”。但随着美团&lt;br&gt;App 业务的高速发展，这种硬编码的方式遇到了以下的挑战：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;业务模块的不断增加，导致使用硬编码方式编写的代码维护成本增加，代码质量迅速下降。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;大型 App 的路由系统使得页面间的跳转变得更加自由和灵活，也使得导航栏相关的问题激增，不但增加了问题的排查难度，还降低了整体的开发效率。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;App 中的导航栏属于各个业务方的公用资源，由于缺乏相应的约束机制和最佳实践，导致业务方之间的代码耦合程度不断增加。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;从各个角度来看，硬编码的方式已经不能很好的解决此类问题，美团 App 需要一个更加合理、更加持久、更加简单易行的解决方案来处理导航栏转场问题。&lt;/p&gt;
+&lt;p&gt;本文将从导航栏的概念入手，通过讲解转场过程中的状态管理、转换时机和样式变化等内容，引出了在大型应用中导航栏转场的三种常见解决方案，并对美团的解决方案进行剖析，同时介绍了我们总结的最佳实践。&lt;/p&gt;
     
     </summary>
     
