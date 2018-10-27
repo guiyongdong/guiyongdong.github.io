@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://guiyongdong.github.io/"/>
-  <updated>2018-10-27T11:01:55.503Z</updated>
+  <updated>2018-10-27T11:05:20.984Z</updated>
   <id>https://guiyongdong.github.io/</id>
   
   <author>
@@ -20,9 +20,9 @@
     <link href="https://guiyongdong.github.io/2018/10/27/%E3%80%90%E8%BD%AC%E3%80%91iOS%E7%B3%BB%E7%BB%9F%E4%B8%AD%E5%AF%BC%E8%88%AA%E6%A0%8F%E7%9A%84%E8%BD%AC%E5%9C%BA%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"/>
     <id>https://guiyongdong.github.io/2018/10/27/【转】iOS系统中导航栏的转场解决方案与最佳实践/</id>
     <published>2018-10-27T11:00:48.000Z</published>
-    <updated>2018-10-27T11:01:55.503Z</updated>
+    <updated>2018-10-27T11:05:20.984Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="【转】iOS系统中导航栏的转场解决方案与最佳实践"><a href="#【转】iOS系统中导航栏的转场解决方案与最佳实践" class="headerlink" title="【转】iOS系统中导航栏的转场解决方案与最佳实践"></a>【转】iOS系统中导航栏的转场解决方案与最佳实践</h2><p> <strong>前言</strong>  </p>
+    <content type="html"><![CDATA[<p> <strong>前言</strong>  </p>
 <p>目前，开源社区和业界内已经存在一些 iOS 导航栏转场的解决方案，但对于历史包袱沉重的美团 App<br>而言，这些解决方案并不完美。有的方案不能满足复杂的页面跳转场景，有的方案迁移成本较大，为此我们提出了一套解决方案并开发了相应的转场库，目前该转场库已经成为美团点评多个<br>App 的基础组件之一。</p>
 <p>在美团 App<br>开发的早期，涉及到导航栏样式改变的需求时，经常会遇到转场效果不佳或者与预期样式不符的“小问题”。在业务体量较小的情况下，为了满足快速的业务迭代，通常会使用硬编码的方式来解决这一类“小问题”。但随着美团<br>App 业务的高速发展，这种硬编码的方式遇到了以下的挑战：</p>
 <ol>
@@ -368,7 +368,8 @@ UIBarButtonItem-perfect-match-in-iOS/" target="_blank" rel="external">UIBarButto
     
     <summary type="html">
     
-      &lt;h2 id=&quot;【转】iOS系统中导航栏的转场解决方案与最佳实践&quot;&gt;&lt;a href=&quot;#【转】iOS系统中导航栏的转场解决方案与最佳实践&quot; class=&quot;headerlink&quot; title=&quot;【转】iOS系统中导航栏的转场解决方案与最佳实践&quot;&gt;&lt;/a&gt;【转】iOS系统中导航栏的转
+      &lt;p&gt; &lt;strong&gt;前言&lt;/strong&gt;  &lt;/p&gt;
+&lt;p&gt;目前，开源社区和业界内已经存在一些 iOS 导航栏转场的解决方案，但对于历史包袱沉重的美团 App&lt;br&gt;而言，这些解决方案并不完美。有的方案不能满足复杂的页面跳转场景，有的方案迁移成本较大，为此我们提出了一套解决
     
     </summary>
     
