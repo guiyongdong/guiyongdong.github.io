@@ -185,9 +185,9 @@ function docall() {
 		outgoingBandwidth: 'default',
 		incomingBandwidth: 'default',
 		videoBandwidth: {
-			max: 2048,
-			min: 1024,
-			start: 1024
+			max: 720,
+			min: 240,
+			start: 240
 		},
 		deviceParams: {
 			useMic: ds.audioInDevice,
