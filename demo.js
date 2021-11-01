@@ -173,6 +173,7 @@ function docall() {
 
 	display("Trying");
 	const ds = getDeviceSettings();
+	alert("start call");
 
 	cur_call = window.verto.newCall({
 		destination_number: document.getElementById('ext').value,
